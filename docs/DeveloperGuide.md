@@ -312,6 +312,66 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 2.
 
+**Use case: Find employees by attribute**
+
+**MSS**
+
+1. HR manager requests for the list of employees with a specific value for an attribute
+2. System displays the list of employees with the specified value for the attribute
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. HR manager did not specify an attribute.
+
+    * 1a1. System informs the HR manager to specify an attribute.
+    * 1a2. System does not display a filtered list of employees.
+
+      Use case ends.
+
+* 1b. HR manager specified multiple attributes.
+
+    * 1b1. System informs the HR manager it does not support multiple attributes.
+    * 1b2. System does not display a filtered list of employees.
+
+      Use case ends.
+
+* 1c. HR manager specified an attribute which does not exist.
+
+    * 1c1. System informs the HR manager the attribute does not exist.
+    * 1c2. System does not display a filtered list of employees.
+
+      Use case ends.
+
+* 1d. HR manager did not specify a value.
+
+    * 1d1. System informs the HR manager to specify a value.
+    * 1d2. System does not display a filtered list of employees.
+
+      Use case ends.
+
+* 1e. HR manager specified multiple values.
+
+    * 1e1. System informs the HR manager it does not support multiple values.
+    * 1e2. System does not display a filtered list of employees.
+
+      Use case ends.
+
+* 1f. HR manager specified a value which is invalid.
+
+    * 1f1. System informs the HR manager the specified value is invalid.
+    * 1f2. System does not display a filtered list of employees.
+
+      Use case ends.
+
+* 1g. None of the employees match the specified value and attribute.
+
+    * 1g1. System informs the HR manager that no employees match the specified value and attribute.
+    * 1g2. System displays an empty list with no employees.
+
+      Use case ends.
+
 **Use case: Record employee leave**
 
 **MSS**
