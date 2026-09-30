@@ -261,13 +261,13 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* HR officer who has to manage a significant number of employee contacts by themselves
+* HR officer who can use the contact book to help her carry out her administrative tasks.
+* HR officer who wants to use the contact book to easily communicate with employees of the company from various different departments.
+* HR officer who is reasonably comfortable using CLI apps and types fast compared to using mouse interactions
+* HR officer that needs help tracking and managing employee records, onboarding, attendance, leave, and other day-to-day administrative matters
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: Helps HR officers keep employee information organised and up to date while reducing repetitive administrative work.
 
 
 ### User stories
