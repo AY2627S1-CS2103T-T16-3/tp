@@ -398,11 +398,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
+1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
+2.  HR Book should be able to hold up to 1000 employees.
 3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-
-*{More to be added}*
+4.  A novice user should be able to use HR Book even if they have not used similar systems before.
+5.  The HR Book should respond to every command under 2 seconds.
+6.  HR Book should be able to carry out its functionality without internet access.
+7.  HR Book should preserve all successfully saved information between application sessions.
 
 ### Glossary
 
