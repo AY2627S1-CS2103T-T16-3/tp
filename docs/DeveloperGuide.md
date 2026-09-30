@@ -326,42 +326,42 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 1a. HR manager did not specify an attribute.
 
     * 1a1. System informs the HR manager to specify an attribute.
-    * 1a2. System does not display the filtered list of employees.
+    * 1a2. System does not display a filtered list of employees.
 
       Use case ends.
 
 * 1b. HR manager specified multiple attributes.
 
     * 1b1. System informs the HR manager it does not support multiple attributes.
-    * 1b2. System does not display the filtered list of employees.
+    * 1b2. System does not display a filtered list of employees.
 
       Use case ends.
 
 * 1c. HR manager specified an attribute which does not exist.
 
     * 1c1. System informs the HR manager the attribute does not exist.
-    * 1c2. System does not display the filtered list of employees.
+    * 1c2. System does not display a filtered list of employees.
 
       Use case ends.
 
 * 1d. HR manager did not specify a value.
 
     * 1d1. System informs the HR manager to specify a value.
-    * 1d2. System does not display the filtered list of employees.
+    * 1d2. System does not display a filtered list of employees.
 
       Use case ends.
 
 * 1e. HR manager specified multiple values.
 
     * 1e1. System informs the HR manager it does not support multiple values.
-    * 1e2. System does not display the filtered list of employees.
+    * 1e2. System does not display a filtered list of employees.
 
       Use case ends.
 
 * 1f. HR manager specified a value which is invalid.
 
     * 1f1. System informs the HR manager the specified value is invalid.
-    * 1f2. System does not display the filtered list of employees.
+    * 1f2. System does not display a filtered list of employees.
 
       Use case ends.
 
