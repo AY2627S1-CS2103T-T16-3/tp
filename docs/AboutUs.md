@@ -9,15 +9,31 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
-### John Doe
+### Goh Sze Han Matthew
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/mattgoddd.png" width="200px">
 
-[[homepage](http://www.comp.nus.edu.sg/~damithch)]
-[[github](https://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/MattGoddd)]
 
-* Role: Project Advisor
+* Role: Developer
+* Responsibility: Storage
+
+### Lee Zi Rong
+
+<img src="images/zirong679.png" width="200px">
+
+[[github](https://github.com/zirong679)]
+
+* Role: Developer
+
+### Kuah Gene Qhee
+
+<img src="images/geengene.png" width="200px">
+
+[[github](https://github.com/geengene)]
+
+* Role: Developer
+* Responsibilities: Logic
 
 ### Chua Wee Joon, Justin
 
@@ -26,33 +42,13 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 [[github](http://github.com/valencia127)]
 
 * Role: Developer
-* Responsibilities: UI
 
-### Johnny Doe
 
-<img src="images/johndoe.png" width="200px">
+### Lee Ren Kai
 
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+<img src="images/user-lrk.png" width="200px">
 
-* Role: Developer
-* Responsibilities: Data
-
-### Jean Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
-* Role: Developer
-* Responsibilities: Dev Ops + Threading
-
-### James Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](http://github.com/USER-LRK)]
 
 * Role: Developer
 * Responsibilities: UI
