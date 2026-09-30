@@ -287,7 +287,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is the `HR Book` and the **Actor** is the `HR manager`, unless specified otherwise)
 
 **Use case: Delete a person**
 
@@ -311,6 +311,88 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 3a1. AddressBook shows an error message.
 
       Use case resumes at step 2.
+
+**Use case: Record employee leave**
+
+**MSS**
+
+1.  HR manager requests to record a leave period for a specified employee, providing the start and end dates.
+2.  System records the leave period and assigns it a unique leave ID.
+3.  System displays the recorded leave and the employee’s remaining leave for the relevant calendar year.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The request is missing required information or contains duplicated or unrecognized information.
+
+    * 1a1. System informs the HR manager that the request is invalid.
+    * 1a2. System does not record the leave.
+
+      Use case ends.
+
+* 1b. The provided employee ID is invalid.
+
+    * 1b1. System informs the HR manager that the employee ID is invalid.
+    * 1b2. System does not record the leave.
+
+      Use case ends.
+
+* 1c. No employee with the provided employee ID exists.
+
+    * 1c1. System informs the HR manager that the employee does not exist.
+    * 1c2. System does not record the leave.
+
+      Use case ends.
+
+* 1d. Either provided date is not a valid calendar date.
+
+    * 1d1. System informs the HR manager that the provided date is invalid.
+    * 1d2. System does not record the leave.
+
+      Use case ends.
+
+* 1e. The start date is later than the end date.
+
+    * 1e1. System informs the HR manager that the date range is invalid.
+    * 1e2. System does not record the leave.
+
+      Use case ends.
+
+* 1f. The start and end dates are in different calendar years.
+
+    * 1f1. System informs the HR manager that the leave period must fall within one calendar year.
+    * 1f2. System does not record the leave.
+
+      Use case ends.
+
+* 1g. The leave period does not contain any working day.
+
+    * 1g1. System informs the HR manager that the leave period must contain at least one working day.
+    * 1g2. System does not record the leave.
+
+      Use case ends.
+
+* 1h. The specified leave period overlaps an existing leave period belonging to the employee.
+
+    * 1h1. System informs the HR manager about the overlapping leave period.
+    * 1h2. System does not record the leave.
+
+      Use case ends.
+
+* 1i. The employee does not have sufficient remaining leave for the specified period.
+
+    * 1i1. System informs the HR manager of the employee’s remaining leave and the number of leave days required.
+    * 1i2. System does not record the leave.
+
+      Use case ends.
+
+* 2a. System is unable to save the leave information.
+
+    * 2a1. System informs the HR manager that the leave could not be recorded.
+    * 2a2. System leaves all existing employee and leave information unchanged.
+
+      Use case ends.
 
 *{More to be added}*
 
