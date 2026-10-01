@@ -277,15 +277,15 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 | Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        |
 | -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
-| `* * *`  | First time user of HRBook                                 | see usage instructions         | refer to instructions when I forget how to use the App and to learn the app capabilities                |
-| `* * *`  | First time user of HRBook                                 | edit employees contact         |   make any relevant updates to employee contact fields              |
+| `* * *`  | First time user of HR Book                                 | see usage instructions         | refer to instructions when I forget how to use the App and to learn the app capabilities                |
+| `* * *`  | First time user of HR Book                                 | edit employees contact         |   make any relevant updates to employee contact fields              |
 | `* * *`  | HR Officer                                       | add a new employee profile               |     add newly hired employee profiles with their respective details                                                                  |
 | `* * *`  | HR Officer                                       | delete an employee profile              | remove employees no longer with the company                                   |
-| `* * *`  | HR Officer                                      |   view employee's department, role, employment status, or other relevant details. | keep track of information relevant to HR administration |
+| `* * *`  | HR Officer                                      |   view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration |
 | `* *`    | HR Officer                                      | filter and find a specific employee based on a specific detail  | save time by not having to go through the entire contact book                |
-| `**`      | user with many employees on HRBook | sort persons by department          | locate a personnel within a department of the company easily                                                |
-| ` *`  | experienced user | tag employees together | easily group employees based on similar tags |
-| ` *`  | experienced user | generate a list of administrative actions | To show logs in the event of audits or reviews|
+| `**`      | Experienced HR Officer with many employees on HR Book | sort employee by department          | locate a personnel within a department of the company easily                                                |
+| ` *`  | Experienced HR Officer | tag employees together | easily group employees based on similar tags |
+| ` *`  | Experienced HR Officer | generate a list of administrative actions | to show logs in the event of audits or reviews|
 | ` *`  | HR Officer | have local storage for employee contact and details | have a persistent and secure database for all relevant information|
 | ` *`  | HR Officer | have automatic local backup for employee contact and details | backup the employee information locally |
 
