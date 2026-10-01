@@ -468,8 +468,16 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Glossary
 
+* **Employee**: A staff member whose employment, contact, and leave information is managed in HR Book
+* **Employee attribute**: A field containing information about an employee, such as their name, contact number, email,
+  employee ID, boss ID, leave entitlement, leave date, or tag
+* **Employee ID**: A unique identifier assigned to an employee in HR Book
+* **HR Book**: The application used by HR managers to manage employee records and routine administrative work
+* **HR manager**: The primary user of HR Book who manages employee records and leave information
+* **Leave**: A period of absence recorded for an employee and counted against their leave entitlement
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+* **Working day**: A day counted when calculating leave duration, excluding non-working days such as weekends and
+  public holidays
 
 --------------------------------------------------------------------------------------------------------------------
 
