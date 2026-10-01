@@ -261,19 +261,17 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* HR officer who has to manage a significant number of employee contacts by themselves
+* HR officer who can use the contact book to help them carry out her administrative tasks
+* HR officer who is reasonably comfortable using CLI apps and types fast compared to using mouse interactions
+* HR officer that needs help tracking and managing employee records, onboarding, attendance, leave, and other day-to-day administrative matters
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: Helps HR officers keep employee information organised and up to date while reducing repetitive administrative work.
 
 
 ### User stories
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
-
 
 | Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        |
 | -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
@@ -294,6 +292,61 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 ### Use cases
 
 (For all use cases below, the **System** is the `HR Book` and the **Actor** is the `HR manager`, unless specified otherwise)
+
+
+**Use case: Add an employee**
+
+**MSS**
+
+1. HR manager requests to add an employee, providing the employee's details.
+2. System adds the employee and saves the employee information.
+3. System displays the added employee and confirms that the employee was added.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide one or more required fields.
+
+    * 1a1. System informs the HR manager to provide all required fields.
+    * 1a2. System does not add the employee.
+
+      Use case ends.
+
+* 1b. The HR manager provides an invalid field.
+
+    * 1b1. System informs the HR manager that the field does not exist.
+    * 1b2. System does not add the employee.
+
+      Use case ends.
+
+* 1c. The HR manager provides more fields than required.
+
+    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c2. System does not add the employee.
+
+      Use case ends.
+
+* 1d. One or more provided employee details are invalid.
+
+    * 1d1. System informs the HR manager that the details are invalid.
+    * 1d2. System does not add the employee.
+
+      Use case ends.
+
+* 1e. The provided email address or contact number belongs to an existing employee.
+
+    * 1e1. System informs the HR manager that the provided email address or contact number belongs to an existing employee.
+    * 1e2. System does not add the employee.
+
+      Use case ends.
+
+* 2a. An error occurs while saving employee information into storage.
+
+    * 2a1. System informs the HR manager that the employee could not be added.
+    * 2a2. System does not add the employee.
+
+      Use case ends.
 
 **Use case: Delete a person**
 
@@ -460,7 +513,62 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-*{More to be added}*
+
+**Use case: Show Employee Details**
+
+**MSS**
+
+1.  HR officer request for a specific detail of an employee on HR Book.
+2.  System displays employee profile and the relevant detail highlighted to user.
+
+    Use case ends
+
+**Extensions**
+
+* 1a. The request contains an employee ID that does not exist in the system
+
+    * 1a1. System informs the HR manager that the request is invalid as employee ID does not exist in the system.
+    * 1a2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1b. The request uses an employee ID that does not follow the correct format (eg. includes letters/special characters)
+
+    * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
+    * 1b2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1c. The detail field for the specified employee is empty
+
+    * 1c1. System informs the HR manager that no such detail has been recorded for the employee.
+    * 1c2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1d. The request inputs an invalid detail field
+
+    * 1d1. System informs the HR manager that detail field does not exist for employees on HR Book.
+    * 1d2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1e. The request specified multiple details in a single command
+
+    * 1e1. System informs the HR manager that only one detail can be shown at a time.
+    * 1e2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1f. The request included multiple employee IDs in a single command
+
+    * 1f1. System informs the HR manager that only one employee can be chosen at a time.
+    * 1f2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+{More to be added}
+
 
 ### Non-Functional Requirements
 
