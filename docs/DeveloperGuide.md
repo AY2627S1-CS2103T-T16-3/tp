@@ -454,7 +454,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-*{More to be added}*
 
 **Use case: Show Employee Details**
 
@@ -467,21 +466,21 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 1a. The request inputs an employee ID that does not exist in the system
+* 1a. The request contains an employee ID that does not exist in the system
 
-    * 1a1. System informs the HR manager that the request is invalid as employee id does not exist in the system.
+    * 1a1. System informs the HR manager that the request is invalid as employee ID does not exist in the system.
     * 1a2. System does not display specified detail of requested employee.
 
       Use case ends.
 
-* 1b. The request uses an employee ID that does not follow the correct format (eg. includes Letters/Special Charecters)
+* 1b. The request uses an employee ID that does not follow the correct format (eg. includes letters/special characters)
 
     * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
     * 1b2. System does not display specified detail of requested employee.
 
       Use case ends.
 
-* 1c. The request inputs an invalid detail of an employee (ie. detail field for specified employee is empty)
+* 1c. The detail field for the specified employee is empty
 
     * 1c1. System informs the HR manager that no such detail has been recorded for the employee.
     * 1c2. System does not display specified detail of requested employee.
@@ -505,7 +504,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 1f. The request included multiple employee IDs in a single command
 
     * 1f1. System informs the HR manager that only one employee can be chosen at a time.
-    * 1b2. System does not display specified detail of requested employee.
+    * 1f2. System does not display specified detail of requested employee.
 
       Use case ends.
 
