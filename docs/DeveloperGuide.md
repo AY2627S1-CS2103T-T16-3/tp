@@ -309,7 +309,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 1b. The HR manager provides in an invalid field.
+* 1b. The HR manager provides an invalid field.
 
     * 1b1. System informs the HR manager that the field does not exist.
     * 1b2. System does not add the employee.
@@ -337,7 +337,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 2a. The system is unable to save the employee information.
+* 2a. An error occurs while saving employee information into storage.
 
     * 2a1. System informs the HR manager that the employee could not be added.
     * 2a2. System does not add the employee.
