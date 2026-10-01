@@ -289,14 +289,15 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 (For all use cases below, the **System** is the `HR Book` and the **Actor** is the `HR manager`, unless specified otherwise)
 
-**Use case: Delete a person**
+**Use case: Delete employee**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1.  HR manager requests to list employees.
+2.  System displays the list of employees.
+3.  HR manager requests to delete a specific employee using the employee's displayed index.
+4.  System deletes the selected employee.
+5.  System confirms that the employee has been deleted.
 
     Use case ends.
 
@@ -304,13 +305,15 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 2a. The list is empty.
 
-  Use case ends.
+    * 2a1. System informs the HR manager that there are no employees to delete.
 
-* 3a. The given index is invalid.
+      Use case ends.
 
-    * 3a1. AddressBook shows an error message.
+* 3a. The provided index is invalid.
 
-      Use case resumes at step 2.
+    * 3a1. System informs the HR manager that the index is invalid.
+
+      Use case resumes at step 3.
 
 **Use case: Find employees by attribute**
 
