@@ -456,6 +456,62 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 *{More to be added}*
 
+**Use case: Show Employee Details**
+
+**MSS**
+
+1.  HR officer request for a specific detail of an employee on HR Book.
+2.  System displays employee profile and the relevant detail highlighted to user.
+
+    Use case ends
+
+**Extensions**
+
+* 1a. The request inputs an employee ID that does not exist in the system
+
+    * 1a1. System informs the HR manager that the request is invalid as employee id does not exist in the system.
+    * 1a2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1b. The request uses an employee ID that does not follow the correct format (eg. includes Letters/Special Charecters)
+
+    * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
+    * 1b2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1c. The request inputs an invalid detail of an employee (ie. detail field for specified employee is empty)
+
+    * 1c1. System informs the HR manager that no such detail has been recorded for the employee.
+    * 1c2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1d. The request inputs an invalid detail field
+
+    * 1d1. System informs the HR manager that detail field does not exist for employees on HR Book.
+    * 1d2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1e. The request specified multiple details in a single command
+
+    * 1e1. System informs the HR manager that only one detail can be shown at a time.
+    * 1e2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+* 1f. The request included multiple employee IDs in a single command
+
+    * 1f1. System informs the HR manager that only one employee can be chosen at a time.
+    * 1b2. System does not display specified detail of requested employee.
+
+      Use case ends.
+
+{More to be added}
+
+
 ### Non-Functional Requirements
 
 1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
