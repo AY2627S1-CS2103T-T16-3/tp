@@ -289,6 +289,61 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 (For all use cases below, the **System** is the `HR Book` and the **Actor** is the `HR manager`, unless specified otherwise)
 
+
+**Use case: Add an employee**
+
+**MSS**
+
+1. HR manager requests to add an employee, providing the employee's details.
+2. System adds the employee and saves the employee information.
+3. System displays the added employee and confirms that the employee was added.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide one or more required fields.
+
+    * 1a1. System informs the HR manager to provide all required fields.
+    * 1a2. System does not add the employee.
+
+      Use case ends.
+
+* 1b. The HR manager provides in an invalid field.
+
+    * 1b1. System informs the HR manager that the field does not exist.
+    * 1b2. System does not add the employee.
+
+      Use case ends.
+
+* 1c. The HR manager provides more fields than required.
+
+    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c2. System does not add the employee.
+
+      Use case ends.
+
+* 1d. One or more provided employee details are invalid.
+
+    * 1d1. System informs the HR manager that the details are invalid.
+    * 1d2. System does not add the employee.
+
+      Use case ends.
+
+* 1e. The provided email address or contact number belongs to an existing employee.
+
+    * 1e1. System informs the HR manager that the provided email address or contact number belongs to an existing employee.
+    * 1e2. System does not add the employee.
+
+      Use case ends.
+
+* 2a. The system is unable to save the employee information.
+
+    * 2a1. System informs the HR manager that the employee could not be added.
+    * 2a2. System does not add the employee.
+
+      Use case ends.
+
 **Use case: Delete a person**
 
 **MSS**
