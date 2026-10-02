@@ -5,6 +5,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.commons.util.ToStringBuilder;
@@ -12,7 +13,8 @@ import seedu.address.model.tag.Tag;
 
 /**
  * Represents an Employee in the address book.
- * Guarantees: details are present and not null, field values are validated, immutable.
+ * Guarantees: contact details and tags are present, field values are validated, immutable.
+ * Salary, employee ID, and leave may be unspecified.
  */
 public class Employee {
 
@@ -24,17 +26,31 @@ public class Employee {
     // Data fields
     private final Address address;
     private final Set<Tag> tags = new HashSet<>();
+    private final Salary salary;
+    private final EmployeeId employeeId;
+    private final Leave leave;
 
     /**
-     * Every field must be present and not null.
+     * Constructs an employee with unspecified salary, employee ID, and leave.
      */
     public Employee(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        this(name, phone, email, address, null, null, null, tags);
+    }
+
+    /**
+     * Contact details and tags must be present. Null salary, employee ID, or leave means unspecified.
+     */
+    public Employee(Name name, Phone phone, Email email, Address address,
+            Salary salary, EmployeeId employeeId, Leave leave, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, tags);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
+        this.salary = salary;
+        this.employeeId = employeeId;
+        this.leave = leave;
     }
 
     public Name getName() {
@@ -51,6 +67,18 @@ public class Employee {
 
     public Address getAddress() {
         return address;
+    }
+
+    public Optional<Salary> getSalary() {
+        return Optional.ofNullable(salary);
+    }
+
+    public Optional<EmployeeId> getEmployeeId() {
+        return Optional.ofNullable(employeeId);
+    }
+
+    public Optional<Leave> getLeave() {
+        return Optional.ofNullable(leave);
     }
 
     /**
@@ -93,13 +121,16 @@ public class Employee {
                 && phone.equals(otherEmployee.phone)
                 && email.equals(otherEmployee.email)
                 && address.equals(otherEmployee.address)
-                && tags.equals(otherEmployee.tags);
+                && tags.equals(otherEmployee.tags)
+                && Objects.equals(salary, otherEmployee.salary)
+                && Objects.equals(employeeId, otherEmployee.employeeId)
+                && Objects.equals(leave, otherEmployee.leave);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, tags, salary, employeeId, leave);
     }
 
     @Override
