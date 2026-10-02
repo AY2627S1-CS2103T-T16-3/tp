@@ -11,7 +11,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.tag.Tag;
 
 /**
- * Represents a Employee in the address book.
+ * Represents an Employee in the address book.
  * Guarantees: details are present and not null, field values are validated, immutable.
  */
 public class Employee {
@@ -24,19 +24,24 @@ public class Employee {
     // Data fields
     private final Address address;
     private final Set<Tag> tags = new HashSet<>();
-    private Salary salary;
+    private final EmployeeId employeeId;
+    private final Leave leave;
+    private final Salary salary;
 
     /**
      * Every field must be present and not null.
      */
-    public Employee(Name name, Phone phone, Email email, Address address, Set<Tag> tags, int salary) {
+    public Employee(Name name, Phone phone, Email email, Address address, Salary salary, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, tags, salary);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
-        this.tags.addAll(tags);
         this.salary = salary;
+        this.employeeId = employeeId;
+        this.leave = leave.
+        this.tags.addAll(tags);
+
     }
 
     public Name getName() {
