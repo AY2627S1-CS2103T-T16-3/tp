@@ -31,7 +31,7 @@ public class Employee {
     /**
      * Every field must be present and not null.
      */
-    public Employee(Name name, Phone phone, Email email, Address address, Salary salary, Set<Tag> tags) {
+    public Employee(Name name, Phone phone, Email email, Address address, Salary salary, EmployeeId employeeId, Leave leave, Set<Tag> tags) {
         requireAllNonNull(name, phone, email, address, tags, salary);
         this.name = name;
         this.phone = phone;
@@ -39,7 +39,7 @@ public class Employee {
         this.address = address;
         this.salary = salary;
         this.employeeId = employeeId;
-        this.leave = leave.
+        this.leave = leave;
         this.tags.addAll(tags);
 
     }
