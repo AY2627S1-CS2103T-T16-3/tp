@@ -3,18 +3,16 @@ package seedu.address.model.employee;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 /**
  * Represents an employee's salary.
  * Guarantees: immutable; valid as declared in {@link #isValidSalary(String)}.
  */
 public class Salary {
 
+    public static final int MAX_SALARY = 50000;
     public static final String MESSAGE_CONSTRAINTS =
-            "Salary should be a non-negative number with at most two decimal places";
-    public static final String VALIDATION_REGEX = "[0-9]+(\\.[0-9]{1,2})?";
+            "Salary should be a whole number from 0 to " + MAX_SALARY + " (inclusive)";
+    public static final String VALIDATION_REGEX = "[0-9]+";
 
     public final Integer value;
 
@@ -26,7 +24,6 @@ public class Salary {
     public Salary(String salary) {
         requireNonNull(salary);
         checkArgument(isValidSalary(salary), MESSAGE_CONSTRAINTS);
-        // Normalize the scale so equivalent amounts have equal values and hash codes.
         value = Integer.valueOf(salary);
     }
 
@@ -34,12 +31,20 @@ public class Salary {
      * Returns true if a given string is a valid salary.
      */
     public static boolean isValidSalary(String test) {
-        return test.matches(VALIDATION_REGEX);
+        if (!test.matches(VALIDATION_REGEX)) {
+            return false;
+        }
+
+        try {
+            return Integer.parseInt(test) <= MAX_SALARY;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     @Override
     public String toString() {
-        return value.toPlainString();
+        return value.toString();
     }
 
     @Override

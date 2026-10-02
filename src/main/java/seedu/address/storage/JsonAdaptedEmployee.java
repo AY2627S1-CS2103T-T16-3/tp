@@ -13,6 +13,8 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
+import seedu.address.model.employee.Leave;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -29,6 +31,9 @@ class JsonAdaptedEmployee {
     private final String phone;
     private final String email;
     private final String address;
+    private final String salary;
+    private final String employeeId;
+    private final String leave;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
@@ -37,11 +42,16 @@ class JsonAdaptedEmployee {
     @JsonCreator
     public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
+            @JsonProperty("salary") String salary, @JsonProperty("employeeId") String employeeId,
+            @JsonProperty("leave") String leave,
             @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.salary = salary;
+        this.employeeId = employeeId;
+        this.leave = leave;
         if (tags != null) {
             this.tags.addAll(tags);
         }
@@ -55,6 +65,9 @@ class JsonAdaptedEmployee {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        salary = source.getSalary().toString();
+        employeeId = source.getEmployeeId().toString();
+        leave = source.getLeave().toString();
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -104,7 +117,34 @@ class JsonAdaptedEmployee {
         final Address modelAddress = new Address(address);
 
         final Set<Tag> modelTags = new HashSet<>(employeeTags);
-        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags, new Salary("1"));
+
+        if (salary == null) {
+            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Salary.class.getSimpleName()));
+        }
+        if (!Salary.isValidSalary(salary)) {
+            throw new IllegalValueException(Salary.MESSAGE_CONSTRAINTS);
+        }
+        final Salary modelSalary = new Salary(salary);
+
+        if (employeeId == null) {
+            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT,
+                    EmployeeId.class.getSimpleName()));
+        }
+        if (!EmployeeId.isValidEmployeeId(employeeId)) {
+            throw new IllegalValueException(EmployeeId.MESSAGE_CONSTRAINTS);
+        }
+        final EmployeeId modelEmployeeId = new EmployeeId(employeeId);
+
+        if (leave == null) {
+            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Leave.class.getSimpleName()));
+        }
+        if (!Leave.isValidLeave(leave)) {
+            throw new IllegalValueException(Leave.MESSAGE_CONSTRAINTS);
+        }
+        final Leave modelLeave = new Leave(leave);
+
+        return new Employee(modelName, modelPhone, modelEmail, modelAddress,
+                modelSalary, modelEmployeeId, modelLeave, modelTags);
     }
 
 }
