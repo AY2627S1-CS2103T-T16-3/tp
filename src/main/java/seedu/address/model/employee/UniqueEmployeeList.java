@@ -62,7 +62,8 @@ public class UniqueEmployeeList implements Iterable<Employee> {
             throw new EmployeeNotFoundException();
         }
 
-        if (!target.isSameEmployee(editedEmployee) && contains(editedEmployee)) {
+        if (internalList.stream().anyMatch(employee ->
+                !employee.equals(target) && employee.isSameEmployee(editedEmployee))) {
             throw new DuplicateEmployeeException();
         }
 

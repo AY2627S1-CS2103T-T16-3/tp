@@ -155,6 +155,77 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Employee ID assignment
+
+`EmployeeId` in `seedu.address.model.employee` is the shared value type for employee identifiers.
+It implements the ID format specified in the team's
+[feature specification](https://docs.google.com/document/d/1c1VmMl1ZykY1uXZyc5bvR_FrrI66UfDzaTrHpbgcH2E/edit):
+an integer from **1 to 999999**, using ASCII digits with **no leading zeros**.
+For example, `1`, `1024`, and `999999` are valid; `0`, `001024`, `1000000`, `+1`, and `1.0` are invalid.
+
+#### Using the shared type and parser
+
+```java
+// Model/storage boundary: require an already canonical ID.
+EmployeeId employeeId = new EmployeeId("1024");
+String storedValue = employeeId.value; // "1024"
+
+// Command parser boundary: trim surrounding whitespace and report invalid input as ParseException.
+EmployeeId parsedId = ParserUtil.parseEmployeeId(" 1024 ");
+boolean sameId = employeeId.equals(parsedId); // true
+```
+
+The constructor and `isValidEmployeeId` reject surrounding whitespace; `ParserUtil.parseEmployeeId`
+trims it, following the existing parser conventions. Internal whitespace remains invalid.
+The constructor throws `IllegalArgumentException` for invalid text; the parser throws `ParseException`
+with `EmployeeId.MESSAGE_CONSTRAINTS`. Null is a programming error and raises `NullPointerException`.
+Validation checks the text before any numeric conversion, including for inputs too large for an `int`.
+
+Command parsers should pass the extracted ID value to `ParserUtil.parseEmployeeId` after checking
+required and repeated prefixes. The shared parser does not consume a prefix: the specification currently
+uses `i/` for show/delete and `id/` for leave. Each command owns its prefix handling.
+Use `equals` and `hashCode` to compare IDs or use them as map keys; `toString()` and `value` return
+the canonical digits for messages and storage.
+
+#### Assignment, editing, and storage
+
+The five-argument `Employee` constructor creates an immutable draft without an ID.
+`AddressBook.addEmployee` assigns the smallest unused ID from `1` to `999999` and returns the stored
+employee. `Model.addEmployee` returns that same value, which `AddCommand` uses in its success message.
+The original draft is unchanged. For example, after constructing a draft:
+
+```java
+Employee storedEmployee = model.addEmployee(draftEmployee);
+EmployeeId assignedId = storedEmployee.getEmployeeId().orElseThrow();
+```
+
+Allocation checks the entire address book, independent of the filtered list. IDs are unique among
+currently stored employees; a deleted ID may be reused. Failed additions do not consume IDs.
+`EmployeeIdExhaustedException` is raised if all IDs are occupied, and `AddCommand` reports it as a
+command failure. Allocation derives its state from stored IDs, so no static counter or extra counter
+file is needed. Existing name-based duplicate rejection remains in effect, and an identical assigned
+ID also counts as a duplicate even if the employee names differ.
+
+`Employee.withEmployeeId` creates a copy for assignment/import. The six-argument constructor accepts
+an existing ID for storage conversion. `getEmployeeId()` is empty only for drafts or legacy records
+before insertion; every employee in `AddressBook` has an ID. Editing preserves the original ID and
+`AddressBook.setEmployee` rejects attempts to change it. Employee equality and hashing include the ID.
+
+JSON keeps its existing `persons` list key and adds an `employeeId` string to each record.
+Save/load preserves assigned IDs. Legacy records with missing/null IDs receive IDs during loading;
+all explicit IDs are reserved first so a legacy record cannot steal an ID from a later record.
+Record order is preserved. Invalid and duplicate stored IDs cause a loading error without rewriting
+the file. Migrated IDs are persisted on the next successful save.
+
+A valid ID does not prove that an employee exists. Teammates implementing ID-based commands should
+parse the value with `ParserUtil.parseEmployeeId`, then search the full collection returned by
+`model.getAddressBook().getEmployeeList()` and handle a missing record separately. Existing edit/delete
+commands still use displayed list indexes; an employee ID must not be passed to `Index.fromOneBased`
+as if it were a position. The `add` command generates its ID and does not take an ID parameter.
+
+`EmployeeIdTest` and `ParserUtilTest` cover validation; `EmployeeIdAssignmentTest` covers allocation,
+duplicates, filtering, copying, and edits; `EmployeeIdStorageTest` covers restart behavior and migration.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation

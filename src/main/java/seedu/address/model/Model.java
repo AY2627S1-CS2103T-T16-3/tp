@@ -50,8 +50,10 @@ public interface Model {
     /**
      * Adds the given employee.
      * {@code employee} must not already exist in the address book.
+     * Returns the stored employee, assigning a unique ID if it did not have one.
+     * Callers should use the returned value because the draft remains unchanged.
      */
-    void addEmployee(Employee employee);
+    Employee addEmployee(Employee employee);
 
     /**
      * Replaces the given employee {@code target} with {@code editedEmployee}.

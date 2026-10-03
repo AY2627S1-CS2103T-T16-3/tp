@@ -79,6 +79,12 @@ Adds an employee to the address book.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​`
 
+Each added employee automatically receives a unique employee ID between `1` and `999999`.
+The success message includes this ID. IDs are saved and preserved when employees are edited;
+the smallest unused ID is assigned, so an ID may be reused after its employee is deleted.
+You do not supply an ID to `add`. Employee IDs are separate from displayed list indexes:
+`edit` and `delete` still take the index shown in the current list.
+
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
 </div>

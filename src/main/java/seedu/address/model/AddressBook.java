@@ -2,12 +2,18 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.UniqueEmployeeList;
+import seedu.address.model.employee.exceptions.DuplicateEmployeeException;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 
 /**
  * Wraps all data at the address-book level.
@@ -34,7 +40,28 @@ public class AddressBook implements ReadOnlyAddressBook {
      * {@code employees} must not contain duplicate employees.
      */
     public void setEmployees(List<Employee> employees) {
-        this.employees.setEmployees(employees);
+        requireNonNull(employees);
+        Set<EmployeeId> usedIds = new HashSet<>();
+        // Reserve all imported IDs before allocating any, even if an ID-less record appears first.
+        for (Employee employee : employees) {
+            employee.getEmployeeId().ifPresent(id -> {
+                if (!usedIds.add(id)) {
+                    throw new DuplicateEmployeeException();
+                }
+            });
+        }
+        List<Employee> assignedEmployees = new ArrayList<>();
+        for (Employee employee : employees) {
+            Employee assigned = employee;
+            if (employee.getEmployeeId().isEmpty()) {
+                EmployeeId id = findAvailableId(usedIds);
+                usedIds.add(id);
+                assigned = employee.withEmployeeId(id);
+            }
+            assignedEmployees.add(assigned);
+        }
+        // UniqueEmployeeList validates the complete replacement before changing the live list.
+        this.employees.setEmployees(assignedEmployees);
     }
 
     /**
@@ -59,9 +86,31 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Adds an employee to the address book.
      * The employee must not already exist in the address book.
+     * Returns the stored employee with its assigned ID; the input object is unchanged.
      */
-    public void addEmployee(Employee p) {
-        employees.add(p);
+    public Employee addEmployee(Employee employee) {
+        requireNonNull(employee);
+        Employee assigned = employee;
+        if (employee.getEmployeeId().isEmpty()) {
+            Set<EmployeeId> usedIds = new HashSet<>();
+            employees.forEach(existing -> usedIds.add(existing.getEmployeeId().orElseThrow()));
+            assigned = employee.withEmployeeId(findAvailableId(usedIds));
+        }
+        employees.add(assigned);
+        return assigned;
+    }
+
+    /**
+     * Returns the smallest unused ID. Deleted IDs can be reused; list filtering has no effect.
+     */
+    private static EmployeeId findAvailableId(Set<EmployeeId> usedIds) {
+        for (int candidate = 1; candidate <= EmployeeId.MAX_VALUE; candidate++) {
+            EmployeeId id = new EmployeeId(Integer.toString(candidate));
+            if (!usedIds.contains(id)) {
+                return id;
+            }
+        }
+        throw new EmployeeIdExhaustedException();
     }
 
     /**
@@ -71,9 +120,15 @@ public class AddressBook implements ReadOnlyAddressBook {
      * the address book.
      */
     public void setEmployee(Employee target, Employee editedEmployee) {
+        requireNonNull(target);
         requireNonNull(editedEmployee);
 
-        employees.setEmployee(target, editedEmployee);
+        EmployeeId targetId = target.getEmployeeId().orElseThrow();
+        if (editedEmployee.getEmployeeId().isPresent()
+                && !editedEmployee.getEmployeeId().get().equals(targetId)) {
+            throw new IllegalArgumentException("An employee's ID cannot be changed.");
+        }
+        employees.setEmployee(target, editedEmployee.withEmployeeId(targetId));
     }
 
     /**

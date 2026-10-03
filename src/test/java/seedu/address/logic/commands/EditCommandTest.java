@@ -37,7 +37,7 @@ public class EditCommandTest {
 
     @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
-        Employee editedEmployee = new EmployeeBuilder().build();
+        Employee editedEmployee = new EmployeeBuilder().withEmployeeId("1").build();
         EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder(editedEmployee).build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor);
 

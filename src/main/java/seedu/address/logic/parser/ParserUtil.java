@@ -11,6 +11,7 @@ import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.tag.Tag;
@@ -33,6 +34,22 @@ public class ParserUtil {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+    }
+
+    /**
+     * Parses an employee ID after trimming leading and trailing whitespace.
+     * This validates format only; callers must look up the ID in the model separately.
+     *
+     * @throws NullPointerException if {@code employeeId} is null.
+     * @throws ParseException if the trimmed ID is outside 1 to 999999 or has leading zeros.
+     */
+    public static EmployeeId parseEmployeeId(String employeeId) throws ParseException {
+        requireNonNull(employeeId);
+        String trimmedId = employeeId.trim();
+        if (!EmployeeId.isValidEmployeeId(trimmedId)) {
+            throw new ParseException(EmployeeId.MESSAGE_CONSTRAINTS);
+        }
+        return new EmployeeId(trimmedId);
     }
 
     /**

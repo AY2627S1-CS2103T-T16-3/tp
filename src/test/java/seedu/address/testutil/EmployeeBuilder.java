@@ -6,6 +6,7 @@ import java.util.Set;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.tag.Tag;
@@ -26,6 +27,7 @@ public class EmployeeBuilder {
     private Email email;
     private Address address;
     private Set<Tag> tags;
+    private EmployeeId employeeId;
 
     /**
      * Creates a {@code EmployeeBuilder} with the default details.
@@ -47,6 +49,15 @@ public class EmployeeBuilder {
         email = employeeToCopy.getEmail();
         address = employeeToCopy.getAddress();
         tags = new HashSet<>(employeeToCopy.getTags());
+        employeeId = employeeToCopy.getEmployeeId().orElse(null);
+    }
+
+    /**
+     * Sets the ID of an existing employee, or clears it to create a draft.
+     */
+    public EmployeeBuilder withEmployeeId(String id) {
+        employeeId = id == null ? null : new EmployeeId(id);
+        return this;
     }
 
     /**
@@ -90,7 +101,7 @@ public class EmployeeBuilder {
     }
 
     public Employee build() {
-        return new Employee(name, phone, email, address, tags);
+        return new Employee(name, phone, email, address, tags, employeeId);
     }
 
 }

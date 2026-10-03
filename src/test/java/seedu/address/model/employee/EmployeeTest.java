@@ -37,8 +37,12 @@ public class EmployeeTest {
                 .withAddress(VALID_ADDRESS_BOB).withTags(VALID_TAG_HUSBAND).build();
         assertTrue(ALICE.isSameEmployee(editedAlice));
 
-        // different name, all other attributes same -> returns false
+        // same assigned ID remains the same employee after a name change
         editedAlice = new EmployeeBuilder(ALICE).withName(VALID_NAME_BOB).build();
+        assertTrue(ALICE.isSameEmployee(editedAlice));
+
+        // different name without an assigned ID -> returns false
+        editedAlice = new EmployeeBuilder(ALICE).withName(VALID_NAME_BOB).withEmployeeId(null).build();
         assertFalse(ALICE.isSameEmployee(editedAlice));
 
         // name differs in case, all other attributes same -> returns false
@@ -49,6 +53,22 @@ public class EmployeeTest {
         String nameWithTrailingSpaces = VALID_NAME_BOB + " ";
         editedBob = new EmployeeBuilder(BOB).withName(nameWithTrailingSpaces).build();
         assertFalse(BOB.isSameEmployee(editedBob));
+    }
+
+    @Test
+    public void employeeId_copyAndEquality() {
+        Employee copy = ALICE.withEmployeeId(new EmployeeId("1"));
+        assertTrue(ALICE.equals(copy));
+        assertTrue(ALICE.hashCode() == copy.hashCode());
+        Employee reassigned = ALICE.withEmployeeId(new EmployeeId("2"));
+        assertFalse(ALICE.equals(reassigned));
+        assertTrue(ALICE.getEmployeeId().orElseThrow().equals(new EmployeeId("1")));
+        assertTrue(reassigned.getName().equals(ALICE.getName()));
+        assertTrue(reassigned.getPhone().equals(ALICE.getPhone()));
+        assertTrue(reassigned.getEmail().equals(ALICE.getEmail()));
+        assertTrue(reassigned.getAddress().equals(ALICE.getAddress()));
+        assertTrue(reassigned.getTags().equals(ALICE.getTags()));
+        assertThrows(NullPointerException.class, () -> ALICE.withEmployeeId(null));
     }
 
     @Test
