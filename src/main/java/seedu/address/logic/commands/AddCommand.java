@@ -12,6 +12,7 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 
 /**
  * Adds an employee to the address book.
@@ -56,8 +57,12 @@ public class AddCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_EMPLOYEE);
         }
 
-        model.addEmployee(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)));
+        try {
+            Employee assigned = model.addEmployee(toAdd);
+            return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(assigned)));
+        } catch (EmployeeIdExhaustedException e) {
+            throw new CommandException(e.getMessage());
+        }
     }
 
     @Override

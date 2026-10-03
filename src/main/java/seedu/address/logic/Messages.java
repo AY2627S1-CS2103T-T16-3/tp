@@ -45,6 +45,7 @@ public class Messages {
                 .append(employee.getAddress())
                 .append("; Tags: ");
         employee.getTags().forEach(builder::append);
+        employee.getEmployeeId().ifPresent(id -> builder.append("; Employee ID: ").append(id));
         return builder.toString();
     }
 

@@ -79,7 +79,8 @@ public class EditCommand extends Command {
         Employee employeeToEdit = lastShownList.get(index.getZeroBased());
         Employee editedEmployee = createEditedEmployee(employeeToEdit, editEmployeeDescriptor);
 
-        if (!employeeToEdit.isSameEmployee(editedEmployee) && model.hasEmployee(editedEmployee)) {
+        if (model.getAddressBook().getEmployeeList().stream()
+                .anyMatch(employee -> !employee.equals(employeeToEdit) && employee.isSameEmployee(editedEmployee))) {
             throw new CommandException(MESSAGE_DUPLICATE_EMPLOYEE);
         }
 
@@ -102,7 +103,8 @@ public class EditCommand extends Command {
         Address updatedAddress = editEmployeeDescriptor.getAddress().orElse(employeeToEdit.getAddress());
         Set<Tag> updatedTags = editEmployeeDescriptor.getTags().orElse(employeeToEdit.getTags());
 
-        return new Employee(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags);
+        return new Employee(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags,
+                employeeToEdit.getEmployeeId().orElse(null));
     }
 
     @Override

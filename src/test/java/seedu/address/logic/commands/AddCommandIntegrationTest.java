@@ -31,10 +31,10 @@ public class AddCommandIntegrationTest {
         Employee validEmployee = new EmployeeBuilder().build();
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.addEmployee(validEmployee);
+        Employee assignedEmployee = expectedModel.addEmployee(validEmployee);
 
         assertCommandSuccess(new AddCommand(validEmployee), model,
-                String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validEmployee)),
+                String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(assignedEmployee)),
                 expectedModel);
     }
 

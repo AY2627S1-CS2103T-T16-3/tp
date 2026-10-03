@@ -13,6 +13,7 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.tag.Tag;
@@ -28,19 +29,28 @@ class JsonAdaptedEmployee {
     private final String phone;
     private final String email;
     private final String address;
+    private final String employeeId;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedEmployee} with the given employee details.
      */
+    public JsonAdaptedEmployee(String name, String phone, String email, String address, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, tags, null);
+    }
+
+    /**
+     * Reads existing IDs; missing IDs in legacy files are assigned by the address book after loading.
+     */
     @JsonCreator
     public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags, @JsonProperty("employeeId") String employeeId) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.employeeId = employeeId;
         if (tags != null) {
             this.tags.addAll(tags);
         }
@@ -54,6 +64,7 @@ class JsonAdaptedEmployee {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        employeeId = source.getEmployeeId().map(id -> id.value).orElse(null);
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -103,7 +114,11 @@ class JsonAdaptedEmployee {
         final Address modelAddress = new Address(address);
 
         final Set<Tag> modelTags = new HashSet<>(employeeTags);
-        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags);
+        if (employeeId != null && !EmployeeId.isValidEmployeeId(employeeId)) {
+            throw new IllegalValueException(EmployeeId.MESSAGE_CONSTRAINTS);
+        }
+        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags,
+                employeeId == null ? null : new EmployeeId(employeeId));
     }
 
 }

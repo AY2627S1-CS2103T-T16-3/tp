@@ -22,6 +22,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class AddCommandTest {
@@ -51,6 +52,19 @@ public class AddCommandTest {
 
         assertThrows(CommandException.class,
                 AddCommand.MESSAGE_DUPLICATE_EMPLOYEE, () -> addCommand.execute(modelStub));
+    }
+
+    @Test
+    public void execute_idSpaceExhausted_reportsCommandException() {
+        Model model = new ModelStubAcceptingEmployeeAdded() {
+            @Override
+            public Employee addEmployee(Employee employee) {
+                throw new EmployeeIdExhaustedException();
+            }
+        };
+        AddCommand command = new AddCommand(new EmployeeBuilder().build());
+        assertThrows(CommandException.class, new EmployeeIdExhaustedException().getMessage(), () ->
+                command.execute(model));
     }
 
     @Test
@@ -104,7 +118,7 @@ public class AddCommandTest {
         }
 
         @Override
-        public void addEmployee(Employee employee) {
+        public Employee addEmployee(Employee employee) {
             throw new AssertionError("This method should not be called.");
         }
 
@@ -175,9 +189,10 @@ public class AddCommandTest {
         }
 
         @Override
-        public void addEmployee(Employee employee) {
+        public Employee addEmployee(Employee employee) {
             requireNonNull(employee);
             employeesAdded.add(employee);
+            return employee;
         }
 
         @Override
