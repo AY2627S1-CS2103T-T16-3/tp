@@ -115,6 +115,14 @@ How the parsing works:
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
+
+On the tutorial branch, `Employee` includes an immutable, non-null `Remark` field.
+Its constructor takes `(name, phone, email, address, tags, remark)`. Remarks participate in
+equality and hashing; employee identity still depends on the name. New and sample employees
+start with an empty remark, and editing other fields preserves the existing remark.
+`EmployeeBuilder.withRemark(...)` supplies remarks for tests. JSON storage saves and restores the
+`remark` field, which must be present but may be empty. `RemarkCommand` replaces the selected
+employee with a copy containing the requested remark and restores the full employee list.
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
 <img src="images/ModelClassDiagram.png" width="450" />

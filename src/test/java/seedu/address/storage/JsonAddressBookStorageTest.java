@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalEmployees.IDA;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.employee.Employee;
+import seedu.address.testutil.EmployeeBuilder;
 
 public class JsonAddressBookStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonAddressBookStorageTest");
@@ -58,6 +61,28 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAddressBook_invalidAndValidEmployeeAddressBook_throwDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("invalidAndValidEmployeeAddressBook.json"));
+    }
+
+    @Test
+    public void readAndSaveAddressBook_nonEmptyRemark_preservesRemark() throws Exception {
+        Path filePath = testFolder.resolve("RemarkAddressBook.json");
+        Employee employee = new EmployeeBuilder(ALICE).withRemark("Likes to swim").build();
+        AddressBook original = new AddressBook();
+        original.addEmployee(employee);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+        storage.saveAddressBook(original);
+        assertEquals(original, new AddressBook(storage.readAddressBook().orElseThrow()));
+    }
+
+    @Test
+    public void readAddressBook_missingRemark_throwsDataLoadingException() throws Exception {
+        Path filePath = testFolder.resolve("MissingRemarkAddressBook.json");
+        Files.writeString(filePath, """
+                {"persons": [{"name": "Alice Pauline", "phone": "94351253",
+                "email": "alice@example.com", "address": "123 Jurong West", "tags": []}]}
+                """);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+        assertThrows(DataLoadingException.class, storage::readAddressBook);
     }
 
     @Test

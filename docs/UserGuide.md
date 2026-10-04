@@ -42,6 +42,13 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 ## Features
 
+### Editing an employee's remark: `remark`
+
+`remark INDEX r/REMARK` replaces the remark of the employee at the given positive index in the displayed list.
+For example, `remark 1 r/Likes to swim` sets the first displayed employee's remark to `Likes to swim`.
+An empty or omitted remark removes the existing remark. After success, the app displays all employees.
+Remarks are saved with employee data and restored when the app is restarted.
+
 <div markdown="block" class="alert alert-info">
 
 **:information_source: Notes about the command format:**<br>

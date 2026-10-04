@@ -91,9 +91,26 @@ public class EmployeeTest {
     }
 
     @Test
+    public void constructor_nullRemark_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new Employee(ALICE.getName(), ALICE.getPhone(),
+                ALICE.getEmail(), ALICE.getAddress(), ALICE.getTags(), null));
+    }
+
+    @Test
+    public void equals_differentRemark_returnsFalse() {
+        Employee employee = new EmployeeBuilder(ALICE).withRemark("Likes to swim").build();
+        assertFalse(ALICE.equals(employee));
+        assertTrue(ALICE.isSameEmployee(employee));
+        Employee copy = new EmployeeBuilder(employee).build();
+        assertEquals(employee, copy);
+        assertEquals(employee.hashCode(), copy.hashCode());
+    }
+
+    @Test
     public void toStringMethod() {
         String expected = Employee.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags() + "}";
+                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags()
+                + ", remark=" + ALICE.getRemark() + "}";
         assertEquals(expected, ALICE.toString());
     }
 }

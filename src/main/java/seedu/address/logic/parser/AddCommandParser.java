@@ -17,6 +17,7 @@ import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Remark;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -45,7 +46,7 @@ public class AddCommandParser implements Parser<AddCommand> {
         Address address = ParserUtil.parseAddress(argMultimap.getValue(PREFIX_ADDRESS).get());
         Set<Tag> tagList = ParserUtil.parseTags(argMultimap.getAllValues(PREFIX_TAG));
 
-        Employee employee = new Employee(name, phone, email, address, tagList);
+        Employee employee = new Employee(name, phone, email, address, tagList, new Remark(""));
 
         return new AddCommand(employee);
     }
