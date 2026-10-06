@@ -15,6 +15,7 @@ import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Salary;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -29,6 +30,7 @@ class JsonAdaptedEmployee {
     private final String email;
     private final String address;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+    private final String salary;
 
     /**
      * Constructs a {@code JsonAdaptedEmployee} with the given employee details.
@@ -36,7 +38,7 @@ class JsonAdaptedEmployee {
     @JsonCreator
     public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags, String salary) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -44,6 +46,7 @@ class JsonAdaptedEmployee {
         if (tags != null) {
             this.tags.addAll(tags);
         }
+        this.salary = salary;
     }
 
     /**
@@ -103,7 +106,9 @@ class JsonAdaptedEmployee {
         final Address modelAddress = new Address(address);
 
         final Set<Tag> modelTags = new HashSet<>(employeeTags);
-        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags);
+
+        final Salary modelSalary = new Salary(salary);
+        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags, modelSalary);
     }
 
 }

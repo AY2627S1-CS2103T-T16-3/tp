@@ -24,17 +24,19 @@ public class Employee {
     // Data fields
     private final Address address;
     private final Set<Tag> tags = new HashSet<>();
+    private final Salary salary;
 
     /**
      * Every field must be present and not null.
      */
-    public Employee(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+    public Employee(Name name, Phone phone, Email email, Address address, Set<Tag> tags, Salary salary) {
+        requireAllNonNull(name, phone, email, address, tags, salary);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
+        this.salary = salary;
     }
 
     public Name getName() {
@@ -59,6 +61,13 @@ public class Employee {
      */
     public Set<Tag> getTags() {
         return Collections.unmodifiableSet(tags);
+    }
+
+    /**
+     * Returns the employee's salary.
+     */
+    public Salary getSalary() {
+        return salary;
     }
 
     /**
