@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
+import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Task;
 
 public class JsonAdaptedEmployeeTest {
     private static final String INVALID_NAME = "R@chel";
@@ -36,6 +38,48 @@ public class JsonAdaptedEmployeeTest {
     public void toModelType_validEmployeeDetails_returnsEmployee() throws Exception {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(BENSON);
         assertEquals(BENSON, employee.toModelType());
+    }
+
+    @Test
+    public void toModelType_validTasks_returnsEmployeeWithTasks() throws Exception {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report"),
+                        new JsonAdaptedTask("Submit report")));
+
+        assertEquals(List.of(new Task("Prepare report"), new Task("Submit report")), employee.toModelType().getTasks());
+    }
+
+    @Test
+    public void constructor_employeeWithTasks_roundTripsTasks() throws Exception {
+        Employee employeeWithTasks = BENSON.addTask(new Task("Prepare report"));
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(employeeWithTasks);
+
+        assertEquals(employeeWithTasks, employee.toModelType());
+    }
+
+    @Test
+    public void toModelType_nullTasks_returnsEmployeeWithEmptyTasks() throws Exception {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_TAGS, null);
+
+        assertEquals(List.of(), employee.toModelType().getTasks());
+    }
+
+    @Test
+    public void toModelType_duplicateTasks_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report"),
+                        new JsonAdaptedTask(" prepare  REPORT ")));
+
+        assertThrows(IllegalValueException.class, employee::toModelType);
+    }
+
+    @Test
+    public void toModelType_invalidTask_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_TAGS, List.of(new JsonAdaptedTask(" ")));
+
+        assertThrows(IllegalValueException.class, employee::toModelType);
     }
 
     @Test
