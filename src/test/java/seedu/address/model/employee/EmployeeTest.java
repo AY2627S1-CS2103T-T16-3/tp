@@ -59,6 +59,13 @@ public class EmployeeTest {
     }
 
     @Test
+    public void deleteTask_negativeIndex_throwsIndexOutOfBoundsException() {
+        Employee employee = new EmployeeBuilder().build();
+
+        assertThrows(IndexOutOfBoundsException.class, () -> employee.deleteTask(-1));
+    }
+
+    @Test
     public void getTasks_modifyReturnedList_throwsUnsupportedOperationException() {
         Employee employee = new EmployeeBuilder().build();
 
