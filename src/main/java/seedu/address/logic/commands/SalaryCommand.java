@@ -18,7 +18,7 @@ import seedu.address.model.employee.Salary;
 public class SalaryCommand extends Command {
 
     public static final String COMMAND_WORD = "salary";
-    public static final String MESSAGE_SUCCESS = "Updated salary for employee: %1$s";
+    public static final String MESSAGE_SUCCESS = "Updated salary to %1$s for employee: %2$s";
 
     public static final String MESSAGE_ARGUMENTS = "Index: %1$d, Salary: %2$s";
     public static final String MESSAGE_USAGE = COMMAND_WORD
@@ -67,7 +67,7 @@ public class SalaryCommand extends Command {
      * Returns a success message identifying the employee whose salary was updated.
      */
     private String generateSuccessMessage(Employee employeeToEdit) {
-        return String.format(MESSAGE_SUCCESS, Messages.format(employeeToEdit));
+        return String.format(MESSAGE_SUCCESS, salary, Messages.format(employeeToEdit));
     }
 
     @Override
