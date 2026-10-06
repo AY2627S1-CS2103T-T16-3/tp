@@ -102,13 +102,14 @@ public class Employee {
                 && phone.equals(otherEmployee.phone)
                 && email.equals(otherEmployee.email)
                 && address.equals(otherEmployee.address)
-                && tags.equals(otherEmployee.tags);
+                && tags.equals(otherEmployee.tags)
+                && salary.equals(otherEmployee.salary);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, tags, salary);
     }
 
     @Override
@@ -119,6 +120,7 @@ public class Employee {
                 .add("email", email)
                 .add("address", address)
                 .add("tags", tags)
+                .add("salary", salary)
                 .toString();
     }
 

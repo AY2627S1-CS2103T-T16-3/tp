@@ -17,6 +17,7 @@ import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.testutil.EmployeeBuilder;
 
 public class SalaryCommandTest {
 
@@ -48,4 +49,19 @@ public class SalaryCommandTest {
 
         assertCommandFailure(command, model, Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_INDEX);
     }
+    @Test
+    public void execute_filteredList_updatesDisplayedEmployee() throws Exception {
+        Model model = new ModelManager();
+        Employee alice = new EmployeeBuilder().withName("Alice").withSalary("1000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob").withSalary("2000").build();
+        model.addEmployee(alice);
+        model.addEmployee(bob);
+        model.updateFilteredEmployeeList(employee -> employee.getName().equals(bob.getName()));
+
+        new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("5000")).execute(model);
+
+        assertEquals(alice.getSalary(), model.getAddressBook().getEmployeeList().get(0).getSalary());
+        assertEquals(new Salary("5000"), model.getAddressBook().getEmployeeList().get(1).getSalary());
+    }
+
 }

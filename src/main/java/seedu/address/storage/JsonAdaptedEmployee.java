@@ -38,7 +38,7 @@ class JsonAdaptedEmployee {
     @JsonCreator
     public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags, String salary) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags, @JsonProperty("salary") String salary) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -57,6 +57,7 @@ class JsonAdaptedEmployee {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        salary = source.getSalary().salary;
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -107,7 +108,12 @@ class JsonAdaptedEmployee {
 
         final Set<Tag> modelTags = new HashSet<>(employeeTags);
 
-        final Salary modelSalary = new Salary(salary);
+        // Older save files have no salary field.
+        String salaryValue = salary == null ? "0" : salary;
+        if (!Salary.isValidSalary(salaryValue)) {
+            throw new IllegalValueException(Salary.MESSAGE_CONSTRAINTS);
+        }
+        final Salary modelSalary = new Salary(salaryValue);
         return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags, modelSalary);
     }
 

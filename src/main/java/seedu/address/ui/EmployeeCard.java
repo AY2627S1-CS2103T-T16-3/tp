@@ -57,6 +57,6 @@ public class EmployeeCard extends UiPart<Region> {
         employee.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
-        salary.setText(employee.getSalary().salary);
+        salary.setText("$" + employee.getSalary().salary);
     }
 }

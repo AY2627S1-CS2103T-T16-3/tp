@@ -28,6 +28,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SALARY;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalEmployees.AMY;
@@ -42,11 +43,40 @@ import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Salary;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class AddCommandParserTest {
     private AddCommandParser parser = new AddCommandParser();
+
+    @Test
+    public void parse_salaryPresent_success() {
+        Employee expected = new EmployeeBuilder(BOB).withSalary("5000").build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
+                + ADDRESS_DESC_BOB + TAG_DESC_FRIEND + TAG_DESC_HUSBAND + " s/5000", new AddCommand(expected));
+    }
+
+    @Test
+    public void parse_salaryAbsent_defaultsToZero() {
+        Employee expected = new EmployeeBuilder(BOB).withTags().withSalary("0").build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
+                new AddCommand(expected));
+    }
+
+    @Test
+    public void parse_invalidSalary_failure() {
+        String details = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB;
+        for (String salary : new String[] {"", "abc", "50001"}) {
+            assertParseFailure(parser, details + " s/" + salary, Salary.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
+    public void parse_duplicateSalary_failure() {
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + " s/5000 s/6000", Messages.getErrorMessageForDuplicatePrefixes(PREFIX_SALARY));
+    }
 
     @Test
     public void parse_allFieldsPresent_success() {
