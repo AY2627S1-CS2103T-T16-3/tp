@@ -15,6 +15,7 @@ import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -29,6 +30,7 @@ class JsonAdaptedEmployee {
     private final String email;
     private final String address;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+    private final List<JsonAdaptedTask> tasks = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedEmployee} with the given employee details.
@@ -36,7 +38,7 @@ class JsonAdaptedEmployee {
     @JsonCreator
     public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags, @JsonProperty("tasks") List<JsonAdaptedTask> tasks) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -44,6 +46,17 @@ class JsonAdaptedEmployee {
         if (tags != null) {
             this.tags.addAll(tags);
         }
+        if (tasks != null) {
+            this.tasks.addAll(tasks);
+        }
+    }
+
+    /**
+     * Constructs a JSON-adapted employee without tasks for backwards-compatible callers.
+     */
+    public JsonAdaptedEmployee(String name, String phone, String email, String address,
+            List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, tags, null);
     }
 
     /**
@@ -57,6 +70,9 @@ class JsonAdaptedEmployee {
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
+        tasks.addAll(source.getTasks().stream()
+                .map(JsonAdaptedTask::new)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -65,11 +81,6 @@ class JsonAdaptedEmployee {
      * @throws IllegalValueException if there were any data constraints violated in the adapted employee.
      */
     public Employee toModelType() throws IllegalValueException {
-        final List<Tag> employeeTags = new ArrayList<>();
-        for (JsonAdaptedTag tag : tags) {
-            employeeTags.add(tag.toModelType());
-        }
-
         if (name == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Name.class.getSimpleName()));
         }
@@ -102,8 +113,21 @@ class JsonAdaptedEmployee {
         }
         final Address modelAddress = new Address(address);
 
+        final List<Tag> employeeTags = new ArrayList<>();
+        for (JsonAdaptedTag tag : tags) {
+            employeeTags.add(tag.toModelType());
+        }
         final Set<Tag> modelTags = new HashSet<>(employeeTags);
-        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags);
+
+        final List<Task> modelTasks = new ArrayList<>();
+        for (JsonAdaptedTask task : tasks) {
+            Task modelTask = task.toModelType();
+            if (modelTasks.contains(modelTask)) {
+                throw new IllegalValueException("Duplicate task details are not allowed.");
+            }
+            modelTasks.add(modelTask);
+        }
+        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags, modelTasks);
     }
 
 }
