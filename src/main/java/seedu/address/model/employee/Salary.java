@@ -8,9 +8,12 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  * Guarantees: immutable; valid as declared in {@link #isValidSalary(String)}.
  */
 public class Salary {
+    public static final int MAX_SALARY = 50000;
     public static final String MESSAGE_CONSTRAINTS =
-            "Salary must contain only digits and represent an amount from 0 to 50000";
+            "Salary must contain only digits and represent an amount from 0 to " + MAX_SALARY;
     public static final String VALIDATION_REGEX = "[0-9]+";
+    private static final int MAX_SALARY_DIGITS = Integer.toString(MAX_SALARY).length();
+
     public final String salary;
 
     /**
@@ -33,7 +36,7 @@ public class Salary {
             return false;
         }
         String normalized = removeLeadingZeros(test);
-        return normalized.length() <= 5 && Integer.parseInt(normalized) <= 50000;
+        return normalized.length() <= MAX_SALARY_DIGITS && Integer.parseInt(normalized) <= MAX_SALARY;
     }
 
     /**

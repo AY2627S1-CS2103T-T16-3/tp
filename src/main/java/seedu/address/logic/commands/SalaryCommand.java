@@ -20,7 +20,6 @@ public class SalaryCommand extends Command {
     public static final String COMMAND_WORD = "salary";
     public static final String MESSAGE_SUCCESS = "Updated salary to %1$s for employee: %2$s";
 
-    public static final String MESSAGE_ARGUMENTS = "Index: %1$d, Salary: %2$s";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Edits the salary of the employee identified "
             + "by the index number used in the last employee listing. "
@@ -35,8 +34,8 @@ public class SalaryCommand extends Command {
     /**
      * Creates a command to update the salary of the employee at the given displayed index.
      *
-     * @param index of the employee in the filtered employee list whose salary is to be edited
-     * @param salary the new salary for the employee
+     * @param index of the employee in the filtered employee list whose salary is to be edited.
+     * @param salary the new salary for the employee.
      */
     public SalaryCommand(Index index, Salary salary) {
         requireAllNonNull(index, salary);
@@ -81,9 +80,9 @@ public class SalaryCommand extends Command {
             return false;
         }
 
-        SalaryCommand e = (SalaryCommand) other;
-        return salary.equals(e.salary)
-                && index.equals(e.index);
+        SalaryCommand otherSalaryCommand = (SalaryCommand) other;
+        return salary.equals(otherSalaryCommand.salary)
+                && index.equals(otherSalaryCommand.index);
     }
 
 }
