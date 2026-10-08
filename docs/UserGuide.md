@@ -78,7 +78,11 @@ Format: `help`
 
 Adds an employee to the address book.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​`
+Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​`
+
+Salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
+Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
+Employee cards display salary with a `$` prefix, for example `$5000`.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -135,6 +139,11 @@ The result appears in the existing command-result area; scroll within it to read
 
 Edits an existing employee in the address book.
 
+Salary is preserved when editing other details. The `edit` command rejects `s/`;
+use `salary INDEX s/SALARY` to change salary.
+After a successful salary update, all employees are displayed.
+Older save files without salary values load with a salary of `0`.
+
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
 
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
@@ -163,6 +172,26 @@ Examples:
 * `find John` returns `john` and `John Doe`
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
+
+### Filtering employees by any field: `filter`
+
+Lists employees who match all supplied criteria.
+
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`
+
+* Supply at least one non-empty criterion.
+* Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
+* Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
+* All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag.
+* Each of `n/`, `p/`, `e/`, and `a/` may appear only once. Unsupported prefixes are rejected.
+* Every filter searches the entire address book, including employees hidden by an earlier search.
+* Use `list` to show all employees again. Filtering does not modify employee details.
+
+Examples:
+* `filter p/91235321` lists employees whose phone number contains `91235321`.
+* `filter e/@example.com` lists employees with an email address containing `@example.com`.
+* `filter n/Alice a/Jurong` lists employees whose name contains `Alice` and whose address contains `Jurong`.
+* `filter t/friends t/owesMoney` lists employees with both tags.
 
 ### Deleting an employee: `delete`
 
@@ -232,6 +261,7 @@ Action | Format, Examples
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
 **List** | `list`
 **Workforce summary** | `/summary` or `summary` (no arguments)
 **Help** | `help`

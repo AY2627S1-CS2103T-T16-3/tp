@@ -185,4 +185,16 @@ public class EditCommandTest {
         assertEquals(expected, editCommand.toString());
     }
 
+    @Test
+    public void execute_editName_preservesSalary() throws Exception {
+        Employee original = new EmployeeBuilder().withSalary("5000").build();
+        Model salaryModel = new ModelManager();
+        salaryModel.addEmployee(original);
+        EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder().withName("Updated Name").build();
+
+        new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor).execute(salaryModel);
+
+        assertEquals(original.getSalary(), salaryModel.getFilteredEmployeeList().get(0).getSalary());
+    }
+
 }

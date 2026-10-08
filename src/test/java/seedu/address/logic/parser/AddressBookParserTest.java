@@ -21,10 +21,12 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
+import seedu.address.model.employee.Salary;
 import seedu.address.testutil.EditEmployeeDescriptorBuilder;
 import seedu.address.testutil.EmployeeBuilder;
 import seedu.address.testutil.EmployeeUtil;
@@ -116,4 +118,20 @@ public class AddressBookParserTest {
     public void parseCommand_unknownCommand_throwsParseException() {
         assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("unknownCommand"));
     }
+    @Test
+    public void parseCommand_salary() throws Exception {
+        assertEquals(new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("5000")),
+                parser.parseCommand("salary 1 s/5000"));
+    }
+
+    @Test
+    public void parseCommand_salaryMissingPrefix_throwsParseException() {
+        assertThrows(ParseException.class, () -> parser.parseCommand("salary 1"));
+    }
+
+    @Test
+    public void parseCommand_salaryDuplicatePrefix_throwsParseException() {
+        assertThrows(ParseException.class, () -> parser.parseCommand("salary 1 s/5000 s/6000"));
+    }
+
 }
