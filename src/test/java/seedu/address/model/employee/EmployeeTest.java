@@ -12,6 +12,8 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
 import static seedu.address.testutil.TypicalEmployees.BOB;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.testutil.EmployeeBuilder;
@@ -22,6 +24,36 @@ public class EmployeeTest {
     public void asObservableList_modifyList_throwsUnsupportedOperationException() {
         Employee employee = new EmployeeBuilder().build();
         assertThrows(UnsupportedOperationException.class, () -> employee.getTags().remove(0));
+    }
+
+    @Test
+    public void addTask_duplicateTask_throwsIllegalArgumentException() {
+        Employee employeeWithTask = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                employeeWithTask.addTask(new Task(" prepare  REPORT ")));
+    }
+
+    @Test
+    public void deleteTask_validIndex_returnsEmployeeWithoutTask() {
+        Employee employee = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"))
+                .addTask(new Task("Submit report"));
+
+        Employee updatedEmployee = employee.deleteTask(0);
+
+        assertEquals(List.of(new Task("Submit report")), updatedEmployee.getTasks());
+        assertEquals(employee.getSalary(), updatedEmployee.getSalary());
+    }
+
+    @Test
+    public void deleteTask_invalidIndex_throwsIndexOutOfBoundsException() {
+        Employee employee = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> employee.deleteTask(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> employee.deleteTask(employee.getTasks().size()));
     }
 
     @Test
