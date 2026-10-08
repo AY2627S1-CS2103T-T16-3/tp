@@ -15,6 +15,8 @@ public class LeavePeriodTest {
     private static final LocalDate TUESDAY = LocalDate.of(2026, 10, 6);
     private static final LocalDate WEDNESDAY = LocalDate.of(2026, 10, 7);
     private static final LocalDate FRIDAY = LocalDate.of(2026, 10, 9);
+    private static final LocalDate PREVIOUS_THURSDAY = LocalDate.of(2026, 10, 1);
+    private static final LocalDate PREVIOUS_FRIDAY = LocalDate.of(2026, 10, 2);
     private static final LocalDate SATURDAY = LocalDate.of(2026, 10, 10);
     private static final LocalDate SUNDAY = LocalDate.of(2026, 10, 11);
     private static final LocalDate NEXT_MONDAY = LocalDate.of(2026, 10, 12);
@@ -71,6 +73,7 @@ public class LeavePeriodTest {
 
         assertTrue(mondayToWednesday.overlaps(new LeavePeriod(MONDAY, WEDNESDAY)));
         assertTrue(mondayToWednesday.overlaps(new LeavePeriod(WEDNESDAY, FRIDAY)));
+        assertFalse(mondayToWednesday.overlaps(new LeavePeriod(PREVIOUS_THURSDAY, PREVIOUS_FRIDAY)));
         assertFalse(mondayToWednesday.overlaps(new LeavePeriod(FRIDAY, NEXT_MONDAY)));
         assertThrows(NullPointerException.class, () -> mondayToWednesday.overlaps(null));
     }
@@ -82,6 +85,7 @@ public class LeavePeriodTest {
         assertTrue(leavePeriod.contains(MONDAY));
         assertTrue(leavePeriod.contains(TUESDAY));
         assertTrue(leavePeriod.contains(WEDNESDAY));
+        assertFalse(leavePeriod.contains(PREVIOUS_FRIDAY));
         assertFalse(leavePeriod.contains(FRIDAY));
         assertThrows(NullPointerException.class, () -> leavePeriod.contains(null));
     }
@@ -101,6 +105,7 @@ public class LeavePeriodTest {
 
         assertTrue(leavePeriod.equals(leavePeriod));
         assertTrue(leavePeriod.equals(new LeavePeriod(MONDAY, WEDNESDAY)));
+        assertFalse(leavePeriod.equals(new LeavePeriod(MONDAY, TUESDAY)));
         assertFalse(leavePeriod.equals(new LeavePeriod(TUESDAY, WEDNESDAY)));
         assertFalse(leavePeriod.equals(null));
         assertFalse(leavePeriod.equals("05-10-2026 to 07-10-2026"));

@@ -22,6 +22,8 @@ public class UniqueLeaveListTest {
             LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 3)));
     private static final Leave SAME_ID_AS_LEAVE_ONE = new Leave(new LeaveId(1), new LeavePeriod(
             LocalDate.of(2026, 12, 1), LocalDate.of(2026, 12, 2)));
+    private static final Leave SAME_ID_AS_LEAVE_TWO = new Leave(new LeaveId(2), new LeavePeriod(
+            LocalDate.of(2026, 12, 3), LocalDate.of(2026, 12, 4)));
 
     private final UniqueLeaveList uniqueLeaveList = new UniqueLeaveList();
 
@@ -84,12 +86,12 @@ public class UniqueLeaveListTest {
     }
 
     @Test
-    public void setLeaves_list_replacesContents() {
+    public void setLeaves_listWithUniqueLeaves_replacesContents() {
         uniqueLeaveList.add(LEAVE_ONE);
 
-        uniqueLeaveList.setLeaves(List.of(LEAVE_TWO));
+        uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, LEAVE_TWO));
 
-        assertEquals(List.of(LEAVE_TWO), uniqueLeaveList.asUnmodifiableObservableList());
+        assertEquals(List.of(LEAVE_ONE, LEAVE_TWO), uniqueLeaveList.asUnmodifiableObservableList());
     }
 
     @Test
@@ -100,6 +102,8 @@ public class UniqueLeaveListTest {
         assertThrows(NullPointerException.class, () -> uniqueLeaveList.setLeaves(Arrays.asList(LEAVE_ONE, null)));
         assertThrows(DuplicateLeaveException.class, () ->
                 uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, SAME_ID_AS_LEAVE_ONE)));
+        assertThrows(DuplicateLeaveException.class, () ->
+                uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, LEAVE_TWO, SAME_ID_AS_LEAVE_TWO)));
         assertEquals(List.of(LEAVE_TWO), uniqueLeaveList.asUnmodifiableObservableList());
     }
 
