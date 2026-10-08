@@ -55,6 +55,13 @@ public class EditCommandParserTest {
     private EditCommandParser parser = new EditCommandParser();
 
     @Test
+    public void parse_salaryPrefix_failure() {
+        assertParseFailure(parser, "1 s/5000", EditCommand.MESSAGE_SALARY_NOT_EDITABLE);
+        assertParseFailure(parser, "1 n/Updated Name s/5000", EditCommand.MESSAGE_SALARY_NOT_EDITABLE);
+        assertParseFailure(parser, "1 s/", EditCommand.MESSAGE_SALARY_NOT_EDITABLE);
+    }
+
+    @Test
     public void parse_missingParts_failure() {
         // no index specified
         assertParseFailure(parser, VALID_NAME_AMY, MESSAGE_INVALID_FORMAT);

@@ -18,6 +18,9 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.Salary;
+import seedu.address.testutil.EmployeeBuilder;
 
 public class JsonAddressBookStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonAddressBookStorageTest");
@@ -106,5 +109,20 @@ public class JsonAddressBookStorageTest {
     @Test
     public void saveAddressBook_nullFilePath_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> saveAddressBook(new AddressBook(), null));
+    }
+    @Test
+    public void readAndSaveAddressBook_nonZeroSalary_preservesNormalizedSalary() throws Exception {
+        Path filePath = testFolder.resolve("SalaryAddressBook.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+        AddressBook original = new AddressBook();
+        Employee employee = new EmployeeBuilder().withSalary("00005000").build();
+        original.addEmployee(employee);
+
+        storage.saveAddressBook(original);
+        ReadOnlyAddressBook readBack = storage.readAddressBook().get();
+
+        assertEquals(original, new AddressBook(readBack));
+        assertEquals(new Salary("5000"), readBack.getEmployeeList().get(0).getSalary());
+        assertEquals("5000", readBack.getEmployeeList().get(0).getSalary().salary);
     }
 }

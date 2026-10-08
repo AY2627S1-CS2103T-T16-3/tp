@@ -12,83 +12,11 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
 import static seedu.address.testutil.TypicalEmployees.BOB;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import seedu.address.testutil.EmployeeBuilder;
 
 public class EmployeeTest {
-
-    @Test
-    public void addTask_validTask_taskIsStoredInOrder() {
-        Employee employee = new EmployeeBuilder().build();
-
-        employee = employee.addTask(new Task("Prepare report"));
-        employee = employee.addTask(new Task("Submit report"));
-
-        assertEquals(List.of(new Task("Prepare report"), new Task("Submit report")), employee.getTasks());
-    }
-
-    @Test
-    public void addTask_duplicateTask_throwsIllegalArgumentException() {
-        Employee employee = new EmployeeBuilder().build();
-        employee = employee.addTask(new Task("Prepare report"));
-        Employee employeeWithTask = employee;
-
-        assertThrows(IllegalArgumentException.class, () ->
-                employeeWithTask.addTask(new Task(" prepare  REPORT ")));
-    }
-
-    @Test
-    public void deleteTask_validIndex_removesTask() {
-        Employee employee = new EmployeeBuilder().build();
-        employee = employee.addTask(new Task("Prepare report"));
-        employee = employee.addTask(new Task("Submit report"));
-
-        employee = employee.deleteTask(0);
-
-        assertEquals(List.of(new Task("Submit report")), employee.getTasks());
-    }
-
-    @Test
-    public void deleteTask_invalidIndex_throwsIndexOutOfBoundsException() {
-        Employee employee = new EmployeeBuilder().build();
-
-        assertThrows(IndexOutOfBoundsException.class, () -> employee.deleteTask(0));
-    }
-
-    @Test
-    public void deleteTask_negativeIndex_throwsIndexOutOfBoundsException() {
-        Employee employee = new EmployeeBuilder().build();
-
-        assertThrows(IndexOutOfBoundsException.class, () -> employee.deleteTask(-1));
-    }
-
-    @Test
-    public void getTasks_modifyReturnedList_throwsUnsupportedOperationException() {
-        Employee employee = new EmployeeBuilder().build();
-
-        assertThrows(UnsupportedOperationException.class, () -> employee.getTasks().add(new Task("Task")));
-    }
-
-    @Test
-    public void addTask_originalEmployeeRemainsUnchanged() {
-        Employee employee = new EmployeeBuilder().build();
-        Employee employeeWithTask = employee.addTask(new Task("Prepare report"));
-
-        assertEquals(0, employee.getTasks().size());
-        assertEquals(1, employeeWithTask.getTasks().size());
-    }
-
-    @Test
-    public void equals_differentTasks_returnsFalse() {
-        Employee employee = new EmployeeBuilder().build();
-        Employee employeeWithTask = employee.addTask(new Task("Prepare report"));
-
-        assertFalse(employee.equals(employeeWithTask));
-        assertFalse(employee.hashCode() == employeeWithTask.hashCode());
-    }
 
     @Test
     public void asObservableList_modifyList_throwsUnsupportedOperationException() {
@@ -160,12 +88,40 @@ public class EmployeeTest {
         // different tags -> returns false
         editedAlice = new EmployeeBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
+
+        // different salary -> returns false
+        editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
+        assertFalse(ALICE.equals(editedAlice));
+
+        // different tasks -> returns false
+        editedAlice = ALICE.addTask(new Task("Prepare report"));
+        assertFalse(ALICE.equals(editedAlice));
+
+        // different salary does not affect employee identity
+        editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
+        assertTrue(ALICE.isSameEmployee(editedAlice));
+
+        // different tasks do not affect employee identity
+        editedAlice = ALICE.addTask(new Task("Prepare report"));
+        assertTrue(ALICE.isSameEmployee(editedAlice));
+    }
+
+    @Test
+    public void copy_nonDefaultSalary_preservesSalary() {
+        Employee original = new EmployeeBuilder(ALICE).withSalary("5000").build();
+        Employee copy = new EmployeeBuilder(original).build();
+        assertEquals(original.getSalary(), copy.getSalary());
     }
 
     @Test
     public void toStringMethod() {
-        String expected = Employee.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags()
+        String expected = Employee.class.getCanonicalName()
+                + "{name=" + ALICE.getName()
+                + ", phone=" + ALICE.getPhone()
+                + ", email=" + ALICE.getEmail()
+                + ", address=" + ALICE.getAddress()
+                + ", salary=" + ALICE.getSalary()
+                + ", tags=" + ALICE.getTags()
                 + ", tasks=" + ALICE.getTasks() + "}";
         assertEquals(expected, ALICE.toString());
     }

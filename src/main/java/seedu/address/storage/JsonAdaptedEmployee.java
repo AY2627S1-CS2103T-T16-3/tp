@@ -15,6 +15,7 @@ import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Salary;
 import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 
@@ -29,6 +30,7 @@ class JsonAdaptedEmployee {
     private final String phone;
     private final String email;
     private final String address;
+    private final String salary;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
     private final List<JsonAdaptedTask> tasks = new ArrayList<>();
 
@@ -38,25 +40,19 @@ class JsonAdaptedEmployee {
     @JsonCreator
     public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags, @JsonProperty("tasks") List<JsonAdaptedTask> tasks) {
+            @JsonProperty("salary") String salary, @JsonProperty("tags") List<JsonAdaptedTag> tags,
+            @JsonProperty("tasks") List<JsonAdaptedTask> tasks) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.salary = salary;
         if (tags != null) {
             this.tags.addAll(tags);
         }
         if (tasks != null) {
             this.tasks.addAll(tasks);
         }
-    }
-
-    /**
-     * Constructs a JSON-adapted employee without tasks for backwards-compatible callers.
-     */
-    public JsonAdaptedEmployee(String name, String phone, String email, String address,
-            List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, tags, null);
     }
 
     /**
@@ -67,6 +63,7 @@ class JsonAdaptedEmployee {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        salary = source.getSalary().salary;
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -127,7 +124,15 @@ class JsonAdaptedEmployee {
             }
             modelTasks.add(modelTask);
         }
-        return new Employee(modelName, modelPhone, modelEmail, modelAddress, modelTags, modelTasks);
+
+        // Older save files have no salary field.
+        String salaryValue = salary == null ? "0" : salary;
+        if (!Salary.isValidSalary(salaryValue)) {
+            throw new IllegalValueException(Salary.MESSAGE_CONSTRAINTS);
+        }
+        final Salary modelSalary = new Salary(salaryValue);
+        return new Employee(modelName, modelPhone, modelEmail, modelAddress,
+                modelSalary, modelTags, modelTasks);
     }
 
 }
