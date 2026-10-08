@@ -12,7 +12,9 @@ import static seedu.address.testutil.TypicalEmployees.AMY;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
@@ -68,6 +71,27 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_summaryAliases_summarizeAllEmployeesWithoutChangingFilterOrSavedData() throws Exception {
+        Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering").build();
+        Employee bob = new EmployeeBuilder().withName("Bob").withTags().build();
+        model.addEmployee(alice);
+        model.addEmployee(bob);
+        logic.execute("find Alice");
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+        String savedData = Files.readString(dataFile);
+        CommandResult expected = new CommandResult("Employee summary\nTotal employees: 2\n"
+                + "Employees without tags: 1\n\nEmployees by tag:\n  engineering: 1\n\n"
+                + "Employees may have multiple tags; tag counts can overlap.");
+
+        for (String command : new String[] {SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS}) {
+            assertEquals(expected, logic.execute(command));
+            assertEquals(List.of(alice), logic.getFilteredEmployeeList());
+            assertEquals(List.of(alice, bob), model.getAddressBook().getEmployeeList());
+            assertEquals(savedData, Files.readString(dataFile));
+        }
     }
 
     @Test

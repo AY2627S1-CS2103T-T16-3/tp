@@ -60,6 +60,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
+  Exception: `/summary` and `summary` reject extra parameters.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -96,6 +97,43 @@ Examples:
 Shows a list of all employees in the address book.
 
 Format: `list`
+
+### Viewing the workforce summary: `/summary`
+
+Shows the total number of stored employees, employees without tags, and employee counts for each tag.
+
+Format: `/summary` (alias: `summary`)
+
+No arguments are accepted. For example, `/summary t/engineering` reports a usage error.
+
+The summary always includes **all stored employees**, even after a `find` command. It does not change
+employee records or the currently displayed search results. Run it again after adding, editing, or
+deleting employees to see updated counts.
+
+Example output:
+
+```text
+Employee summary
+Total employees: 5
+Employees without tags: 1
+
+Employees by tag:
+  engineering: 3
+  intern: 1
+  remote: 2
+
+Employees may have multiple tags; tag counts can overlap.
+```
+
+* Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
+  An employee tagged with both `Engineering` and `engineering` counts once in that group.
+* Employees with several different tags count in each group, so tag counts can exceed the total headcount.
+* Having no tags is allowed; the untagged count is a categorization aid, not an error.
+* If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
+* These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
+  not interpreted as structured departments. Leave balances, salary totals, and reminders are not included.
+
+The result appears in the existing command-result area; scroll within it to read a long summary.
 
 ### Editing an employee: `edit`
 
@@ -225,4 +263,5 @@ Action | Format, Examples
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
 **List** | `list`
+**Workforce summary** | `/summary` or `summary` (no arguments)
 **Help** | `help`
