@@ -77,7 +77,11 @@ Format: `help`
 
 Adds an employee to the address book.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​`
+Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​`
+
+Salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
+Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
+Employee cards display salary with a `$` prefix, for example `$5000`.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -96,6 +100,11 @@ Format: `list`
 ### Editing an employee: `edit`
 
 Edits an existing employee in the address book.
+
+Salary is preserved when editing other details. The `edit` command rejects `s/`;
+use `salary INDEX s/SALARY` to change salary.
+After a successful salary update, all employees are displayed.
+Older save files without salary values load with a salary of `0`.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
 

@@ -16,6 +16,7 @@ import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Salary;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -191,4 +192,28 @@ public class ParserUtilTest {
 
         assertEquals(expectedTagSet, actualTagSet);
     }
+    @Test
+    public void parseSalary_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseSalary(null));
+    }
+
+    @Test
+    public void parseSalary_invalidValues_throwsParseException() {
+        for (String salary : List.of("", " ", "-1", "50001", "999999999999", "abc", "1.5")) {
+            assertThrows(ParseException.class, Salary.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseSalary(salary));
+        }
+    }
+
+    @Test
+    public void parseSalary_validValues_returnsSalary() throws Exception {
+        for (String salary : List.of("0", "5000", "50000")) {
+            assertEquals(new Salary(salary), ParserUtil.parseSalary(salary));
+        }
+    }
+
+    @Test
+    public void parseSalary_validValueWithWhitespace_returnsTrimmedSalary() throws Exception {
+        assertEquals(new Salary("5000"), ParserUtil.parseSalary(WHITESPACE + "5000" + WHITESPACE));
+    }
+
 }
