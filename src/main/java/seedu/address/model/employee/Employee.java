@@ -1,9 +1,12 @@
 package seedu.address.model.employee;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -23,20 +26,23 @@ public class Employee {
 
     // Data fields
     private final Address address;
-    private final Set<Tag> tags = new HashSet<>();
     private final Salary salary;
+    private final Set<Tag> tags = new HashSet<>();
+    private final List<Task> tasks = new ArrayList<>();
 
     /**
      * Every field must be present and not null.
      */
-    public Employee(Name name, Phone phone, Email email, Address address, Set<Tag> tags, Salary salary) {
-        requireAllNonNull(name, phone, email, address, tags, salary);
+    public Employee(Name name, Phone phone, Email email, Address address, Salary salary,
+            Set<Tag> tags, List<Task> tasks) {
+        requireAllNonNull(name, phone, email, address, tags, salary, tasks);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
-        this.tags.addAll(tags);
         this.salary = salary;
+        this.tags.addAll(tags);
+        this.tasks.addAll(tasks);
     }
 
     public Name getName() {
@@ -63,9 +69,33 @@ public class Employee {
         return Collections.unmodifiableSet(tags);
     }
 
-    /**
-     * Returns the employee's salary.
-     */
+    /** Returns an immutable task list. */
+    public List<Task> getTasks() {
+        return Collections.unmodifiableList(tasks);
+    }
+
+    /** Adds a task to this employee. */
+    public Employee addTask(Task task) {
+        requireNonNull(task);
+        if (tasks.contains(task)) {
+            throw new IllegalArgumentException("Task already exists for this employee.");
+        }
+        List<Task> updatedTasks = new ArrayList<>(tasks);
+        updatedTasks.add(task);
+        return new Employee(name, phone, email, address, salary, tags, updatedTasks);
+    }
+
+    /** Deletes a task using a zero-based index. */
+    public Employee deleteTask(int index) {
+        if (index < 0 || index >= tasks.size()) {
+            throw new IndexOutOfBoundsException("Task index is out of bounds.");
+        }
+        List<Task> updatedTasks = new ArrayList<>(tasks);
+        updatedTasks.remove(index);
+        return new Employee(name, phone, email, address, salary, tags, updatedTasks);
+    }
+
+    /** Returns the employee's salary. */
     public Salary getSalary() {
         return salary;
     }
@@ -103,13 +133,14 @@ public class Employee {
                 && email.equals(otherEmployee.email)
                 && address.equals(otherEmployee.address)
                 && tags.equals(otherEmployee.tags)
+                && tasks.equals(otherEmployee.tasks)
                 && salary.equals(otherEmployee.salary);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags, salary);
+        return Objects.hash(name, phone, email, address, tags, tasks, salary);
     }
 
     @Override
@@ -119,8 +150,9 @@ public class Employee {
                 .add("phone", phone)
                 .add("email", email)
                 .add("address", address)
-                .add("tags", tags)
                 .add("salary", salary)
+                .add("tags", tags)
+                .add("tasks", tasks)
                 .toString();
     }
 

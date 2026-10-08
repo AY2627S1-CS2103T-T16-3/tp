@@ -7,6 +7,7 @@ import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_EMPLOYEE;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -30,8 +31,8 @@ public class SalaryCommandTest {
     public void execute_validIndex_updatesSalaryAndPreservesDetails() throws Exception {
         Model model = new ModelManager();
         Employee original = new Employee(new Name("Alice"), new Phone("91234567"),
-                new Email("alice@example.com"), new Address("123 Main Street"), Set.of(new Tag("team")),
-                new Salary("1000"));
+                new Email("alice@example.com"), new Address("123 Main Street"), new Salary("1000"),
+                Set.of(new Tag("team")), List.of());
         model.addEmployee(original);
         Salary updatedSalary = new Salary("5000");
 
