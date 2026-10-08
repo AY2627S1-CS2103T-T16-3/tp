@@ -40,6 +40,8 @@ public class EmployeeCard extends UiPart<Region> {
     private Label email;
     @FXML
     private FlowPane tags;
+    @FXML
+    private Label salary;
 
     /**
      * Creates a {@code EmployeeCard} with the given {@code Employee} and index to display.
@@ -55,5 +57,6 @@ public class EmployeeCard extends UiPart<Region> {
         employee.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+        salary.setText("$" + employee.getSalary().salary);
     }
 }

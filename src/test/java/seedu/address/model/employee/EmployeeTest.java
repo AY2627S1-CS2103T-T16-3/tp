@@ -93,7 +93,27 @@ public class EmployeeTest {
     @Test
     public void toStringMethod() {
         String expected = Employee.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags() + "}";
+                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags()
+                + ", salary=" + ALICE.getSalary() + "}";
         assertEquals(expected, ALICE.toString());
     }
+    @Test
+    public void equals_differentSalary_returnsFalse() {
+        Employee editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
+        assertFalse(ALICE.equals(editedAlice));
+    }
+
+    @Test
+    public void isSameEmployee_differentSalary_returnsTrue() {
+        Employee editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
+        assertTrue(ALICE.isSameEmployee(editedAlice));
+    }
+
+    @Test
+    public void copy_nonDefaultSalary_preservesSalary() {
+        Employee original = new EmployeeBuilder(ALICE).withSalary("5000").build();
+        Employee copy = new EmployeeBuilder(original).build();
+        assertEquals(original.getSalary(), copy.getSalary());
+    }
+
 }
