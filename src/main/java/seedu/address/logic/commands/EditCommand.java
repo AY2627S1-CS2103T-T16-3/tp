@@ -50,6 +50,7 @@ public class EditCommand extends Command {
 
     public static final String MESSAGE_EDIT_EMPLOYEE_SUCCESS = "Edited employee: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
+    public static final String MESSAGE_SALARY_NOT_EDITABLE = "Use the salary command to change an employee's salary.";
     public static final String MESSAGE_DUPLICATE_EMPLOYEE = "This employee already exists in the address book.";
 
     private final Index index;
@@ -90,7 +91,7 @@ public class EditCommand extends Command {
 
     /**
      * Creates and returns a {@code Employee} with the details of {@code employeeToEdit}
-     * edited with {@code editEmployeeDescriptor}.
+     * edited with {@code editEmployeeDescriptor}, preserving the existing salary.
      */
     private static Employee createEditedEmployee(Employee employeeToEdit,
             EditEmployeeDescriptor editEmployeeDescriptor) {
@@ -102,7 +103,8 @@ public class EditCommand extends Command {
         Address updatedAddress = editEmployeeDescriptor.getAddress().orElse(employeeToEdit.getAddress());
         Set<Tag> updatedTags = editEmployeeDescriptor.getTags().orElse(employeeToEdit.getTags());
 
-        return new Employee(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags);
+        return new Employee(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags,
+                employeeToEdit.getSalary());
     }
 
     @Override
