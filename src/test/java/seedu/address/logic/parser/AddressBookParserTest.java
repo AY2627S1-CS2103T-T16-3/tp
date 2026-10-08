@@ -21,6 +21,7 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
@@ -85,6 +86,24 @@ public class AddressBookParserTest {
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD + " 3") instanceof ListCommand);
+    }
+
+    @Test
+    public void parseCommand_summaryAliasesAndWhitespace() throws Exception {
+        for (String command : new String[] {"summary", "/summary", "  summary  ", "\t/summary\t"}) {
+            assertTrue(parser.parseCommand(command) instanceof SummaryCommand);
+        }
+    }
+
+    @Test
+    public void parseCommand_summaryWithArguments_throwsUsageMessage() {
+        for (String command : new String[] {"summary", "/summary"}) {
+            for (String args : new String[] {" 1", " t/engineering", " all", "\tunexpected"}) {
+                assertThrows(ParseException.class,
+                        String.format(MESSAGE_INVALID_COMMAND_FORMAT, SummaryCommand.MESSAGE_USAGE), () ->
+                        parser.parseCommand(command + args));
+            }
+        }
     }
 
     @Test
