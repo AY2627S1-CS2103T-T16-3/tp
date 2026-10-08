@@ -1,6 +1,8 @@
 package seedu.address.testutil;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import seedu.address.model.employee.Address;
@@ -9,6 +11,7 @@ import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 import seedu.address.model.util.SampleDataUtil;
 
@@ -29,6 +32,7 @@ public class EmployeeBuilder {
     private Address address;
     private Set<Tag> tags;
     private Salary salary;
+    private List<Task> tasks;
 
     /**
      * Creates a {@code EmployeeBuilder} with the default details.
@@ -40,6 +44,7 @@ public class EmployeeBuilder {
         address = new Address(DEFAULT_ADDRESS);
         tags = new HashSet<>();
         salary = new Salary(DEFAULT_SALARY);
+        tasks = new ArrayList<>();
     }
 
     /**
@@ -52,6 +57,7 @@ public class EmployeeBuilder {
         address = employeeToCopy.getAddress();
         tags = new HashSet<>(employeeToCopy.getTags());
         salary = employeeToCopy.getSalary();
+        tasks = new ArrayList<>(employeeToCopy.getTasks());
     }
 
     /**
@@ -102,8 +108,14 @@ public class EmployeeBuilder {
         return this;
     }
 
+    /** Sets the tasks of the employee being built. */
+    public EmployeeBuilder withTasks(Task... tasks) {
+        this.tasks = new ArrayList<>(List.of(tasks));
+        return this;
+    }
+
     public Employee build() {
-        return new Employee(name, phone, email, address, tags, salary);
+        return new Employee(name, phone, email, address, salary, tags, tasks);
     }
 
 }

@@ -53,7 +53,7 @@ public class SalaryCommand extends Command {
         Employee employeeToEdit = lastShownList.get(index.getZeroBased());
         Employee editedEmployee = new Employee(
                 employeeToEdit.getName(), employeeToEdit.getPhone(), employeeToEdit.getEmail(),
-                employeeToEdit.getAddress(), employeeToEdit.getTags(), salary);
+                employeeToEdit.getAddress(), salary, employeeToEdit.getTags(), employeeToEdit.getTasks());
 
         model.setEmployee(employeeToEdit, editedEmployee);
         model.updateFilteredEmployeeList(PREDICATE_SHOW_ALL_EMPLOYEES);
