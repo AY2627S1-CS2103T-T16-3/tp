@@ -18,7 +18,7 @@ public class AddTaskCommand extends Command {
     public static final String COMMAND_WORD = "add-task";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Adds a task to the employee identified by the displayed index.\n"
-            + "Parameters: INDEX (must be a positive integer) d/DETAILS\n"
+            + "Parameters: EMPLOYEE_INDEX (must be a positive integer) d/DETAILS\n"
             + "Example: " + COMMAND_WORD + " 1 d/Prepare report";
     public static final String MESSAGE_SUCCESS = "Added task to %1$s: %2$s";
     public static final String MESSAGE_DUPLICATE_TASK = "This task already exists for the employee.";

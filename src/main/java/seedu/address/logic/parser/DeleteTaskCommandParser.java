@@ -22,15 +22,18 @@ public class DeleteTaskCommandParser implements Parser<DeleteTaskCommand> {
     public DeleteTaskCommand parse(String args) throws ParseException {
         requireNonNull(args);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_TASK_INDEX);
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_TASK_INDEX);
+
+        if (argMultimap.getPreamble().isEmpty() || argMultimap.getValue(PREFIX_TASK_INDEX).isEmpty()) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteTaskCommand.MESSAGE_USAGE));
+        }
+
         try {
-            argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_TASK_INDEX);
             Index employeeIndex = ParserUtil.parseIndex(argMultimap.getPreamble());
-            String taskIndex = argMultimap.getValue(PREFIX_TASK_INDEX)
-                    .orElseThrow(() -> new ParseException("Task index is missing."));
-            return new DeleteTaskCommand(employeeIndex, ParserUtil.parseIndex(taskIndex));
-        } catch (ParseException exception) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                    DeleteTaskCommand.MESSAGE_USAGE), exception);
+            Index taskIndex = ParserUtil.parseIndex(argMultimap.getValue(PREFIX_TASK_INDEX).get());
+            return new DeleteTaskCommand(employeeIndex, taskIndex);
+        } catch (ParseException e) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteTaskCommand.MESSAGE_USAGE));
         }
     }
 }

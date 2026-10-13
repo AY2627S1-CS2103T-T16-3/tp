@@ -1,5 +1,7 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
@@ -65,7 +67,7 @@ public class DeleteTaskCommandTest {
 
         new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)).execute(model);
 
-        org.junit.jupiter.api.Assertions.assertEquals(1, model.getFilteredEmployeeList().size());
-        org.junit.jupiter.api.Assertions.assertTrue(model.getFilteredEmployeeList().get(0).getTasks().isEmpty());
+        assertEquals(1, model.getFilteredEmployeeList().size());
+        assertTrue(model.getFilteredEmployeeList().get(0).getTasks().isEmpty());
     }
 }

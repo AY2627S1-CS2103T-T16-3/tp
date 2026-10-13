@@ -1,5 +1,8 @@
 package seedu.address.logic.parser;
 
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.Messages.getErrorMessageForDuplicatePrefixes;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TASK_DETAILS;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
@@ -21,14 +24,20 @@ public class AddTaskCommandParserTest {
 
     @Test
     public void parse_duplicateDetailsPrefix_throwsParseException() {
-        assertParseFailure(parser, "1 d/Prepare d/report", "Invalid command format!\n"
-                + AddTaskCommand.MESSAGE_USAGE);
+        assertParseFailure(parser, "1 d/Prepare d/report",
+                getErrorMessageForDuplicatePrefixes(PREFIX_TASK_DETAILS));
     }
 
     @Test
     public void parse_missingDetails_throwsParseException() {
         assertParseFailure(parser, "1", "Invalid command format!\n"
                 + AddTaskCommand.MESSAGE_USAGE);
+    }
+
+    @Test
+    public void parse_invalidEmployeeIndex_throwsParseException() {
+        assertParseFailure(parser, "zero d/Prepare report",
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddTaskCommand.MESSAGE_USAGE));
     }
 
     @Test

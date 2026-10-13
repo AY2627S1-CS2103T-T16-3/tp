@@ -15,10 +15,10 @@ import seedu.address.model.employee.Task;
 /** Lists the tasks assigned to an employee. */
 public class ListTasksCommand extends Command {
 
-    public static final String COMMAND_WORD = "list-task";
+    public static final String COMMAND_WORD = "list-tasks";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Lists the tasks assigned to the employee identified by the displayed index.\n"
-            + "Parameters: INDEX (must be a positive integer)\n"
+            + "Parameters: EMPLOYEE_INDEX (must be a positive integer)\n"
             + "Example: " + COMMAND_WORD + " 1";
     public static final String MESSAGE_NO_TASKS = "Employee %1$s has no tasks.";
 

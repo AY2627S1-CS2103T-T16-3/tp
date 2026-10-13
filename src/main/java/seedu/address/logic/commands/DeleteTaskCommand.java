@@ -18,7 +18,7 @@ public class DeleteTaskCommand extends Command {
     public static final String COMMAND_WORD = "delete-task";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Deletes a task from the employee identified by the displayed index.\n"
-            + "Parameters: INDEX (must be a positive integer) i/TASK_INDEX\n"
+            + "Parameters: EMPLOYEE_INDEX (must be a positive integer) i/TASK_INDEX (must be a positive integer)\n"
             + "Example: " + COMMAND_WORD + " 1 i/1";
     public static final String MESSAGE_SUCCESS = "Deleted task from %1$s: %2$s";
     public static final String MESSAGE_INVALID_TASK_INDEX = "The task index provided is invalid.";

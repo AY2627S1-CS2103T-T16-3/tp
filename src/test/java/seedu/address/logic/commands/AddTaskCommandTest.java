@@ -1,5 +1,6 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
@@ -54,8 +55,7 @@ public class AddTaskCommandTest {
 
         new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")).execute(model);
 
-        org.junit.jupiter.api.Assertions.assertEquals(1, model.getFilteredEmployeeList().size());
-        org.junit.jupiter.api.Assertions.assertEquals("Prepare report",
-                model.getFilteredEmployeeList().get(0).getTasks().get(0).getDetails());
+        assertEquals(1, model.getFilteredEmployeeList().size());
+        assertEquals("Prepare report", model.getFilteredEmployeeList().get(0).getTasks().get(0).getDetails());
     }
 }
