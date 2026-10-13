@@ -14,6 +14,7 @@ import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -136,5 +137,21 @@ public class ParserUtil {
             throw new ParseException(Salary.MESSAGE_CONSTRAINTS);
         }
         return new Salary(trimmedSalary);
+    }
+
+    /**
+     * Parses task details after trimming leading and trailing whitespace.
+     *
+     * @param details Task details to parse.
+     * @return The parsed task.
+     * @throws ParseException If the task details are invalid.
+     */
+    public static Task parseTask(String details) throws ParseException {
+        requireNonNull(details);
+        try {
+            return new Task(details);
+        } catch (IllegalArgumentException exception) {
+            throw new ParseException(Task.MESSAGE_CONSTRAINTS, exception);
+        }
     }
 }
