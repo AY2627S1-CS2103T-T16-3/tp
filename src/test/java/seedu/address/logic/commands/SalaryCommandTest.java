@@ -16,12 +16,7 @@ import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
-import seedu.address.model.employee.Address;
-import seedu.address.model.employee.Email;
-import seedu.address.model.employee.Employee;
-import seedu.address.model.employee.Name;
-import seedu.address.model.employee.Phone;
-import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.*;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -32,7 +27,8 @@ public class SalaryCommandTest {
         Model model = new ModelManager();
         Employee original = new Employee(new Name("Alice"), new Phone("91234567"),
                 new Email("alice@example.com"), new Address("123 Main Street"), new Salary("1000"),
-                Set.of(new Tag("team")), List.of());
+                Set.of(new Tag("team")),
+                List.of(new Task("Prepare report"), new Task("Meet partners")));
         model.addEmployee(original);
         Salary updatedSalary = new Salary("5000");
 
@@ -47,6 +43,7 @@ public class SalaryCommandTest {
         assertEquals(original.getTags(), updated.getTags());
         assertEquals(String.format(SalaryCommand.MESSAGE_SUCCESS, updatedSalary, Messages.format(updated)),
                 result.getFeedbackToUser());
+        assertEquals(original.getTasks(), updated.getTasks());
     }
 
     @Test
