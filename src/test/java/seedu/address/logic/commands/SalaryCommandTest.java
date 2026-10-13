@@ -16,7 +16,13 @@ import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
-import seedu.address.model.employee.*;
+import seedu.address.model.employee.Address;
+import seedu.address.model.employee.Email;
+import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.Name;
+import seedu.address.model.employee.Phone;
+import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -101,7 +107,8 @@ public class SalaryCommandTest {
         model.addEmployee(alice);
         model.addEmployee(bob);
 
-        CommandResult result = new SalaryCommand(Index.fromOneBased(2), new Salary("50000")).execute(model);
+        CommandResult result = new SalaryCommand(Index.fromOneBased(2),
+                new Salary("50000")).execute(model);
 
         assertEquals(2, model.getAddressBook().getEmployeeList().size());
         assertEquals(alice, model.getAddressBook().getEmployeeList().get(0));

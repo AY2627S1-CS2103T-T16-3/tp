@@ -23,6 +23,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -31,6 +32,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.Task;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -109,6 +111,56 @@ public class LogicManagerTest {
     @Test
     public void getFilteredEmployeeList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredEmployeeList().remove(0));
+    }
+
+    @Test
+    public void execute_salaryCommand_updatesModelAndStorage() throws Exception {
+        // Original employee
+        Employee charlie = new EmployeeBuilder()
+                .withName("Charlie")
+                .withSalary("1000")
+                .withTags("Engineering", "FullTime")
+                .build()
+                .addTask(new Task("Prepare report"))
+                .addTask(new Task("Review budget"));
+        model.addEmployee(charlie);
+
+        // Expected employee: only the salary changes
+        Employee expected = new EmployeeBuilder(charlie)
+                .withSalary("5000")
+                .build();
+
+        assertEquals("$1000", charlie.getSalary().toString());
+
+        // Expected feedback for tested command
+        CommandResult expectedFeedback = new CommandResult(
+                String.format(SalaryCommand.MESSAGE_SUCCESS,
+                        expected.getSalary(), Messages.format(expected)));
+
+        // Asserts that command feedback is correct
+        assertEquals(expectedFeedback, logic.execute("salary 1 s/005000"));
+
+        // Asserts that logic changes Salary object
+        assertEquals("5000",
+                model.getAddressBook().getEmployeeList().get(0).getSalary().salary);
+
+        // Assert that logic rejects invalid parameters
+        assertThrows(ParseException.class, () ->
+                logic.execute("salary 1 s/abc"));
+
+        JsonAddressBookStorage storage =
+                new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        // Take saved data from local storage
+        ReadOnlyAddressBook saved = storage.readAddressBook().orElseThrow();
+
+        // Asserts that storage safely saves salary
+        assertEquals("$5000", saved.getEmployeeList().get(0).getSalary().toString());
+
+        // Asserts that other fields of employee are preserved after salary command
+        assertEquals(expected, model.getAddressBook().getEmployeeList().get(0));
+
+        // Asserts that the saved address book matches the model
+        assertEquals(model.getAddressBook(), saved);
     }
 
     /**
