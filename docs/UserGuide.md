@@ -307,17 +307,17 @@ _Details coming soon ..._
 
 ## Command summary
 
-Action | Format, Examples
---------|------------------
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
-**Clear** | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
-**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
-**Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
-**List** | `list`
-**List tasks** | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`
-**Add task** | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`
-**Delete task** | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`
-**Workforce summary** | `/summary` or `summary` (no arguments)
-**Help** | `help`
+| Action                | Format, Examples                                                                                                                                                     |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Add**               | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague` |
+| **Clear**             | `clear`                                                                                                                                                              |
+| **Delete**            | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                  |
+| **Edit**              | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`                                          |
+| **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                                           |
+| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`                                                                           |
+| **List**              | `list`                                                                                                                                                               |
+| **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`                                                                                                                 |
+| **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`                                                                                          |
+| **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`                                                                                              |
+| **Workforce summary** | `/summary` or `summary` (no arguments)                                                                                                                               |
+| **Help**              | `help`                                                                                                                                                               |

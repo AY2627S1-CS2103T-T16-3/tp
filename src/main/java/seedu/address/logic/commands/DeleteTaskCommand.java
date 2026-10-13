@@ -51,12 +51,7 @@ public class DeleteTaskCommand extends Command {
         }
 
         Task task = employee.getTasks().get(taskIndex.getZeroBased());
-        Employee updatedEmployee;
-        try {
-            updatedEmployee = employee.deleteTask(taskIndex.getZeroBased());
-        } catch (IndexOutOfBoundsException exception) {
-            throw new CommandException(MESSAGE_INVALID_TASK_INDEX, exception);
-        }
+        Employee updatedEmployee = employee.deleteTask(taskIndex.getZeroBased());
         model.setEmployee(employee, updatedEmployee);
         return new CommandResult(String.format(MESSAGE_SUCCESS,
                 employee.getName().fullName, task.getDetails()));

@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
@@ -49,5 +50,8 @@ public class ListTasksCommandTest {
     public void equals() {
         ListTasksCommand first = new ListTasksCommand(Index.fromOneBased(1));
         assertEquals(first, new ListTasksCommand(Index.fromOneBased(1)));
+        assertNotEquals(first, new ListTasksCommand(Index.fromOneBased(2)));
+        assertNotEquals(first, new Object());
+        assertEquals(first.hashCode(), new ListTasksCommand(Index.fromOneBased(1)).hashCode());
     }
 }

@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
@@ -57,5 +58,26 @@ public class AddTaskCommandTest {
 
         assertEquals(1, model.getFilteredEmployeeList().size());
         assertEquals("Prepare report", model.getFilteredEmployeeList().get(0).getTasks().get(0).getDetails());
+    }
+
+    @Test
+    public void equals_sameValues_returnsTrue() {
+        AddTaskCommand command = new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report"));
+        assertEquals(command, new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")));
+    }
+
+    @Test
+    public void equals_differentValues_returnsFalse() {
+        AddTaskCommand command = new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report"));
+        assertNotEquals(command, new AddTaskCommand(Index.fromOneBased(2), new Task("Prepare report")));
+        assertNotEquals(command, new AddTaskCommand(Index.fromOneBased(1), new Task("Submit report")));
+        assertNotEquals(command, new Object());
+    }
+
+    @Test
+    public void hashCode_sameValues_returnsSameHashCode() {
+        AddTaskCommand command = new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report"));
+        assertEquals(command.hashCode(),
+                new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")).hashCode());
     }
 }

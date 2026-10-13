@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
@@ -69,5 +70,26 @@ public class DeleteTaskCommandTest {
 
         assertEquals(1, model.getFilteredEmployeeList().size());
         assertTrue(model.getFilteredEmployeeList().get(0).getTasks().isEmpty());
+    }
+
+    @Test
+    public void equals_sameValues_returnsTrue() {
+        DeleteTaskCommand command = new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1));
+        assertEquals(command, new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)));
+    }
+
+    @Test
+    public void equals_differentValues_returnsFalse() {
+        DeleteTaskCommand command = new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1));
+        assertNotEquals(command, new DeleteTaskCommand(Index.fromOneBased(2), Index.fromOneBased(1)));
+        assertNotEquals(command, new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(2)));
+        assertNotEquals(command, new Object());
+    }
+
+    @Test
+    public void hashCode_sameValues_returnsSameHashCode() {
+        DeleteTaskCommand command = new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1));
+        assertEquals(command.hashCode(),
+                new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)).hashCode());
     }
 }
