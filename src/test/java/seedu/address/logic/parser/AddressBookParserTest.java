@@ -17,6 +17,7 @@ import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddLeaveCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
+import seedu.address.logic.commands.DeleteLeaveCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditEmployeeDescriptor;
 import seedu.address.logic.commands.ExitCommand;
@@ -30,6 +31,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EditEmployeeDescriptorBuilder;
 import seedu.address.testutil.EmployeeBuilder;
@@ -57,6 +59,11 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_listLeave() throws Exception {
         assertTrue(parser.parseCommand("leave list") instanceof ListLeaveCommand);
+    }
+
+    @Test
+    public void parseCommand_deleteLeave() throws Exception {
+        assertEquals(new DeleteLeaveCommand(new LeaveId(1)), parser.parseCommand("leave delete 1"));
     }
 
     @Test

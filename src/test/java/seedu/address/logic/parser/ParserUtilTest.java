@@ -19,6 +19,7 @@ import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -70,6 +71,19 @@ public class ParserUtilTest {
         assertEquals(new LeaveEntitlement(0), ParserUtil.parseLeaveEntitlement("0"));
         assertEquals(new LeaveEntitlement(14), ParserUtil.parseLeaveEntitlement(" 14 "));
         assertEquals(new LeaveEntitlement(365), ParserUtil.parseLeaveEntitlement("365"));
+    }
+
+    @Test
+    public void parseLeaveId_invalidValue_throwsParseException() {
+        for (String value : List.of("", " ", "0", "-1", "1.5", "abc", "2147483648")) {
+            assertThrows(ParseException.class, LeaveId.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseLeaveId(value));
+        }
+    }
+
+    @Test
+    public void parseLeaveId_validValue_returnsLeaveId() throws Exception {
+        assertEquals(new LeaveId(1), ParserUtil.parseLeaveId(" 1 "));
+        assertEquals(new LeaveId(Integer.MAX_VALUE), ParserUtil.parseLeaveId(Integer.toString(Integer.MAX_VALUE)));
     }
 
     @Test

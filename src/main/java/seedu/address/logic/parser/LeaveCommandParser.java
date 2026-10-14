@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.AddLeaveCommand;
 import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.DeleteLeaveCommand;
 import seedu.address.logic.commands.ListLeaveCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
@@ -17,7 +18,8 @@ public class LeaveCommandParser implements Parser<Command> {
 
     public static final String MESSAGE_USAGE = "Leave commands:\n"
             + AddLeaveCommand.MESSAGE_USAGE + "\n"
-            + ListLeaveCommand.MESSAGE_USAGE;
+            + ListLeaveCommand.MESSAGE_USAGE + "\n"
+            + DeleteLeaveCommand.MESSAGE_USAGE;
 
     private static final Pattern SUBCOMMAND_FORMAT = Pattern.compile("(?<subcommandWord>\\S+)(?<arguments>.*)");
 
@@ -35,6 +37,9 @@ public class LeaveCommandParser implements Parser<Command> {
         }
         if (ListLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord) && arguments.isBlank()) {
             return new ListLeaveCommand();
+        }
+        if (DeleteLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord)) {
+            return new DeleteLeaveCommandParser().parse(arguments);
         }
         throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
     }
