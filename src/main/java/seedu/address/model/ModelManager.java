@@ -13,6 +13,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 
 /**
@@ -99,6 +100,11 @@ public class ModelManager implements Model {
     @Override
     public Leave addLeave(EmployeeId employeeId, LeavePeriod leavePeriod) {
         return addressBook.addLeave(employeeId, leavePeriod);
+    }
+
+    @Override
+    public Leave deleteLeave(LeaveId leaveId) {
+        return addressBook.removeLeave(leaveId);
     }
 
     @Override

@@ -24,6 +24,7 @@ import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -138,6 +139,11 @@ public class AddCommandTest {
 
         @Override
         public Leave addLeave(EmployeeId employeeId, LeavePeriod leavePeriod) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Leave deleteLeave(LeaveId leaveId) {
             throw new AssertionError("This method should not be called.");
         }
 
