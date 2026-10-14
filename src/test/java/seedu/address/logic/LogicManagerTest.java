@@ -82,7 +82,7 @@ public class LogicManagerTest {
         logic.execute("find Alice");
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
-        CommandResult expected = new CommandResult("Employee summary\nTotal employees: 2\n"
+        CommandResult expected = new CommandResult("Employee summary\nScope: All employees\nTotal employees: 2\n"
                 + "Employees without tags: 1\n\nEmployees by tag:\n  engineering: 1\n\n"
                 + "Employees may have multiple tags; tag counts can overlap.");
 
@@ -91,6 +91,28 @@ public class LogicManagerTest {
             assertEquals(List.of(alice), logic.getFilteredEmployeeList());
             assertEquals(List.of(alice, bob), model.getAddressBook().getEmployeeList());
             assertEquals(savedData, Files.readString(dataFile));
+        }
+    }
+
+    @Test
+    public void execute_scopedSummaryAfterFindAndFilter_preservesDataAndDisplayedEmployees() throws Exception {
+        Employee alice = new EmployeeBuilder().withName("Alice").withTags("engineering").build();
+        Employee bob = new EmployeeBuilder().withName("Bob").withTags("remote").build();
+        model.addEmployee(alice);
+        model.addEmployee(bob);
+        for (String selection : new String[] {"find Bob", "filter t/remote"}) {
+            logic.execute(selection);
+            Path dataFile = temporaryFolder.resolve("addressBook.json");
+            String savedData = Files.readString(dataFile);
+            for (String alias : new String[] {"summary", "/summary"}) {
+                String expected = "Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
+                        + "Employees without tags: 0\n\nEmployees by tag:\n  remote: 1\n\n"
+                        + "Employees may have multiple tags; tag counts can overlap.";
+                assertEquals(expected, logic.execute(alias + " scope/filtered").getFeedbackToUser());
+                assertEquals(logic.execute(alias), logic.execute(alias + " scope/all"));
+                assertEquals(List.of(bob), model.getFilteredEmployeeList());
+                assertEquals(savedData, Files.readString(dataFile));
+            }
         }
     }
 

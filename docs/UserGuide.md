@@ -60,7 +60,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
-  Exception: `/summary` and `summary` reject extra parameters.
+  Exception: `/summary` and `summary` accept only an optional `scope/all` or `scope/filtered` parameter.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -102,18 +102,23 @@ Format: `list`
 
 Shows the total number of stored employees, employees without tags, and employee counts for each tag.
 
-Format: `/summary` (alias: `summary`)
+Format: `/summary [scope/all|scope/filtered]` (alias: `summary`)
 
-No arguments are accepted. For example, `/summary t/engineering` reports a usage error.
+Omit the parameter or use `scope/all` for all employees. Use `scope/filtered` for the currently displayed
+employees after `find` or `filter`. For example, run `filter t/engineering` then `summary scope/filtered`.
+Values are case-sensitive and must immediately follow `scope/`; surrounding whitespace is allowed.
+Empty, unknown, repeated parameters and extra text report a usage error, e.g. `/summary t/engineering`.
 
-The summary always includes **all stored employees**, even after a `find` command. It does not change
-employee records or the currently displayed search results. Run it again after adding, editing, or
-deleting employees to see updated counts.
+Without a parameter the summary still includes **all stored employees**, even after a `find` command.
+The output labels its scope explicitly. An empty filtered result produces zero counts, not a fallback
+to the full book. Neither scope changes employee records or the current filter. Run the command again
+after changes to see fresh counts; with no active filter, both scopes include the same employees.
 
 Example output:
 
 ```text
 Employee summary
+Scope: All employees
 Total employees: 5
 Employees without tags: 1
 
@@ -263,5 +268,5 @@ Action | Format, Examples
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
 **List** | `list`
-**Workforce summary** | `/summary` or `summary` (no arguments)
+**Workforce summary** | `/summary [scope/all\|scope/filtered]` or `summary [scope/all\|scope/filtered]`
 **Help** | `help`

@@ -157,14 +157,17 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Workforce summary
 
-The `/summary` command (alias `summary`) produces a read-only overview of all stored employees:
+The `/summary` command (alias `summary`) produces a read-only overview of employees in the selected scope:
 total employees, employees without tags, and employee counts by tag.
 
-`AddressBookParser` routes both spellings to `SummaryCommandParser`, which rejects nonblank arguments
-with `SummaryCommand.MESSAGE_USAGE`. `SummaryCommand.execute` reads
-`model.getAddressBook().getEmployeeList()` rather than the filtered list, then constructs an
-`EmployeeSummary` snapshot. The command formats the snapshot into a multiline `CommandResult` for
-the existing result display. No new window or model API is needed.
+`AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts no argument,
+`scope/all`, or `scope/filtered`, rejecting every other argument string with `SummaryCommand.MESSAGE_USAGE`.
+It stores only a `SummaryCommand.Scope` enum, not a list or snapshot. At execution time the command reads
+`model.getAddressBook().getEmployeeList()` for the default/all scope, or `model.getFilteredEmployeeList()`
+for filtered scope. That single selected collection is passed to `EmployeeSummary.fromEmployees`, so all
+statistics share the same scope. The command labels the multiline result `Scope: All employees` or
+`Scope: Filtered employees`. Empty filtered lists remain empty; no fallback or filter mutation occurs.
+No new window, storage fields, or model API is needed.
 
 `EmployeeSummary.fromEmployees` owns aggregation independently of presentation:
 
@@ -183,7 +186,9 @@ employment, or departments, and does not depend on employee IDs or the planned l
 Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, locale independence, and
 snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
 of the filter predicate, and fresh results after add/edit/delete. Parser tests cover both spellings,
-surrounding whitespace, and rejection of unexpected arguments.
+surrounding whitespace, and rejection of unexpected arguments. `SummaryScopeCommandTest` covers scope
+selection, empty matches, execution-time reads, and preservation of the filter predicate. Logic tests
+exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
 
 ### \[Proposed\] Undo/redo feature
 
