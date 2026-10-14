@@ -7,12 +7,14 @@ import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_EMPLOYEE;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.AddLeaveCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
@@ -27,6 +29,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EditEmployeeDescriptorBuilder;
 import seedu.address.testutil.EmployeeBuilder;
 import seedu.address.testutil.EmployeeUtil;
@@ -40,6 +43,14 @@ public class AddressBookParserTest {
         Employee employee = new EmployeeBuilder().build();
         AddCommand command = (AddCommand) parser.parseCommand(EmployeeUtil.getAddCommand(employee));
         assertEquals(new AddCommand(employee), command);
+    }
+
+    @Test
+    public void parseCommand_addLeave() throws Exception {
+        LeavePeriod period = new LeavePeriod(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 7));
+
+        assertEquals(new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, period),
+                parser.parseCommand("leave add 1 from/05-10-2026 to/07-10-2026"));
     }
 
     @Test

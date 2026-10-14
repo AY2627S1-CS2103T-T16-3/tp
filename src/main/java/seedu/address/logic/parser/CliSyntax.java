@@ -13,5 +13,7 @@ public class CliSyntax {
     public static final Prefix PREFIX_TAG = new Prefix("t/");
     public static final Prefix PREFIX_SALARY = new Prefix("s/");
     public static final Prefix PREFIX_LEAVE_ENTITLEMENT = new Prefix("le/");
+    public static final Prefix PREFIX_START_DATE = new Prefix("from/");
+    public static final Prefix PREFIX_END_DATE = new Prefix("to/");
 
 }

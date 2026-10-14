@@ -27,6 +27,7 @@ import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -72,6 +73,18 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_addLeave_recordsAndPersistsLeave() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/123 Main Street le/14");
+
+        logic.execute("leave add 1 from/05-10-2026 to/07-10-2026");
+
+        assertEquals(1, model.getAddressBook().getLeaveList().size());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        ReadOnlyAddressBook savedData = storage.readAddressBook().orElseThrow();
+        assertEquals(new AddressBook(model.getAddressBook()), new AddressBook(savedData));
     }
 
     @Test
