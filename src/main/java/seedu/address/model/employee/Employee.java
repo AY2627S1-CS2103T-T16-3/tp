@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.commons.util.ToStringBuilder;
@@ -20,6 +21,7 @@ import seedu.address.model.tag.Tag;
 public class Employee {
 
     // Identity fields
+    private final Optional<EmployeeId> employeeId;
     private final Name name;
     private final Phone phone;
     private final Email email;
@@ -30,12 +32,10 @@ public class Employee {
     private final Set<Tag> tags = new HashSet<>();
     private final List<Task> tasks = new ArrayList<>();
 
-    /**
-     * Every field must be present and not null.
-     */
-    public Employee(Name name, Phone phone, Email email, Address address, Salary salary,
-            Set<Tag> tags, List<Task> tasks) {
-        requireAllNonNull(name, phone, email, address, tags, salary, tasks);
+    private Employee(Optional<EmployeeId> employeeId, Name name, Phone phone, Email email, Address address,
+            Salary salary, Set<Tag> tags, List<Task> tasks) {
+        requireAllNonNull(employeeId, name, phone, email, address, tags, salary, tasks);
+        this.employeeId = employeeId;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -43,6 +43,30 @@ public class Employee {
         this.salary = salary;
         this.tags.addAll(tags);
         this.tasks.addAll(tasks);
+    }
+
+    /**
+     * Creates an employee whose internal identifier has not yet been assigned by the address book.
+     */
+    public static Employee createUnassigned(Name name, Phone phone, Email email, Address address, Salary salary,
+            Set<Tag> tags, List<Task> tasks) {
+        return new Employee(Optional.empty(), name, phone, email, address, salary, tags, tasks);
+    }
+
+    /**
+     * Returns a copy with the given internal identifier assigned.
+     * This operation is only valid for an employee that has not already been assigned an identifier.
+     */
+    public Employee withEmployeeId(EmployeeId employeeId) {
+        requireNonNull(employeeId);
+        if (this.employeeId.isPresent()) {
+            throw new IllegalStateException("Employee ID has already been assigned.");
+        }
+        return new Employee(Optional.of(employeeId), name, phone, email, address, salary, tags, tasks);
+    }
+
+    public Optional<EmployeeId> getEmployeeId() {
+        return employeeId;
     }
 
     public Name getName() {
@@ -59,6 +83,14 @@ public class Employee {
 
     public Address getAddress() {
         return address;
+    }
+
+    /**
+     * Returns a copy with updated employee details while preserving internal identity, salary, and tasks.
+     */
+    public Employee withDetails(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, tags);
+        return new Employee(employeeId, name, phone, email, address, salary, tags, tasks);
     }
 
     /**
@@ -82,7 +114,7 @@ public class Employee {
         }
         List<Task> updatedTasks = new ArrayList<>(tasks);
         updatedTasks.add(task);
-        return new Employee(name, phone, email, address, salary, tags, updatedTasks);
+        return new Employee(employeeId, name, phone, email, address, salary, tags, updatedTasks);
     }
 
     /** Deletes a task using a zero-based index. */
@@ -92,12 +124,18 @@ public class Employee {
         }
         List<Task> updatedTasks = new ArrayList<>(tasks);
         updatedTasks.remove(index);
-        return new Employee(name, phone, email, address, salary, tags, updatedTasks);
+        return new Employee(employeeId, name, phone, email, address, salary, tags, updatedTasks);
     }
 
     /** Returns the employee's salary. */
     public Salary getSalary() {
         return salary;
+    }
+
+    /** Returns a copy with the updated salary while preserving internal identity and all other fields. */
+    public Employee withSalary(Salary salary) {
+        requireNonNull(salary);
+        return new Employee(employeeId, name, phone, email, address, salary, tags, tasks);
     }
 
     /**
@@ -128,7 +166,8 @@ public class Employee {
             return false;
         }
 
-        return name.equals(otherEmployee.name)
+        return employeeId.equals(otherEmployee.employeeId)
+                && name.equals(otherEmployee.name)
                 && phone.equals(otherEmployee.phone)
                 && email.equals(otherEmployee.email)
                 && address.equals(otherEmployee.address)
@@ -140,7 +179,7 @@ public class Employee {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags, tasks, salary);
+        return Objects.hash(employeeId, name, phone, email, address, tags, tasks, salary);
     }
 
     @Override

@@ -3,11 +3,13 @@ package seedu.address.testutil;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -33,6 +35,7 @@ public class EmployeeBuilder {
     private Set<Tag> tags;
     private Salary salary;
     private List<Task> tasks;
+    private Optional<EmployeeId> employeeId;
 
     /**
      * Creates a {@code EmployeeBuilder} with the default details.
@@ -45,6 +48,7 @@ public class EmployeeBuilder {
         tags = new HashSet<>();
         salary = new Salary(DEFAULT_SALARY);
         tasks = new ArrayList<>();
+        employeeId = Optional.empty();
     }
 
     /**
@@ -58,6 +62,7 @@ public class EmployeeBuilder {
         tags = new HashSet<>(employeeToCopy.getTags());
         salary = employeeToCopy.getSalary();
         tasks = new ArrayList<>(employeeToCopy.getTasks());
+        employeeId = employeeToCopy.getEmployeeId();
     }
 
     /**
@@ -114,8 +119,16 @@ public class EmployeeBuilder {
         return this;
     }
 
+    /** Assigns an internal employee ID to the employee being built. */
+    public EmployeeBuilder withEmployeeId(int employeeId) {
+        this.employeeId = Optional.of(new EmployeeId(employeeId));
+        return this;
+    }
+
+    /** Builds the employee with the configured fields and optional internal ID. */
     public Employee build() {
-        return new Employee(name, phone, email, address, salary, tags, tasks);
+        Employee employee = Employee.createUnassigned(name, phone, email, address, salary, tags, tasks);
+        return employeeId.map(employee::withEmployeeId).orElse(employee);
     }
 
 }

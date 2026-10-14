@@ -131,7 +131,7 @@ class JsonAdaptedEmployee {
             throw new IllegalValueException(Salary.MESSAGE_CONSTRAINTS);
         }
         final Salary modelSalary = new Salary(salaryValue);
-        return new Employee(modelName, modelPhone, modelEmail, modelAddress,
+        return Employee.createUnassigned(modelName, modelPhone, modelEmail, modelAddress,
                 modelSalary, modelTags, modelTasks);
     }
 

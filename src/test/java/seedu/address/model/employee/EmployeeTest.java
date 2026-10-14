@@ -27,6 +27,55 @@ public class EmployeeTest {
     }
 
     @Test
+    public void createUnassigned_hasNoEmployeeId() {
+        Employee employee = new EmployeeBuilder().build();
+
+        assertTrue(employee.getEmployeeId().isEmpty());
+    }
+
+    @Test
+    public void withEmployeeId_unassignedEmployee_assignsEmployeeId() {
+        Employee employee = new EmployeeBuilder().build();
+
+        Employee assignedEmployee = employee.withEmployeeId(new EmployeeId(1));
+
+        assertEquals(new EmployeeId(1), assignedEmployee.getEmployeeId().orElseThrow());
+        assertTrue(employee.getEmployeeId().isEmpty());
+    }
+
+    @Test
+    public void withEmployeeId_null_throwsNullPointerException() {
+        Employee employee = new EmployeeBuilder().build();
+
+        assertThrows(NullPointerException.class, () -> employee.withEmployeeId(null));
+    }
+
+    @Test
+    public void withEmployeeId_assignedEmployee_throwsIllegalStateException() {
+        Employee employee = new EmployeeBuilder().withEmployeeId(1).build();
+
+        assertThrows(IllegalStateException.class, () -> employee.withEmployeeId(new EmployeeId(2)));
+    }
+
+    @Test
+    public void updateMethods_assignedEmployee_preserveEmployeeId() {
+        Employee employee = new EmployeeBuilder().withEmployeeId(1)
+                .withTasks(new Task("Prepare report"))
+                .build();
+
+        Employee withDetails = employee.withDetails(new Name(VALID_NAME_BOB), new Phone(VALID_PHONE_BOB),
+                new Email(VALID_EMAIL_BOB), new Address(VALID_ADDRESS_BOB), employee.getTags());
+        Employee withSalary = employee.withSalary(new Salary("5000"));
+        Employee withAddedTask = employee.addTask(new Task("Submit report"));
+        Employee withDeletedTask = employee.deleteTask(0);
+
+        assertEquals(employee.getEmployeeId(), withDetails.getEmployeeId());
+        assertEquals(employee.getEmployeeId(), withSalary.getEmployeeId());
+        assertEquals(employee.getEmployeeId(), withAddedTask.getEmployeeId());
+        assertEquals(employee.getEmployeeId(), withDeletedTask.getEmployeeId());
+    }
+
+    @Test
     public void addTask_duplicateTask_throwsIllegalArgumentException() {
         Employee employeeWithTask = new EmployeeBuilder().build()
                 .addTask(new Task("Prepare report"));
@@ -101,6 +150,10 @@ public class EmployeeTest {
         // different employee -> returns false
         assertFalse(ALICE.equals(BOB));
 
+        // different employee ID -> returns false
+        Employee employeeWithDifferentId = new EmployeeBuilder(ALICE).withEmployeeId(1).build();
+        assertFalse(ALICE.equals(employeeWithDifferentId));
+
         // different name -> returns false
         Employee editedAlice = new EmployeeBuilder(ALICE).withName(VALID_NAME_BOB).build();
         assertFalse(ALICE.equals(editedAlice));
@@ -143,6 +196,14 @@ public class EmployeeTest {
         Employee original = new EmployeeBuilder(ALICE).withSalary("5000").build();
         Employee copy = new EmployeeBuilder(original).build();
         assertEquals(original.getSalary(), copy.getSalary());
+    }
+
+    @Test
+    public void copy_assignedEmployee_preservesEmployeeId() {
+        Employee original = new EmployeeBuilder(ALICE).withEmployeeId(1).build();
+        Employee copy = new EmployeeBuilder(original).build();
+
+        assertEquals(original.getEmployeeId(), copy.getEmployeeId());
     }
 
     @Test

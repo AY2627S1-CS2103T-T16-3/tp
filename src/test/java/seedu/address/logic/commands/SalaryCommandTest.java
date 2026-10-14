@@ -30,7 +30,7 @@ public class SalaryCommandTest {
     @Test
     public void execute_validIndex_updatesSalaryAndPreservesDetails() throws Exception {
         Model model = new ModelManager();
-        Employee original = new Employee(new Name("Alice"), new Phone("91234567"),
+        Employee original = Employee.createUnassigned(new Name("Alice"), new Phone("91234567"),
                 new Email("alice@example.com"), new Address("123 Main Street"), new Salary("1000"),
                 Set.of(new Tag("team")), List.of());
         model.addEmployee(original);
