@@ -599,6 +599,55 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+
+**Use case: Change an employee's salary**
+
+**MSS**
+
+1. HR manager requests to change an employee's salary, and provides the employee's details.
+2. System changes the employee's salary.
+3. System displays the employee with the new salary.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide one or more required fields.
+
+    * 1a1. System informs the HR manager to provide all required fields.
+    * 1a2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 1b. The HR manager provides an invalid salary value.
+
+    * 1b1. System informs the HR manager that the salary value is invalid.
+    * 1b2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 1c. The HR manager provides more fields than required.
+
+    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 1d. The HR manager provides an invalid index.
+
+    * 1d1. System informs the HR manager that the index is invalid.
+    * 1d2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 2a. An error occurs while saving new salary of employee into storage.
+
+    * 2a1. System informs the HR manager that the salary could not be changed.
+    * 2a2. System does not change the employee's salary.
+
+    Use case ends.
+
+
 {More to be added}
 
 
