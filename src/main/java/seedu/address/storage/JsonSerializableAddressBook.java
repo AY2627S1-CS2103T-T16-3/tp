@@ -12,7 +12,6 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.employee.Employee;
-import seedu.address.model.employee.exceptions.DuplicateEmployeeException;
 
 /**
  * An Immutable AddressBook that is serializable to JSON format.
@@ -67,8 +66,6 @@ class JsonSerializableAddressBook {
         long storedNextEmployeeId = nextEmployeeId == null ? 1 : nextEmployeeId;
         try {
             return new AddressBook(modelEmployees, storedNextEmployeeId);
-        } catch (DuplicateEmployeeException e) {
-            throw new IllegalValueException(MESSAGE_DUPLICATE_EMPLOYEE, e);
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalValueException(MESSAGE_INVALID_EMPLOYEE_ID, e);
         }

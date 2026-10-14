@@ -137,6 +137,7 @@ public class EmployeeTest {
         // same values -> returns true
         Employee aliceCopy = new EmployeeBuilder(ALICE).build();
         assertTrue(ALICE.equals(aliceCopy));
+        assertEquals(ALICE.hashCode(), aliceCopy.hashCode());
 
         // same object -> returns true
         assertTrue(ALICE.equals(ALICE));

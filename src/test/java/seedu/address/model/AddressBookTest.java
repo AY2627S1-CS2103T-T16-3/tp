@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
@@ -30,6 +31,31 @@ public class AddressBookTest {
     @Test
     public void constructor() {
         assertEquals(List.of(), addressBook.getEmployeeList());
+    }
+
+    @Test
+    public void constructor_invalidNextEmployeeId_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new AddressBook(List.of(), 0));
+        assertThrows(IllegalArgumentException.class, () ->
+                new AddressBook(List.of(), (long) Integer.MAX_VALUE + 2));
+    }
+
+    @Test
+    public void constructor_unassignedEmployeeAfterMaximumId_throwsIllegalStateException() {
+        Employee unassignedEmployee = new EmployeeBuilder().build();
+
+        assertThrows(IllegalStateException.class, () ->
+                new AddressBook(List.of(unassignedEmployee), (long) Integer.MAX_VALUE + 1));
+    }
+
+    @Test
+    public void setEmployees_unassignedEmployee_assignsNextId() {
+        addressBook.addEmployee(ALICE);
+        Employee unassignedBob = new EmployeeBuilder(BOB).withoutEmployeeId().build();
+
+        addressBook.setEmployees(List.of(unassignedBob));
+
+        assertEquals(new EmployeeId(2), addressBook.getEmployeeList().get(0).getEmployeeId().orElseThrow());
     }
 
     @Test
@@ -144,6 +170,14 @@ public class AddressBookTest {
     }
 
     @Test
+    public void addEmployee_noAvailableId_throwsIllegalStateException() {
+        AddressBook exhaustedAddressBook = new AddressBook(List.of(), (long) Integer.MAX_VALUE + 1);
+
+        assertThrows(IllegalStateException.class, () ->
+                exhaustedAddressBook.addEmployee(new EmployeeBuilder().build()));
+    }
+
+    @Test
     public void setEmployee_unassignedReplacement_preservesTargetId() {
         addressBook.addEmployee(ALICE);
         Employee target = addressBook.getEmployeeList().get(0);
@@ -184,6 +218,19 @@ public class AddressBookTest {
     public void toStringMethod() {
         String expected = AddressBook.class.getCanonicalName() + "{employees=" + addressBook.getEmployeeList() + "}";
         assertEquals(expected, addressBook.toString());
+    }
+
+    @Test
+    public void equalsAndHashCode() {
+        AddressBook addressBookCopy = new AddressBook(addressBook);
+        AddressBook addressBookWithDifferentNextId = new AddressBook(List.of(), 2);
+
+        assertTrue(addressBook.equals(addressBook));
+        assertEquals(addressBook, addressBookCopy);
+        assertEquals(addressBook.hashCode(), addressBookCopy.hashCode());
+        assertNotEquals(addressBook, addressBookWithDifferentNextId);
+        assertNotEquals(addressBook, null);
+        assertNotEquals(addressBook, "address book");
     }
 
     /**
