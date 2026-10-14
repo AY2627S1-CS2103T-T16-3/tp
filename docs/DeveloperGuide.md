@@ -185,6 +185,20 @@ snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empt
 of the filter predicate, and fresh results after add/edit/delete. Parser tests cover both spellings,
 surrounding whitespace, and rejection of unexpected arguments.
 
+#### Salary statistics
+
+`EmployeeSummary` also captures salary statistics from the same employee collection. Its private
+`IntSummaryStatistics` is constructed locally and never exposed or modified after snapshot creation.
+The total is a `long`; minimum and maximum are `OptionalInt` values, empty for an empty collection.
+The average is an optional `BigDecimal`, calculated directly from the integer total and employee count
+with scale 2 and `RoundingMode.HALF_UP`, without converting to floating point. Zero salaries are included.
+
+`SummaryCommand` formats a separate salary section after the headcount/tag section, including when
+there are no tags. It displays `$0.00` for an empty total and `N/A` for absent average/minimum/maximum.
+No currency period, benefits, or payroll assumptions are added. Tests cover empty/single inputs,
+zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
+and recomputation after a salary command.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation

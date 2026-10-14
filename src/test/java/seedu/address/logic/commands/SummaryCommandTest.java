@@ -16,8 +16,11 @@ import seedu.address.model.employee.Employee;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class SummaryCommandTest {
+    private static final String ZERO_SALARIES = "\n\nSalary overview\nTotal recorded salary: $0.00\n"
+            + "Average salary: $0.00\nLowest salary: $0.00\nHighest salary: $0.00";
     private static final String EMPTY_SUMMARY = "Employee summary\nTotal employees: 0\n"
-            + "Employees without tags: 0\n\nNo tags to summarize.";
+            + "Employees without tags: 0\n\nNo tags to summarize.\n\nSalary overview\n"
+            + "Total recorded salary: $0.00\nAverage salary: N/A\nLowest salary: N/A\nHighest salary: N/A";
 
     @Test
     public void execute_nullModel_throwsNullPointerException() {
@@ -34,7 +37,8 @@ public class SummaryCommandTest {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice"));
         assertEquals(new CommandResult("Employee summary\nTotal employees: 1\n"
-                + "Employees without tags: 1\n\nNo tags to summarize."), new SummaryCommand().execute(model));
+                + "Employees without tags: 1\n\nNo tags to summarize." + ZERO_SALARIES),
+                new SummaryCommand().execute(model));
     }
 
     @Test
@@ -46,7 +50,7 @@ public class SummaryCommandTest {
         Model expectedModel = new ModelManager(model.getAddressBook(), model.getUserPrefs());
         String expected = "Employee summary\nTotal employees: 3\nEmployees without tags: 1\n\n"
                 + "Employees by tag:\n  engineering: 2\n  intern: 1\n  remote: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap.";
+                + "Employees may have multiple tags; tag counts can overlap." + ZERO_SALARIES;
         assertEquals(new CommandResult(expected), new SummaryCommand().execute(model));
         assertEquals(expectedModel, model);
     }
@@ -90,14 +94,14 @@ public class SummaryCommandTest {
         SummaryCommand command = new SummaryCommand();
         new AddCommand(employee("Alice")).execute(model);
         assertEquals(new CommandResult("Employee summary\nTotal employees: 1\n"
-                + "Employees without tags: 1\n\nNo tags to summarize."), command.execute(model));
+                + "Employees without tags: 1\n\nNo tags to summarize." + ZERO_SALARIES), command.execute(model));
 
         EditCommand.EditEmployeeDescriptor edit = new EditCommand.EditEmployeeDescriptor();
         edit.setTags(employee("Alice", "remote").getTags());
         new EditCommand(Index.fromOneBased(1), edit).execute(model);
         assertEquals(new CommandResult("Employee summary\nTotal employees: 1\nEmployees without tags: 0\n\n"
                 + "Employees by tag:\n  remote: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap."), command.execute(model));
+                + "Employees may have multiple tags; tag counts can overlap." + ZERO_SALARIES), command.execute(model));
 
         new DeleteCommand(Index.fromOneBased(1)).execute(model);
         assertEquals(new CommandResult(EMPTY_SUMMARY), command.execute(model));
