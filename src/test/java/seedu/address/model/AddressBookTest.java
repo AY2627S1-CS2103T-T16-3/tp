@@ -82,6 +82,19 @@ public class AddressBookTest {
     }
 
     @Test
+    public void setEmployees_employeeRemoved_removesOnlyOrphanedLeaves() {
+        addressBook.addEmployee(ALICE);
+        addressBook.addEmployee(BENSON);
+        Leave aliceLeave = addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);
+        Leave bobLeave = addressBook.addLeave(new EmployeeId(2), MONDAY_TO_WEDNESDAY);
+
+        addressBook.setEmployees(List.of(BENSON));
+
+        assertEquals(List.of(bobLeave), addressBook.getLeaveList());
+        assertFalse(addressBook.getLeaveList().contains(aliceLeave));
+    }
+
+    @Test
     public void resetData_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> addressBook.resetData(null));
     }

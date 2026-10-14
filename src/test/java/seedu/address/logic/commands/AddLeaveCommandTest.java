@@ -1,12 +1,15 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_EMPLOYEE;
+import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_EMPLOYEE;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -75,6 +78,29 @@ public class AddLeaveCommandTest {
 
         assertCommandFailure(new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY), model,
                 expectedMessage);
+    }
+
+    @Test
+    public void execute_leaveIdExhausted_throwsCommandException() {
+        AddressBook addressBook = new AddressBook(List.of(ALICE), 2, List.of(),
+                (long) Integer.MAX_VALUE + 1);
+        Model model = new ModelManager(addressBook, new UserPrefs());
+
+        assertCommandFailure(new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY), model,
+                AddLeaveCommand.MESSAGE_LEAVE_ID_EXHAUSTED);
+    }
+
+    @Test
+    public void equals() {
+        AddLeaveCommand command = new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY);
+        LeavePeriod differentPeriod = new LeavePeriod(
+                LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 9));
+
+        assertEquals(command, command);
+        assertEquals(command, new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY));
+        assertNotEquals(command, new AddLeaveCommand(INDEX_SECOND_EMPLOYEE, MONDAY_TO_WEDNESDAY));
+        assertNotEquals(command, new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, differentPeriod));
+        assertNotEquals(command, null);
     }
 
     @Test
