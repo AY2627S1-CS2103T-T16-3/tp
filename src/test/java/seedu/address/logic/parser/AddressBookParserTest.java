@@ -23,6 +23,7 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.ListLeaveCommand;
 import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -51,6 +52,11 @@ public class AddressBookParserTest {
 
         assertEquals(new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, period),
                 parser.parseCommand("leave add 1 from/05-10-2026 to/07-10-2026"));
+    }
+
+    @Test
+    public void parseCommand_listLeave() throws Exception {
+        assertTrue(parser.parseCommand("leave list") instanceof ListLeaveCommand);
     }
 
     @Test

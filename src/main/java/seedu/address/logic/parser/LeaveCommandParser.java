@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.AddLeaveCommand;
 import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.ListLeaveCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
@@ -14,13 +15,17 @@ import seedu.address.logic.parser.exceptions.ParseException;
  */
 public class LeaveCommandParser implements Parser<Command> {
 
+    public static final String MESSAGE_USAGE = "Leave commands:\n"
+            + AddLeaveCommand.MESSAGE_USAGE + "\n"
+            + ListLeaveCommand.MESSAGE_USAGE;
+
     private static final Pattern SUBCOMMAND_FORMAT = Pattern.compile("(?<subcommandWord>\\S+)(?<arguments>.*)");
 
     @Override
     public Command parse(String args) throws ParseException {
         Matcher matcher = SUBCOMMAND_FORMAT.matcher(args.trim());
         if (!matcher.matches()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLeaveCommand.MESSAGE_USAGE));
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
         }
 
         String subcommandWord = matcher.group("subcommandWord");
@@ -28,6 +33,9 @@ public class LeaveCommandParser implements Parser<Command> {
         if (AddLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord)) {
             return new AddLeaveCommandParser().parse(arguments);
         }
-        throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLeaveCommand.MESSAGE_USAGE));
+        if (ListLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord) && arguments.isBlank()) {
+            return new ListLeaveCommand();
+        }
+        throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
     }
 }
