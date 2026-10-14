@@ -121,9 +121,10 @@ public class LogicManagerTest {
                 .withSalary("1000")
                 .withTags("Engineering", "FullTime")
                 .build()
-                .addTask(new Task("Prepare report"))
-                .addTask(new Task("Review budget"));
+                .addTask(new Task("Prepare  REPORT"))
+                .addTask(new Task("Review   Budget"));
         model.addEmployee(charlie);
+        List<String> originalTaskDetails = charlie.getTasks().stream().map(Task::getDetails).toList();
 
         // Expected employee: only the salary changes
         Employee expected = new EmployeeBuilder(charlie)
@@ -158,6 +159,10 @@ public class LogicManagerTest {
 
         // Asserts that other fields of employee are preserved after salary command
         assertEquals(expected, model.getAddressBook().getEmployeeList().get(0));
+        assertEquals(originalTaskDetails, model.getAddressBook().getEmployeeList().get(0)
+                .getTasks().stream().map(Task::getDetails).toList());
+        assertEquals(originalTaskDetails, saved.getEmployeeList().get(0)
+                .getTasks().stream().map(Task::getDetails).toList());
 
         // Asserts that the saved address book matches the model
         assertEquals(model.getAddressBook(), saved);
