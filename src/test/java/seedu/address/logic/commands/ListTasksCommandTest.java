@@ -29,14 +29,16 @@ public class ListTasksCommandTest {
 
         String expected = "Tasks for " + employee.getName().fullName + ":\n"
                 + "1. Prepare report\n2. Submit report";
-        assertCommandSuccess(new ListTasksCommand(Index.fromOneBased(1)), model, expected, model);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        assertCommandSuccess(new ListTasksCommand(Index.fromOneBased(1)), model, expected, expectedModel);
     }
 
     @Test
     public void execute_employeeWithoutTasks_returnsEmptyMessage() {
         Employee employee = model.getFilteredEmployeeList().get(0);
         String expected = String.format(ListTasksCommand.MESSAGE_NO_TASKS, employee.getName().fullName);
-        assertCommandSuccess(new ListTasksCommand(Index.fromOneBased(1)), model, expected, model);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        assertCommandSuccess(new ListTasksCommand(Index.fromOneBased(1)), model, expected, expectedModel);
     }
 
     @Test

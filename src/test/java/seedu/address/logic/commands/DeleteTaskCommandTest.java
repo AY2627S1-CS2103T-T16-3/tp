@@ -17,6 +17,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
+import seedu.address.testutil.TypicalEmployees;
 
 public class DeleteTaskCommandTest {
 
@@ -61,7 +62,8 @@ public class DeleteTaskCommandTest {
 
     @Test
     public void execute_filteredList_preservesFilter() throws CommandException {
-        Employee employee = model.getFilteredEmployeeList().get(0);
+        Employee employee = TypicalEmployees.BENSON;
+        Employee otherEmployee = TypicalEmployees.ALICE;
         Employee employeeWithTask = employee.addTask(new Task("Prepare report"));
         model.setEmployee(employee, employeeWithTask);
         model.updateFilteredEmployeeList(candidate -> candidate.getName().equals(employeeWithTask.getName()));
@@ -70,6 +72,7 @@ public class DeleteTaskCommandTest {
 
         assertEquals(1, model.getFilteredEmployeeList().size());
         assertTrue(model.getFilteredEmployeeList().get(0).getTasks().isEmpty());
+        assertTrue(model.getAddressBook().getEmployeeList().contains(otherEmployee));
     }
 
     @Test

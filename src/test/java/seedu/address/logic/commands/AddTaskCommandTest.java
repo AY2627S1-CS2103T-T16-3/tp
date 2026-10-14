@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
@@ -16,6 +17,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
+import seedu.address.testutil.TypicalEmployees;
 
 public class AddTaskCommandTest {
 
@@ -51,13 +53,15 @@ public class AddTaskCommandTest {
 
     @Test
     public void execute_filteredList_preservesFilter() throws CommandException {
-        Employee employee = model.getFilteredEmployeeList().get(0);
+        Employee employee = TypicalEmployees.BENSON;
+        Employee otherEmployee = TypicalEmployees.ALICE;
         model.updateFilteredEmployeeList(candidate -> candidate.getName().equals(employee.getName()));
 
         new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")).execute(model);
 
         assertEquals(1, model.getFilteredEmployeeList().size());
         assertEquals("Prepare report", model.getFilteredEmployeeList().get(0).getTasks().get(0).getDetails());
+        assertTrue(model.getAddressBook().getEmployeeList().contains(otherEmployee));
     }
 
     @Test
