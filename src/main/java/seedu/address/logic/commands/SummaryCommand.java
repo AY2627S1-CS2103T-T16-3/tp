@@ -12,14 +12,21 @@ public class SummaryCommand extends Command {
     public static final String COMMAND_WORD = "summary";
     public static final String COMMAND_ALIAS = "/summary";
     public static final String MESSAGE_USAGE = COMMAND_ALIAS
-            + ": Shows total employees, employees without tags, and employee counts by tag.\n"
+            + ": Shows employee counts, tags, and assigned task counts.\n"
             + "Usage: /summary (or summary). No arguments are accepted.";
 
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
         EmployeeSummary summary = EmployeeSummary.fromEmployees(model.getAddressBook().getEmployeeList());
-        return new CommandResult(formatSummary(summary));
+        return new CommandResult(formatSummary(summary) + formatTaskSummary(summary));
+    }
+
+    private String formatTaskSummary(EmployeeSummary summary) {
+        return "\n\nTask overview\nTotal assigned tasks: " + summary.getTotalTasks()
+                + "\nEmployees with tasks: " + summary.getEmployeesWithTasks()
+                + "\nEmployees without tasks: " + summary.getEmployeesWithoutTasks()
+                + "\nHighest tasks per employee: " + summary.getHighestTaskCount();
     }
 
     private String formatSummary(EmployeeSummary summary) {

@@ -185,6 +185,19 @@ snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empt
 of the filter predicate, and fresh results after add/edit/delete. Parser tests cover both spellings,
 surrounding whitespace, and rejection of unexpected arguments.
 
+#### Task counts
+
+`EmployeeSummary` captures the sum of `Employee.getTasks().size()` as a `long`, the number of employees
+with nonempty task lists, and the maximum per-employee task count in the same pass as tag aggregation.
+Employees without tasks are derived from headcount minus employees with tasks. Empty input yields
+zero for all task statistics; identical descriptions on different employees count separately.
+
+`SummaryCommand` appends the task section after formatting the headcount/tag section, even if there are
+no tags. The snapshot contains counts only and remains unchanged when source records are replaced.
+Tests cover mixed and empty lists, tied maxima, repeated descriptions across employees, filtered views,
+unchanged records, and fresh snapshots after task and employee changes. No completion or due-date
+semantics, storage fields, or task commands are introduced by this feature.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation

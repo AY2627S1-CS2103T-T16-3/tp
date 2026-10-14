@@ -100,7 +100,7 @@ Format: `list`
 
 ### Viewing the workforce summary: `/summary`
 
-Shows the total number of stored employees, employees without tags, and employee counts for each tag.
+Shows the total number of stored employees, employee counts by tag, and task-assignment counts.
 
 Format: `/summary` (alias: `summary`)
 
@@ -123,6 +123,12 @@ Employees by tag:
   remote: 2
 
 Employees may have multiple tags; tag counts can overlap.
+
+Task overview
+Total assigned tasks: 6
+Employees with tasks: 3
+Employees without tasks: 2
+Highest tasks per employee: 3
 ```
 
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
@@ -134,6 +140,12 @@ Employees may have multiple tags; tag counts can overlap.
   not interpreted as structured departments. Leave balances, salary totals, and reminders are not included.
 
 The result appears in the existing command-result area; scroll within it to read a long summary.
+
+Task counts include all employees even after filtering. The same description assigned to two employees
+counts as two assignments. An empty book shows zero for every task statistic; if employees have no
+tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
+Run the summary again after task changes or employee deletion to refresh it. These counts do not
+indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
 
 ### Editing an employee: `edit`
 
