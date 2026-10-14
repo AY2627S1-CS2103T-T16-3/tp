@@ -309,6 +309,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book                                 | edit employees contact         |   make any relevant updates to employee contact fields              |
 | `* * *`  | HR Officer                                       | add a new employee profile               |     add newly hired employee profiles with their respective details                                                                  |
 | `* * *`  | HR Officer                                       | manage Employee’s leaves and off               |     can keep track of manpower in the company on a daily basis                                                                  |
+| `* * *`  | HR Officer                                       | filter through a list of employees              |      can find easily find those that match specific criteria(s)                                                                |
 | `* * *`  | HR Officer                                       | delete an employee profile              | remove employees no longer with the company                                   |
 | `* * *`  | HR Officer                                      |   shift employees between different departments | keep check of changing roles within the startup |
 | `* * *`  | HR Officer                                      |   view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration |
@@ -460,6 +461,52 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     * 1g1. System informs the HR manager that no employees match the specified value and attribute.
     * 1g2. System displays an empty list with no employees.
+
+      Use case ends.
+
+**Use case: Filter employees**
+
+**MSS**
+
+1. HR manager requests to filter employees and provides one or more criteria, such as name, phone, email, address, tags, tasks, or salary.
+2. System identifies employees who match all supplied criteria.
+3. System displays the matching employees and the number of matches.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide any criteria or provides an empty criterion.
+
+    * 1a1. System informs the HR manager that at least one criterion is required and supplied criteria must not be empty.
+    * 1a2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1b. The HR manager provides an unsupported field prefix.
+
+    * 1b1. System informs the HR manager of the valid command format.
+    * 1b2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1c. The HR manager repeats a field that may appear only once, such as name or salary.
+
+    * 1c1. System informs the HR manager that the field cannot be repeated.
+    * 1c2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1d. The HR manager provides an invalid salary value.
+
+    * 1d1. System informs the HR manager that salary must be a whole number from 0 to 50000.
+    * 1d2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 2a. No employees match all supplied criteria.
+
+    * 2a1. System displays an empty employee list and reports zero matches.
 
       Use case ends.
 

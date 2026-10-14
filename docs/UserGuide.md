@@ -177,13 +177,15 @@ Examples:
 
 Lists employees who match all supplied criteria.
 
-Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`
 
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
+* Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
+* Salary matches an exact amount from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
-* All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag.
-* Each of `n/`, `p/`, `e/`, and `a/` may appear only once. Unsupported prefixes are rejected.
+* All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
+* Each of `n/`, `p/`, `e/`, `a/`, and `s/` may appear only once. Unsupported prefixes are rejected.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -192,6 +194,8 @@ Examples:
 * `filter e/@example.com` lists employees with an email address containing `@example.com`.
 * `filter n/Alice a/Jurong` lists employees whose name contains `Alice` and whose address contains `Jurong`.
 * `filter t/friends t/owesMoney` lists employees with both tags.
+* `filter task/report task/review` lists employees with tasks matching both descriptions.
+* `filter task/report s/3000` lists employees with a matching task and salary 3000.
 
 ### Deleting an employee: `delete`
 
@@ -261,7 +265,7 @@ Action | Format, Examples
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
-**Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
+**Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br> e.g., `filter p/91235321`
 **List** | `list`
 **Workforce summary** | `/summary` or `summary` (no arguments)
 **Help** | `help`
