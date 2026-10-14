@@ -179,6 +179,10 @@ public class EmployeeTest {
         editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
         assertFalse(ALICE.equals(editedAlice));
 
+        // different leave entitlement -> returns false
+        editedAlice = new EmployeeBuilder(ALICE).withLeaveEntitlement(21).build();
+        assertFalse(ALICE.equals(editedAlice));
+
         // different tasks -> returns false
         editedAlice = ALICE.addTask(new Task("Prepare report"));
         assertFalse(ALICE.equals(editedAlice));
@@ -215,6 +219,7 @@ public class EmployeeTest {
                 + ", email=" + ALICE.getEmail()
                 + ", address=" + ALICE.getAddress()
                 + ", salary=" + ALICE.getSalary()
+                + ", leaveEntitlement=" + ALICE.getLeaveEntitlement()
                 + ", tags=" + ALICE.getTags()
                 + ", tasks=" + ALICE.getTasks() + "}";
         assertEquals(expected, ALICE.toString());
