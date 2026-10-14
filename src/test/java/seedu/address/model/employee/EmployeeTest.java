@@ -151,7 +151,7 @@ public class EmployeeTest {
         assertFalse(ALICE.equals(BOB));
 
         // different employee ID -> returns false
-        Employee employeeWithDifferentId = new EmployeeBuilder(ALICE).withEmployeeId(1).build();
+        Employee employeeWithDifferentId = new EmployeeBuilder(ALICE).withEmployeeId(99).build();
         assertFalse(ALICE.equals(employeeWithDifferentId));
 
         // different name -> returns false

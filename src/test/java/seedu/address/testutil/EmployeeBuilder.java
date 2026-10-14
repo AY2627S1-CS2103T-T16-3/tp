@@ -125,6 +125,12 @@ public class EmployeeBuilder {
         return this;
     }
 
+    /** Leaves the employee without an assigned internal ID. */
+    public EmployeeBuilder withoutEmployeeId() {
+        employeeId = Optional.empty();
+        return this;
+    }
+
     /** Builds the employee with the configured fields and optional internal ID. */
     public Employee build() {
         Employee employee = Employee.createUnassigned(name, phone, email, address, salary, tags, tasks);

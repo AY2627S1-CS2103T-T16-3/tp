@@ -12,6 +12,7 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.exceptions.DuplicateEmployeeException;
 
 /**
  * An Immutable AddressBook that is serializable to JSON format.
@@ -20,17 +21,22 @@ import seedu.address.model.employee.Employee;
 class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_EMPLOYEE = "Employees list contains duplicate employee(s).";
+    public static final String MESSAGE_INVALID_EMPLOYEE_ID = "Address book contains invalid employee ID data.";
 
     // Retain the existing JSON key so saved address books remain compatible.
     @JsonProperty("persons")
     private final List<JsonAdaptedEmployee> employees = new ArrayList<>();
+    @JsonProperty("nextEmployeeId")
+    private final Long nextEmployeeId;
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given employees.
      */
     @JsonCreator
-    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedEmployee> employees) {
+    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedEmployee> employees,
+            @JsonProperty("nextEmployeeId") Long nextEmployeeId) {
         this.employees.addAll(employees);
+        this.nextEmployeeId = nextEmployeeId;
     }
 
     /**
@@ -40,6 +46,7 @@ class JsonSerializableAddressBook {
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
         employees.addAll(source.getEmployeeList().stream().map(JsonAdaptedEmployee::new).collect(Collectors.toList()));
+        nextEmployeeId = source.getNextEmployeeId();
     }
 
     /**
@@ -48,15 +55,23 @@ class JsonSerializableAddressBook {
      * @throws IllegalValueException if there were any data constraints violated.
      */
     public AddressBook toModelType() throws IllegalValueException {
-        AddressBook addressBook = new AddressBook();
+        List<Employee> modelEmployees = new ArrayList<>();
         for (JsonAdaptedEmployee jsonAdaptedEmployee : employees) {
             Employee employee = jsonAdaptedEmployee.toModelType();
-            if (addressBook.hasEmployee(employee)) {
+            if (modelEmployees.stream().anyMatch(employee::isSameEmployee)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_EMPLOYEE);
             }
-            addressBook.addEmployee(employee);
+            modelEmployees.add(employee);
         }
-        return addressBook;
+
+        long storedNextEmployeeId = nextEmployeeId == null ? 1 : nextEmployeeId;
+        try {
+            return new AddressBook(modelEmployees, storedNextEmployeeId);
+        } catch (DuplicateEmployeeException e) {
+            throw new IllegalValueException(MESSAGE_DUPLICATE_EMPLOYEE, e);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new IllegalValueException(MESSAGE_INVALID_EMPLOYEE_ID, e);
+        }
     }
 
 }

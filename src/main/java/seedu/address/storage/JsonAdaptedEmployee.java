@@ -13,6 +13,7 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -26,6 +27,8 @@ class JsonAdaptedEmployee {
 
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Employee's %s field is missing!";
 
+    @JsonProperty("employeeId")
+    private final Integer employeeId;
     private final String name;
     private final String phone;
     private final String email;
@@ -38,10 +41,12 @@ class JsonAdaptedEmployee {
      * Constructs a {@code JsonAdaptedEmployee} with the given employee details.
      */
     @JsonCreator
-    public JsonAdaptedEmployee(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
+    public JsonAdaptedEmployee(@JsonProperty("employeeId") Integer employeeId,
+            @JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("salary") String salary, @JsonProperty("tags") List<JsonAdaptedTag> tags,
             @JsonProperty("tasks") List<JsonAdaptedTask> tasks) {
+        this.employeeId = employeeId;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -56,9 +61,18 @@ class JsonAdaptedEmployee {
     }
 
     /**
+     * Constructs a legacy employee without an internal employee ID.
+     */
+    public JsonAdaptedEmployee(String name, String phone, String email, String address,
+            String salary, List<JsonAdaptedTag> tags, List<JsonAdaptedTask> tasks) {
+        this(null, name, phone, email, address, salary, tags, tasks);
+    }
+
+    /**
      * Converts a given {@code Employee} into this class for Jackson use.
      */
     public JsonAdaptedEmployee(Employee source) {
+        employeeId = source.getEmployeeId().map(EmployeeId::getValue).orElse(null);
         name = source.getName().fullName;
         phone = source.getPhone().value;
         email = source.getEmail().value;
@@ -131,8 +145,15 @@ class JsonAdaptedEmployee {
             throw new IllegalValueException(Salary.MESSAGE_CONSTRAINTS);
         }
         final Salary modelSalary = new Salary(salaryValue);
-        return Employee.createUnassigned(modelName, modelPhone, modelEmail, modelAddress,
+        Employee employee = Employee.createUnassigned(modelName, modelPhone, modelEmail, modelAddress,
                 modelSalary, modelTags, modelTasks);
+        if (employeeId == null) {
+            return employee;
+        }
+        if (!EmployeeId.isValidEmployeeId(employeeId)) {
+            throw new IllegalValueException(EmployeeId.MESSAGE_CONSTRAINTS);
+        }
+        return employee.withEmployeeId(new EmployeeId(employeeId));
     }
 
 }
