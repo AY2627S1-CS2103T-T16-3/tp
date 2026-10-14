@@ -1,13 +1,19 @@
 package seedu.address.logic.commands;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.logic.Messages.MESSAGE_EMPLOYEES_LISTED_OVERVIEW;
+import static seedu.address.testutil.TypicalEmployees.ALICE;
+import static seedu.address.testutil.TypicalEmployees.BENSON;
+import static seedu.address.testutil.TypicalEmployees.DANIEL;
+import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalEmployees.getTypicalEmployees;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
-import static seedu.address.logic.Messages.MESSAGE_EMPLOYEES_LISTED_OVERVIEW;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
@@ -16,11 +22,6 @@ import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
 import seedu.address.testutil.EmployeeBuilder;
-import static seedu.address.testutil.TypicalEmployees.ALICE;
-import static seedu.address.testutil.TypicalEmployees.BENSON;
-import static seedu.address.testutil.TypicalEmployees.DANIEL;
-import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
-import static seedu.address.testutil.TypicalEmployees.getTypicalEmployees;
 
 /**
  * Tests filtering from command input through the model's displayed list.
