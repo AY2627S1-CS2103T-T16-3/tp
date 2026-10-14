@@ -91,8 +91,9 @@ public class Employee {
     /**
      * Returns a copy with updated employee details while preserving internal identity, salary, and tasks.
      */
-    public Employee withDetails(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+    public Employee withDetails(Name name, Phone phone, Email email, Address address,
+            LeaveEntitlement leaveEntitlement, Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, leaveEntitlement, tags);
         return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, tasks);
     }
 

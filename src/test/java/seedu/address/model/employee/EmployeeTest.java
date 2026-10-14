@@ -64,7 +64,8 @@ public class EmployeeTest {
                 .build();
 
         Employee withDetails = employee.withDetails(new Name(VALID_NAME_BOB), new Phone(VALID_PHONE_BOB),
-                new Email(VALID_EMAIL_BOB), new Address(VALID_ADDRESS_BOB), employee.getTags());
+                new Email(VALID_EMAIL_BOB), new Address(VALID_ADDRESS_BOB), employee.getLeaveEntitlement(),
+                employee.getTags());
         Employee withSalary = employee.withSalary(new Salary("5000"));
         Employee withAddedTask = employee.addTask(new Task("Submit report"));
         Employee withDeletedTask = employee.deleteTask(0);
