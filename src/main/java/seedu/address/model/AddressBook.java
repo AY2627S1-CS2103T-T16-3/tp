@@ -14,6 +14,10 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.UniqueEmployeeList;
+import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
+import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.UniqueLeaveList;
+import seedu.address.model.leave.exceptions.OverlappingLeaveException;
 
 /**
  * Wraps all data at the address-book level.
@@ -22,7 +26,9 @@ import seedu.address.model.employee.UniqueEmployeeList;
 public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniqueEmployeeList employees = new UniqueEmployeeList();
+    private final UniqueLeaveList leaves = new UniqueLeaveList();
     private long nextEmployeeId = 1;
+    private long nextLeaveId = 1;
 
     public AddressBook() {}
 
@@ -31,6 +37,14 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public AddressBook(List<Employee> employees, long nextEmployeeId) {
         replaceEmployees(employees, nextEmployeeId);
+    }
+
+    /**
+     * Creates an address book snapshot with the given employees, leave records, and next identifiers.
+     */
+    public AddressBook(List<Employee> employees, long nextEmployeeId, List<Leave> leaves, long nextLeaveId) {
+        replaceEmployees(employees, nextEmployeeId);
+        this.nextLeaveId = setLeavesAndGetNextId(leaves, nextLeaveId);
     }
 
     /**
@@ -49,6 +63,14 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void setEmployees(List<Employee> employees) {
         replaceEmployees(employees, nextEmployeeId);
+        removeOrphanedLeaves();
+    }
+
+    /**
+     * Replaces the contents of the leave list with {@code leaves}.
+     */
+    public void setLeaves(List<Leave> leaves) {
+        nextLeaveId = setLeavesAndGetNextId(leaves, nextLeaveId);
     }
 
     /**
@@ -57,7 +79,12 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
-        replaceEmployees(newData.getEmployeeList(), newData.getNextEmployeeId());
+        AddressBook replacement = new AddressBook(newData.getEmployeeList(), newData.getNextEmployeeId(),
+                newData.getLeaveList(), newData.getNextLeaveId());
+        employees.setEmployees(replacement.employees);
+        leaves.setLeaves(replacement.leaves);
+        nextEmployeeId = replacement.nextEmployeeId;
+        nextLeaveId = replacement.nextLeaveId;
     }
 
     //// employee-level operations
@@ -122,7 +149,10 @@ public class AddressBook implements ReadOnlyAddressBook {
      * {@code key} must exist in the address book.
      */
     public void removeEmployee(Employee key) {
+        EmployeeId employeeId = key.getEmployeeId()
+                .orElseThrow(() -> new IllegalStateException("Stored employee has no internal ID."));
         employees.remove(key);
+        leaves.removeAllFor(employeeId);
     }
 
     //// util methods
@@ -131,6 +161,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     public String toString() {
         return new ToStringBuilder(this)
                 .add("employees", employees)
+                .add("leaves", leaves)
                 .toString();
     }
 
@@ -145,6 +176,16 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     @Override
+    public long getNextLeaveId() {
+        return nextLeaveId;
+    }
+
+    @Override
+    public ObservableList<Leave> getLeaveList() {
+        return leaves.asUnmodifiableObservableList();
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == this) {
             return true;
@@ -156,12 +197,14 @@ public class AddressBook implements ReadOnlyAddressBook {
         }
 
         return employees.equals(otherAddressBook.employees)
-                && nextEmployeeId == otherAddressBook.nextEmployeeId;
+                && nextEmployeeId == otherAddressBook.nextEmployeeId
+                && leaves.equals(otherAddressBook.leaves)
+                && nextLeaveId == otherAddressBook.nextLeaveId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(employees, nextEmployeeId);
+        return Objects.hash(employees, nextEmployeeId, leaves, nextLeaveId);
     }
 
     /**
@@ -215,5 +258,38 @@ public class AddressBook implements ReadOnlyAddressBook {
         return employees.asUnmodifiableObservableList().stream()
                 .flatMap(employee -> employee.getEmployeeId().stream())
                 .anyMatch(employeeId::equals);
+    }
+
+    /**
+     * Replaces the leave list and returns an identifier greater than every leave identifier in the replacement.
+     */
+    private long setLeavesAndGetNextId(List<Leave> leaves, long startingLeaveId) {
+        requireAllNonNull(leaves);
+        if (startingLeaveId < 1 || startingLeaveId > (long) Integer.MAX_VALUE + 1) {
+            throw new IllegalArgumentException("Invalid next leave ID.");
+        }
+
+        long nextIdAfterSet = startingLeaveId;
+        UniqueLeaveList validatedLeaves = new UniqueLeaveList();
+        for (Leave leave : leaves) {
+            if (!hasEmployeeId(leave.getEmployeeId())) {
+                throw new EmployeeNotFoundException();
+            }
+            if (validatedLeaves.hasOverlappingLeave(leave.getEmployeeId(), leave.getPeriod())) {
+                throw new OverlappingLeaveException();
+            }
+            validatedLeaves.add(leave);
+            nextIdAfterSet = Math.max(nextIdAfterSet, (long) leave.getLeaveId().value + 1);
+        }
+
+        this.leaves.setLeaves(validatedLeaves);
+        return nextIdAfterSet;
+    }
+
+    private void removeOrphanedLeaves() {
+        List<Leave> retainedLeaves = leaves.asUnmodifiableObservableList().stream()
+                .filter(leave -> hasEmployeeId(leave.getEmployeeId()))
+                .toList();
+        leaves.setLeaves(retainedLeaves);
     }
 }
