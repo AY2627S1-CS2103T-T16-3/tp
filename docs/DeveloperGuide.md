@@ -312,6 +312,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                 |
 | `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
 | `* * *`  | HR Officer                 | manage employee’s leaves and off                                               | can keep track of manpower in the company on a daily basis                               |
+| `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find those that match specific criteria(s)                                        |
 | `* * *`  | HR Officer                 | delete an employee profile                                                     | remove employees no longer with the company                                              |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep check of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration                                  |
@@ -547,7 +548,60 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC7 - Record employee leave**
+**Use case: UC7 - Filter employees**
+
+**MSS**
+
+1. HR manager requests to filter employees that meets a certain criteria(s)
+2. System identifies employees who match all supplied criteria.
+3. System displays the matching employees and the number of matches.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide any criteria.
+
+    * 1a1. System informs the HR manager that at least one criterion is required.
+    * 1a2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1b. The HR manager provides an unsupported field prefix.
+
+    * 1b1. System informs the HR manager of the valid command format.
+    * 1b2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1c. The HR manager repeats a field that may appear only once, such as name or salary.
+
+    * 1c1. System informs the HR manager that the field cannot be repeated.
+    * 1c2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1d. The HR manager provides an invalid salary value.
+
+    * 1d1. System informs the HR manager that salary must be a whole number from 0 to 50000.
+    * 1d2. System keeps the currently displayed employee list.
+
+      Use case ends.
+      
+* 1e. The HR manager provides an empty criterion.
+
+    * 1a1. System informs the HR manager that supplied criteria must not be empty.
+    * 1a2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 2a. No employees match all supplied criteria.
+
+    * 2a1. System displays an empty employee list and reports zero matches.
+
+      Use case ends.
+
+**Use case: UC8 - Record employee leave**
 
 **MSS**
 
@@ -630,7 +684,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC8 - Show Employee Details**
+**Use case: UC9 - Show Employee Details**
 
 **MSS**
 
@@ -684,7 +738,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC9 - Change an employee's salary**
+**Use case: UC10 - Change an employee's salary**
 
 **MSS**
 
