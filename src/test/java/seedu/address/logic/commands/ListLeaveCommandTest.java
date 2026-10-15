@@ -1,10 +1,12 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
-import static seedu.address.testutil.TypicalEmployees.BENSON;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -20,10 +22,20 @@ import seedu.address.model.leave.LeavePeriod;
 
 public class ListLeaveCommandTest {
 
-    private static final LeavePeriod EARLIER_PERIOD = new LeavePeriod(
-            LocalDate.of(2020, 10, 5), LocalDate.of(2020, 10, 7));
-    private static final LeavePeriod LATER_PERIOD = new LeavePeriod(
-            LocalDate.of(2099, 10, 5), LocalDate.of(2099, 10, 7));
+    private static final LocalDate FIXED_DATE = LocalDate.of(2026, 10, 6);
+    private static final Clock FIXED_CLOCK = Clock.fixed(
+            FIXED_DATE.atStartOfDay().toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+    private static final LeavePeriod PAST_PERIOD = new LeavePeriod(
+            LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 2));
+    private static final LeavePeriod ONGOING_PERIOD = new LeavePeriod(
+            LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 7));
+    private static final LeavePeriod UPCOMING_PERIOD = new LeavePeriod(
+            LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 9));
+
+    @Test
+    public void constructor_nullClock_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new ListLeaveCommand(null));
+    }
 
     @Test
     public void execute_noLeave_returnsNoLeaveMessage() {
@@ -35,16 +47,18 @@ public class ListLeaveCommandTest {
     }
 
     @Test
-    public void execute_multipleLeaves_listsInIdOrderWithoutEmployeeIds() {
-        Leave laterId = new Leave(new LeaveId(2), new EmployeeId(2), LATER_PERIOD);
-        Leave earlierId = new Leave(new LeaveId(1), new EmployeeId(1), EARLIER_PERIOD);
-        AddressBook addressBook = new AddressBook(List.of(ALICE, BENSON), 3,
-                List.of(laterId, earlierId), 3);
+    public void execute_multipleLeaves_listsInIdOrderWithStatusesFromClock() {
+        Leave upcomingLeave = new Leave(new LeaveId(3), new EmployeeId(1), UPCOMING_PERIOD);
+        Leave pastLeave = new Leave(new LeaveId(1), new EmployeeId(1), PAST_PERIOD);
+        Leave ongoingLeave = new Leave(new LeaveId(2), new EmployeeId(1), ONGOING_PERIOD);
+        AddressBook addressBook = new AddressBook(List.of(ALICE), 2,
+                List.of(upcomingLeave, pastLeave, ongoingLeave), 4);
         Model model = new ModelManager(addressBook, new UserPrefs());
-        String expectedRecords = "ID 1 | Alice Pauline | 05-10-2020 to 07-10-2020 | 3 working day(s) | Past\n"
-                + "ID 2 | Benson Meier | 05-10-2099 to 07-10-2099 | 3 working day(s) | Upcoming";
+        String expectedRecords = "ID 1 | Alice Pauline | 01-10-2026 to 02-10-2026 | 2 working day(s) | Past\n"
+                + "ID 2 | Alice Pauline | 05-10-2026 to 07-10-2026 | 3 working day(s) | Ongoing\n"
+                + "ID 3 | Alice Pauline | 08-10-2026 to 09-10-2026 | 2 working day(s) | Upcoming";
 
-        CommandResult result = new ListLeaveCommand().execute(model);
+        CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
         assertEquals(String.format(ListLeaveCommand.MESSAGE_SUCCESS, expectedRecords), result.getFeedbackToUser());
     }

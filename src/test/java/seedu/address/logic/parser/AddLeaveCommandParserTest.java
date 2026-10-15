@@ -5,6 +5,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_END_DATE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_START_DATE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
+import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_EMPLOYEE;
 
 import java.time.LocalDate;
@@ -46,10 +47,8 @@ public class AddLeaveCommandParserTest {
 
     @Test
     public void parse_invalidIndex_failure() {
-        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLeaveCommand.MESSAGE_USAGE);
-
-        assertParseFailure(parser, "0 from/05-10-2026 to/07-10-2026", expectedMessage);
-        assertParseFailure(parser, "first from/05-10-2026 to/07-10-2026", expectedMessage);
+        assertParseFailure(parser, "0 from/05-10-2026 to/07-10-2026", MESSAGE_INVALID_INDEX);
+        assertParseFailure(parser, "first from/05-10-2026 to/07-10-2026", MESSAGE_INVALID_INDEX);
     }
 
     @Test

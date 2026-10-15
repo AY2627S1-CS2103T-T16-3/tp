@@ -86,11 +86,11 @@ public class AddressBookTest {
         addressBook.addEmployee(ALICE);
         addressBook.addEmployee(BENSON);
         Leave aliceLeave = addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);
-        Leave bobLeave = addressBook.addLeave(new EmployeeId(2), MONDAY_TO_WEDNESDAY);
+        Leave bensonLeave = addressBook.addLeave(new EmployeeId(2), MONDAY_TO_WEDNESDAY);
 
         addressBook.setEmployees(List.of(BENSON));
 
-        assertEquals(List.of(bobLeave), addressBook.getLeaveList());
+        assertEquals(List.of(bensonLeave), addressBook.getLeaveList());
         assertFalse(addressBook.getLeaveList().contains(aliceLeave));
     }
 
@@ -383,17 +383,18 @@ public class AddressBookTest {
     }
 
     @Test
-    public void removeLeave_existingLeave_removesRecordAndRestoresEntitlement() {
+    public void removeLeave_existingLeave_removesOnlyTargetAndRestoresEntitlement() {
         addressBook.addEmployee(ALICE);
         Leave addedLeave = addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);
+        Leave remainingLeave = addressBook.addLeave(new EmployeeId(1), THURSDAY_TO_FRIDAY);
 
         Leave removedLeave = addressBook.removeLeave(addedLeave.getLeaveId());
 
         assertEquals(addedLeave, removedLeave);
-        assertTrue(addressBook.getLeaveList().isEmpty());
-        assertEquals(ALICE.getLeaveEntitlement().value,
+        assertEquals(List.of(remainingLeave), addressBook.getLeaveList());
+        assertEquals(ALICE.getLeaveEntitlement().value - THURSDAY_TO_FRIDAY.getWorkingDayCount(),
                 addressBook.getRemainingLeave(new EmployeeId(1), 2026));
-        assertEquals(2, addressBook.getNextLeaveId());
+        assertEquals(3, addressBook.getNextLeaveId());
     }
 
     @Test

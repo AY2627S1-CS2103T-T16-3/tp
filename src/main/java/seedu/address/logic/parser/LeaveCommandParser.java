@@ -16,7 +16,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
  */
 public class LeaveCommandParser implements Parser<Command> {
 
-    public static final String MESSAGE_USAGE = "Leave commands:\n"
+    public static final String MESSAGE_USAGE = "Available leave commands:\n"
             + AddLeaveCommand.MESSAGE_USAGE + "\n"
             + ListLeaveCommand.MESSAGE_USAGE + "\n"
             + DeleteLeaveCommand.MESSAGE_USAGE;

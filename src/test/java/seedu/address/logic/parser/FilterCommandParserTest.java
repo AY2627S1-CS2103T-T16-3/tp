@@ -6,6 +6,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SALARY;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
@@ -18,6 +19,7 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FilterCommand;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate.Field;
+import seedu.address.model.employee.Salary;
 
 /**
  * Tests validation of filter criteria and conversion to a filter command.
@@ -35,7 +37,8 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_emptyField_throwsParseException() {
-        for (String input : List.of("n/", "p/ ", "e/", "a/", "t/", "n/Alice p/", "t/friends t/")) {
+        for (String input : List.of("n/", "p/ ", "e/", "a/", "t/", "n/Alice p/", "t/friends t/",
+                "task/", "s/", "task/report s/", "task/report task/")) {
             assertInvalidFormat(input);
         }
     }
@@ -49,7 +52,7 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_duplicateScalarFields_throwsParseException() {
-        for (Prefix prefix : List.of(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS)) {
+        for (Prefix prefix : List.of(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_SALARY)) {
             assertParseFailure(parser, " " + prefix.getPrefix() + "first " + prefix.getPrefix() + "second",
                     Messages.getErrorMessageForDuplicatePrefixes(prefix));
         }
@@ -60,9 +63,11 @@ public class FilterCommandParserTest {
         FilterCommand expected = new FilterCommand(new EmployeeMatchesCriteriaPredicate(Map.of(
                 Field.NAME, List.of("Alice Pauline"), Field.PHONE, List.of("91235321"),
                 Field.EMAIL, List.of("example.com"), Field.ADDRESS, List.of("Jurong West"),
-                Field.TAG, List.of("friends", "colleagues"))));
+                Field.TAG, List.of("friends", "colleagues"), Field.TASK, List.of("report", "review"),
+                Field.SALARY, List.of("3000"))));
         assertParseSuccess(parser,
-                "n/Alice Pauline p/91235321 e/example.com a/Jurong West t/friends t/colleagues", expected);
+                "n/Alice Pauline p/91235321 e/example.com a/Jurong West t/friends t/colleagues "
+                        + "task/report task/review s/3000", expected);
     }
 
     @Test
@@ -76,6 +81,27 @@ public class FilterCommandParserTest {
     @Test
     public void parse_whitespaceAndPrefixOrder_returnsSameCommand() throws Exception {
         assertEquals(parser.parse("n/Alice p/912"), parser.parse("\t p/912\n n/Alice   "));
+    }
+
+    @Test
+    public void parse_salary_normalizesLeadingZerosAndAcceptsBounds() {
+        for (String input : List.of("0", "50000", "003000")) {
+            assertParseSuccess(parser, "s/" + input, new FilterCommand(new EmployeeMatchesCriteriaPredicate(
+                    Map.of(Field.SALARY, List.of(new Salary(input).salary)))));
+        }
+    }
+
+    @Test
+    public void parse_invalidSalary_throwsParseException() {
+        for (String input : List.of("-1", "50001", "3000.50", "abc", "9999999999999999999999")) {
+            assertParseFailure(parser, "s/" + input, Salary.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
+    public void parse_taskOnly_returnsFilterCommand() {
+        assertParseSuccess(parser, "task/Quarterly report", new FilterCommand(new EmployeeMatchesCriteriaPredicate(
+                Map.of(Field.TASK, List.of("Quarterly report")))));
     }
 
     private void assertInvalidFormat(String input) {

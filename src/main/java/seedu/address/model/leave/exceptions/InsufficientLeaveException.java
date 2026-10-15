@@ -12,6 +12,9 @@ public class InsufficientLeaveException extends RuntimeException {
      * Creates an exception describing the requested and remaining leave days.
      */
     public InsufficientLeaveException(int requestedDays, int remainingDays) {
+        assert requestedDays >= 0 : "Requested leave days must be non-negative.";
+        assert remainingDays >= 0 : "Remaining leave days must be non-negative.";
+        assert requestedDays > remainingDays : "Requested leave days must exceed remaining leave days.";
         this.requestedDays = requestedDays;
         this.remainingDays = remainingDays;
     }
