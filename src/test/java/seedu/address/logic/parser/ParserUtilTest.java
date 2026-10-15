@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
+import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -64,6 +65,21 @@ public class ParserUtilTest {
     @Test
     public void parseTask_validValue_returnsTask() throws Exception {
         assertEquals(new Task("Prepare report"), ParserUtil.parseTask("Prepare report"));
+    }
+
+    @Test
+    public void parseLeaveEntitlement_invalidValue_throwsParseException() {
+        for (String value : List.of("", " ", "-1", "366", "1.5", "abc", "014")) {
+            assertThrows(ParseException.class, LeaveEntitlement.MESSAGE_CONSTRAINTS, () ->
+                    ParserUtil.parseLeaveEntitlement(value));
+        }
+    }
+
+    @Test
+    public void parseLeaveEntitlement_validValue_returnsEntitlement() throws Exception {
+        assertEquals(new LeaveEntitlement(0), ParserUtil.parseLeaveEntitlement("0"));
+        assertEquals(new LeaveEntitlement(14), ParserUtil.parseLeaveEntitlement(" 14 "));
+        assertEquals(new LeaveEntitlement(365), ParserUtil.parseLeaveEntitlement("365"));
     }
 
     @Test

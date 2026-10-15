@@ -14,5 +14,6 @@ public class CliSyntax {
     public static final Prefix PREFIX_SALARY = new Prefix("s/");
     public static final Prefix PREFIX_TASK_DETAILS = new Prefix("d/");
     public static final Prefix PREFIX_TASK_INDEX = new Prefix("i/");
+    public static final Prefix PREFIX_LEAVE_ENTITLEMENT = new Prefix("le/");
 
 }
