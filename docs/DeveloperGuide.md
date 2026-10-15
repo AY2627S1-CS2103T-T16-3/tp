@@ -158,7 +158,7 @@ This section describes some noteworthy details on how certain features are imple
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
-total employees, employees without tags, and employee counts by tag.
+total employees, employees without tags, employee counts by tag, task counts, and salary statistics.
 
 `AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts no argument,
 `scope/all`, or `scope/filtered`, rejecting every other argument string with `SummaryCommand.MESSAGE_USAGE`.
@@ -190,6 +190,33 @@ of the filter predicate, and fresh results after add/edit/delete. Parser tests c
 surrounding whitespace, and rejection of unexpected arguments. `SummaryScopeCommandTest` covers scope
 selection, empty matches, execution-time reads, and preservation of the filter predicate. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
+
+#### Task counts
+
+`EmployeeSummary` captures the sum of `Employee.getTasks().size()` as a `long`, the number of employees
+with nonempty task lists, and the maximum per-employee task count in the same pass as tag aggregation.
+Employees without tasks are derived from headcount minus employees with tasks. Empty input yields
+zero for all task statistics; identical descriptions on different employees count separately.
+
+`SummaryCommand` appends the task section after formatting the headcount/tag section, even if there are
+no tags. The snapshot contains counts only and remains unchanged when source records are replaced.
+Tests cover mixed and empty lists, tied maxima, repeated descriptions across employees, filtered views,
+unchanged records, and fresh snapshots after task and employee changes. No completion or due-date
+semantics, storage fields, or task commands are introduced by this feature.
+
+#### Salary statistics
+
+`EmployeeSummary` also captures salary statistics from the same employee collection. Its private
+`IntSummaryStatistics` is constructed locally and never exposed or modified after snapshot creation.
+The total is a `long`; minimum and maximum are `OptionalInt` values, empty for an empty collection.
+The average is an optional `BigDecimal`, calculated directly from the integer total and employee count
+with scale 2 and `RoundingMode.HALF_UP`, without converting to floating point. Zero salaries are included.
+
+`SummaryCommand` formats a separate salary section after the headcount/tag section, including when
+there are no tags. It displays `$0.00` for an empty total and `N/A` for absent average/minimum/maximum.
+No currency period, benefits, or payroll assumptions are added. Tests cover empty/single inputs,
+zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
+and recomputation after a salary command.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -318,6 +345,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                 |
 | `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
 | `* * *`  | HR Officer                 | manage employee’s leaves and off                                               | can keep track of manpower in the company on a daily basis                               |
+| `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find those that match specific criteria(s)                                        |
 | `* * *`  | HR Officer                 | delete an employee profile                                                     | remove employees no longer with the company                                              |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep check of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration                                  |
@@ -553,7 +581,60 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC7 - Record employee leave**
+**Use case: UC7 - Filter employees**
+
+**MSS**
+
+1. HR manager requests to filter employees that meets a certain criteria(s)
+2. System identifies employees who match all supplied criteria.
+3. System displays the matching employees and the number of matches.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide any criteria.
+
+    * 1a1. System informs the HR manager that at least one criterion is required.
+    * 1a2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1b. The HR manager provides an unsupported field prefix.
+
+    * 1b1. System informs the HR manager of the valid command format.
+    * 1b2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1c. The HR manager repeats a field that may appear only once, such as name or salary.
+
+    * 1c1. System informs the HR manager that the field cannot be repeated.
+    * 1c2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1d. The HR manager provides an invalid salary value.
+
+    * 1d1. System informs the HR manager that salary must be a whole number from 0 to 50000.
+    * 1d2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 1e. The HR manager provides an empty criterion.
+
+    * 1a1. System informs the HR manager that supplied criteria must not be empty.
+    * 1a2. System keeps the currently displayed employee list.
+
+      Use case ends.
+
+* 2a. No employees match all supplied criteria.
+
+    * 2a1. System displays an empty employee list and reports zero matches.
+
+      Use case ends.
+
+**Use case: UC8 - Record employee leave**
 
 **MSS**
 
@@ -636,7 +717,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC8 - Show Employee Details**
+**Use case: UC9 - Show Employee Details**
 
 **MSS**
 
@@ -690,7 +771,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC9 - Change an employee's salary**
+**Use case: UC10 - Change an employee's salary**
 
 **MSS**
 

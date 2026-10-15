@@ -36,7 +36,7 @@ public class SummaryScopeCommandTest {
         SummaryCommand command = new SummaryCommand(SummaryCommand.Scope.FILTERED);
         assertEquals("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
                 + "Employees without tags: 0\n\nEmployees by tag:\n  remote: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap.",
+                + "Employees may have multiple tags; tag counts can overlap." + zeroOverview(1),
                 command.execute(model).getFeedbackToUser());
         assertEquals(before, model.getAddressBook());
         assertEquals(List.of(storedBob), model.getFilteredEmployeeList());
@@ -52,7 +52,7 @@ public class SummaryScopeCommandTest {
         model.addEmployee(new EmployeeBuilder().build());
         model.updateFilteredEmployeeList(employee -> false);
         assertEquals("Employee summary\nScope: Filtered employees\nTotal employees: 0\n"
-                + "Employees without tags: 0\n\nNo tags to summarize.",
+                + "Employees without tags: 0\n\nNo tags to summarize." + zeroOverview(0),
                 new SummaryCommand().execute(model).getFeedbackToUser());
         assertEquals(List.of(), model.getFilteredEmployeeList());
         assertTrue(new SummaryCommand(SummaryCommand.Scope.ALL).execute(model)
@@ -94,5 +94,13 @@ public class SummaryScopeCommandTest {
         assertEquals(new SummaryCommand(SummaryCommand.Scope.FILTERED), new SummaryCommand());
         assertNotEquals(all, null);
         assertNotEquals(all, "summary");
+    }
+
+    private static String zeroOverview(int employees) {
+        String salary = employees == 0 ? "N/A" : "$0.00";
+        return "\n\nTask overview\nTotal assigned tasks: 0\nEmployees with tasks: 0\n"
+                + "Employees without tasks: " + employees + "\nMost tasks assigned to one employee: 0"
+                + "\n\nSalary overview\nTotal recorded salary: $0.00\nAverage salary: " + salary
+                + "\nLowest salary: " + salary + "\nHighest salary: " + salary;
     }
 }
