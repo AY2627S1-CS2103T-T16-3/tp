@@ -21,12 +21,18 @@ public final class EmployeeSummary {
     private final int employeesWithoutTags;
     private final SortedMap<String, Integer> tagCounts;
     private final IntSummaryStatistics salaryStatistics;
+    private final long totalTasks;
+    private final int employeesWithTasks;
+    private final int highestTaskCount;
 
     private EmployeeSummary(int totalEmployees, int employeesWithoutTags, SortedMap<String, Integer> tagCounts,
-            IntSummaryStatistics salaryStatistics) {
+            long totalTasks, int employeesWithTasks, int highestTaskCount, IntSummaryStatistics salaryStatistics) {
         this.totalEmployees = totalEmployees;
         this.employeesWithoutTags = employeesWithoutTags;
         this.tagCounts = Collections.unmodifiableSortedMap(new TreeMap<>(tagCounts));
+        this.totalTasks = totalTasks;
+        this.employeesWithTasks = employeesWithTasks;
+        this.highestTaskCount = highestTaskCount;
         this.salaryStatistics = salaryStatistics;
     }
 
@@ -38,7 +44,16 @@ public final class EmployeeSummary {
         requireNonNull(employees);
         int untagged = 0;
         SortedMap<String, Integer> counts = new TreeMap<>();
+        long totalTasks = 0;
+        int employeesWithTasks = 0;
+        int highestTaskCount = 0;
         for (Employee employee : employees) {
+            int taskCount = employee.getTasks().size();
+            totalTasks += taskCount;
+            if (taskCount > 0) {
+                employeesWithTasks++;
+            }
+            highestTaskCount = Math.max(highestTaskCount, taskCount);
             if (employee.getTags().isEmpty()) {
                 untagged++;
             }
@@ -50,7 +65,8 @@ public final class EmployeeSummary {
         IntSummaryStatistics salaries = employees.stream()
                 .mapToInt(employee -> Integer.parseInt(employee.getSalary().salary))
                 .summaryStatistics();
-        return new EmployeeSummary(employees.size(), untagged, counts, salaries);
+        return new EmployeeSummary(employees.size(), untagged, counts,
+                totalTasks, employeesWithTasks, highestTaskCount, salaries);
     }
 
     public int getTotalEmployees() {
@@ -86,6 +102,22 @@ public final class EmployeeSummary {
 
     public OptionalInt getHighestSalary() {
         return totalEmployees == 0 ? OptionalInt.empty() : OptionalInt.of(salaryStatistics.getMax());
+    }
+
+    public long getTotalTasks() {
+        return totalTasks;
+    }
+
+    public int getEmployeesWithTasks() {
+        return employeesWithTasks;
+    }
+
+    public int getEmployeesWithoutTasks() {
+        return totalEmployees - employeesWithTasks;
+    }
+
+    public int getHighestTaskCount() {
+        return highestTaskCount;
     }
 
     /**

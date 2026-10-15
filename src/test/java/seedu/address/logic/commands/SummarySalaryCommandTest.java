@@ -25,10 +25,12 @@ public class SummarySalaryCommandTest {
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
         Employee storedBob = model.getAddressBook().getEmployeeList().get(1);
         model.updateFilteredEmployeeList(employee -> employee.equals(storedAlice));
-        String expected = "Employee summary\nTotal employees: 2\nEmployees without tags: 2\n\n"
-                + "No tags to summarize.\n\nSalary overview\nTotal recorded salary: $8000.00\n"
+        String expected = "Employee summary\nScope: All employees\nTotal employees: 2\nEmployees without tags: 2\n\n"
+                + "No tags to summarize.\n\nTask overview\nTotal assigned tasks: 0\n"
+                + "Employees with tasks: 0\nEmployees without tasks: 2\nMost tasks assigned to one employee: 0"
+                + "\n\nSalary overview\nTotal recorded salary: $8000.00\n"
                 + "Average salary: $4000.00\nLowest salary: $3000.00\nHighest salary: $5000.00";
-        assertEquals(expected, new SummaryCommand().execute(model).getFeedbackToUser());
+        assertEquals(expected, new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser());
         assertEquals(List.of(storedAlice, storedBob), model.getAddressBook().getEmployeeList());
         assertEquals(List.of(storedAlice), model.getFilteredEmployeeList());
     }
