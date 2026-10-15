@@ -14,9 +14,9 @@ import seedu.address.model.employee.EmployeeSummary;
 public class SummaryCommand extends Command {
     public static final String COMMAND_WORD = "summary";
     public static final String COMMAND_ALIAS = "/summary";
-    public static final String MESSAGE_USAGE = COMMAND_ALIAS
+    public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Shows total employees, employees without tags, and employee counts by tag.\n"
-            + "Usage: /summary [scope/all|scope/filtered] (or summary). Default scope: all.";
+            + "Usage: summary [scope/all|scope/filtered] (alias: /summary). Default scope: filtered.";
 
     /** Selects the employee collection to summarize at execution time. */
     public enum Scope {
@@ -33,7 +33,7 @@ public class SummaryCommand extends Command {
     private final Scope scope;
 
     public SummaryCommand() {
-        this(Scope.ALL);
+        this(Scope.FILTERED);
     }
 
     public SummaryCommand(Scope scope) {

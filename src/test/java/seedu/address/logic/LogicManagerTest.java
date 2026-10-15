@@ -5,6 +5,7 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_IN
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.LEAVE_ENTITLEMENT_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -23,14 +24,17 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.Task;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -74,22 +78,24 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_summaryAliases_summarizeAllEmployeesWithoutChangingFilterOrSavedData() throws Exception {
+    public void execute_summaryAliases_summarizeDisplayedEmployeesWithoutChangingFilterOrSavedData() throws Exception {
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering").build();
         Employee bob = new EmployeeBuilder().withName("Bob").withTags().build();
         model.addEmployee(alice);
         model.addEmployee(bob);
+        Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
+        Employee storedBob = model.getAddressBook().getEmployeeList().get(1);
         logic.execute("find Alice");
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
-        CommandResult expected = new CommandResult("Employee summary\nScope: All employees\nTotal employees: 2\n"
-                + "Employees without tags: 1\n\nEmployees by tag:\n  engineering: 1\n\n"
+        CommandResult expected = new CommandResult("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
+                + "Employees without tags: 0\n\nEmployees by tag:\n  engineering: 1\n\n"
                 + "Employees may have multiple tags; tag counts can overlap.");
 
         for (String command : new String[] {SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS}) {
             assertEquals(expected, logic.execute(command));
-            assertEquals(List.of(alice), logic.getFilteredEmployeeList());
-            assertEquals(List.of(alice, bob), model.getAddressBook().getEmployeeList());
+            assertEquals(List.of(storedAlice), logic.getFilteredEmployeeList());
+            assertEquals(List.of(storedAlice, storedBob), model.getAddressBook().getEmployeeList());
             assertEquals(savedData, Files.readString(dataFile));
         }
     }
@@ -100,6 +106,8 @@ public class LogicManagerTest {
         Employee bob = new EmployeeBuilder().withName("Bob").withTags("remote").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
+        Employee storedBob = model.getAddressBook().getEmployeeList().get(1);
+        AddressBook before = new AddressBook(model.getAddressBook());
         for (String selection : new String[] {"find Bob", "filter t/remote"}) {
             logic.execute(selection);
             Path dataFile = temporaryFolder.resolve("addressBook.json");
@@ -109,8 +117,13 @@ public class LogicManagerTest {
                         + "Employees without tags: 0\n\nEmployees by tag:\n  remote: 1\n\n"
                         + "Employees may have multiple tags; tag counts can overlap.";
                 assertEquals(expected, logic.execute(alias + " scope/filtered").getFeedbackToUser());
-                assertEquals(logic.execute(alias), logic.execute(alias + " scope/all"));
-                assertEquals(List.of(bob), model.getFilteredEmployeeList());
+                assertEquals(expected, logic.execute(alias).getFeedbackToUser());
+                String allExpected = "Employee summary\nScope: All employees\nTotal employees: 2\n"
+                        + "Employees without tags: 0\n\nEmployees by tag:\n  engineering: 1\n  remote: 1\n\n"
+                        + "Employees may have multiple tags; tag counts can overlap.";
+                assertEquals(allExpected, logic.execute(alias + " scope/all").getFeedbackToUser());
+                assertEquals(before, model.getAddressBook());
+                assertEquals(List.of(storedBob), model.getFilteredEmployeeList());
                 assertEquals(savedData, Files.readString(dataFile));
             }
         }
@@ -131,6 +144,61 @@ public class LogicManagerTest {
     @Test
     public void getFilteredEmployeeList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredEmployeeList().remove(0));
+    }
+
+    @Test
+    public void execute_salaryCommand_updatesModelAndStorage() throws Exception {
+        // Original employee
+        Employee charlie = new EmployeeBuilder()
+                .withName("Charlie")
+                .withSalary("1000")
+                .withTags("Engineering", "FullTime")
+                .build()
+                .addTask(new Task("Prepare  REPORT"))
+                .addTask(new Task("Review   Budget"));
+        model.addEmployee(charlie);
+        List<String> originalTaskDetails = charlie.getTasks().stream().map(Task::getDetails).toList();
+
+        // Expected employee: only the salary changes
+        Employee expected = new EmployeeBuilder(model.getAddressBook().getEmployeeList().get(0))
+                .withSalary("5000")
+                .build();
+
+        assertEquals("$1000", charlie.getSalary().toString());
+
+        // Expected feedback for tested command
+        CommandResult expectedFeedback = new CommandResult(
+                String.format(SalaryCommand.MESSAGE_SUCCESS,
+                        expected.getSalary(), Messages.format(expected)));
+
+        // Asserts that command feedback is correct
+        assertEquals(expectedFeedback, logic.execute("salary 1 s/005000"));
+
+        // Asserts that logic changes Salary object
+        assertEquals("5000",
+                model.getAddressBook().getEmployeeList().get(0).getSalary().salary);
+
+        // Assert that logic rejects invalid parameters
+        assertThrows(ParseException.class, () ->
+                logic.execute("salary 1 s/abc"));
+
+        JsonAddressBookStorage storage =
+                new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        // Take saved data from local storage
+        ReadOnlyAddressBook saved = storage.readAddressBook().orElseThrow();
+
+        // Asserts that storage safely saves salary
+        assertEquals("$5000", saved.getEmployeeList().get(0).getSalary().toString());
+
+        // Asserts that other fields of employee are preserved after salary command
+        assertEquals(expected, model.getAddressBook().getEmployeeList().get(0));
+        assertEquals(originalTaskDetails, model.getAddressBook().getEmployeeList().get(0)
+                .getTasks().stream().map(Task::getDetails).toList());
+        assertEquals(originalTaskDetails, saved.getEmployeeList().get(0)
+                .getTasks().stream().map(Task::getDetails).toList());
+
+        // Asserts that the saved address book matches the model
+        assertEquals(model.getAddressBook(), saved);
     }
 
     /**
@@ -211,8 +279,8 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
-                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Employee expectedEmployee = new EmployeeBuilder(AMY).withTags().build();
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + LEAVE_ENTITLEMENT_DESC_AMY;
+        Employee expectedEmployee = new EmployeeBuilder(AMY).withoutEmployeeId().withTags().build();
         ModelManager expectedModel = new ModelManager();
         expectedModel.addEmployee(expectedEmployee);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);

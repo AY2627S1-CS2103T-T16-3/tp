@@ -197,4 +197,15 @@ public class EditCommandTest {
         assertEquals(original.getSalary(), salaryModel.getFilteredEmployeeList().get(0).getSalary());
     }
 
+    @Test
+    public void execute_editLeaveEntitlement_updatesEntitlement() throws Exception {
+        Model entitlementModel = new ModelManager();
+        entitlementModel.addEmployee(new EmployeeBuilder().withLeaveEntitlement(14).build());
+        EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder().withLeaveEntitlement(21).build();
+
+        new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor).execute(entitlementModel);
+
+        assertEquals(21, entitlementModel.getFilteredEmployeeList().get(0).getLeaveEntitlement().value);
+    }
+
 }

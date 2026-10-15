@@ -27,7 +27,7 @@ public class SummaryCommandParserTest {
 
     @Test
     public void parse_scopes_returnsMatchingCommand() throws Exception {
-        assertEquals(new SummaryCommand(SummaryCommand.Scope.ALL), parser.parse(""));
+        assertEquals(new SummaryCommand(SummaryCommand.Scope.FILTERED), parser.parse(""));
         assertEquals(new SummaryCommand(SummaryCommand.Scope.ALL), parser.parse(" scope/all "));
         assertEquals(new SummaryCommand(SummaryCommand.Scope.FILTERED), parser.parse("\tscope/filtered\t"));
     }

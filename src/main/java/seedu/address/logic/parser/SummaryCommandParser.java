@@ -14,8 +14,8 @@ public class SummaryCommandParser implements Parser<SummaryCommand> {
     public SummaryCommand parse(String args) throws ParseException {
         requireNonNull(args);
         return switch (args.strip()) {
-            case "", "scope/all" -> new SummaryCommand(SummaryCommand.Scope.ALL);
-            case "scope/filtered" -> new SummaryCommand(SummaryCommand.Scope.FILTERED);
+            case "scope/all" -> new SummaryCommand(SummaryCommand.Scope.ALL);
+            case "", "scope/filtered" -> new SummaryCommand(SummaryCommand.Scope.FILTERED);
             default -> throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, SummaryCommand.MESSAGE_USAGE));
         };

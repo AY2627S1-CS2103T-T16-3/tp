@@ -15,10 +15,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.parser.AddressBookParser;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.Task;
+import seedu.address.testutil.EmployeeBuilder;
 
 /**
  * Tests filtering from command input through the model's displayed list.
@@ -77,6 +80,31 @@ public class FilterCommandTest {
         assertFalse(command.equals(parser.parseCommand("filter n/Benson")));
         assertFalse(command.equals(new ListCommand()));
         assertFalse(command.equals(null));
+    }
+
+    @Test
+    public void execute_tasksAndSalary_requiresAllCriteria() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withSalary("3000")
+                .withTasks(new Task("Quarterly report"), new Task("Review invoices")).build();
+        Employee benson = new EmployeeBuilder(BENSON).withSalary("30000")
+                .withTasks(new Task("Quarterly report")).build();
+        Employee daniel = new EmployeeBuilder(DANIEL).withSalary("3000").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addEmployee(alice);
+        addressBook.addEmployee(benson);
+        addressBook.addEmployee(daniel);
+        model.setAddressBook(addressBook);
+
+        assertFilter("task/REPORT", List.of(alice, benson));
+        assertFilter("task/report task/INVOICES", List.of(alice));
+        assertFilter("task/missing", List.of());
+        assertFilter("s/3000", List.of(alice, daniel));
+        assertFilter("s/003000", List.of(alice, daniel));
+        assertFilter("s/300", List.of());
+        assertFilter("task/report s/3000", List.of(alice));
+        assertFilter("n/Alice t/friends task/invoices s/3000", List.of(alice));
+        assertFilter("task/report s/0", List.of());
+        assertEquals(addressBook, model.getAddressBook());
     }
 
     private void assertFilter(String arguments, List<Employee> expectedEmployees) throws Exception {
