@@ -465,7 +465,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Filter employees**
+**Use case: UC4 - Filter employees**
 
 **MSS**
 
@@ -518,7 +518,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Record employee leave**
+**Use case: UC5 - Record employee leave**
 
 **MSS**
 
@@ -601,7 +601,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC5 - Show Employee Details**
+**Use case: UC6 - Show Employee Details**
 
 **MSS**
 
@@ -655,7 +655,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: Change an employee's salary**
+**Use case: UC7 - Change an employee's salary**
 
 **MSS**
 
