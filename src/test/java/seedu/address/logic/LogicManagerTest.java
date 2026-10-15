@@ -130,7 +130,7 @@ public class LogicManagerTest {
         List<String> originalTaskDetails = charlie.getTasks().stream().map(Task::getDetails).toList();
 
         // Expected employee: only the salary changes
-        Employee expected = new EmployeeBuilder(charlie)
+        Employee expected = new EmployeeBuilder(model.getAddressBook().getEmployeeList().get(0))
                 .withSalary("5000")
                 .build();
 
