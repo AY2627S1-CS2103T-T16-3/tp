@@ -721,7 +721,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1.  HR officer request for a specific detail of an employee on HR Book.
+1.  HR manager request for a specific detail of an employee on HR Book.
 2.  System displays employee profile and the relevant detail highlighted to user.
 
     Use case ends
@@ -737,7 +737,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1b. The request uses an employee ID that does not follow the correct format (eg. includes letters/special characters)
 
-    * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
+    * 1b1. System informs the HR manager that Employee ID should adhere to strictly numbers and a specified length.
     * 1b2. System does not display specified detail of requested employee.
 
       Use case ends.
