@@ -132,6 +132,15 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_summaryScopeAliases() throws Exception {
+        for (String command : new String[] {"summary", "/summary"}) {
+            assertEquals(new SummaryCommand(SummaryCommand.Scope.ALL), parser.parseCommand(command + " scope/all"));
+            assertEquals(new SummaryCommand(SummaryCommand.Scope.FILTERED),
+                    parser.parseCommand(command + " scope/filtered"));
+        }
+    }
+
+    @Test
     public void parseCommand_summaryWithArguments_throwsUsageMessage() {
         for (String command : new String[] {"summary", "/summary"}) {
             for (String args : new String[] {" 1", " t/engineering", " all", "\tunexpected"}) {

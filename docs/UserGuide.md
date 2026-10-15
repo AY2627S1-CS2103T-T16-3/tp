@@ -60,7 +60,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
-  Exception: `/summary` and `summary` reject extra parameters.
+  Exception: `/summary` and `summary` accept only an optional `scope/all` or `scope/filtered` parameter.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -98,22 +98,29 @@ Shows a list of all employees in the address book.
 
 Format: `list`
 
-### Viewing the workforce summary: `/summary`
+### Viewing the workforce summary: `summary`
 
-Shows employee counts by tag and overall recorded salary statistics.
+Shows employee counts by tag, task-assignment counts, and recorded salary statistics in the selected scope.
 
-Format: `/summary` (alias: `summary`)
+Format: `summary [scope/all|scope/filtered]` (alias: `/summary`)
 
-No arguments are accepted. For example, `/summary t/engineering` reports a usage error.
+Omit the parameter or use `scope/filtered` to summarize the currently displayed employees after `find`
+or `filter`. For example, run `filter t/engineering` then `summary`. Use `summary scope/all` to summarize
+all stored employees while keeping the current filter active.
+Values are case-sensitive and must immediately follow `scope/`; surrounding whitespace is allowed.
+Empty, unknown, repeated parameters and extra text report a usage error, e.g. `summary t/engineering`.
 
-The summary always includes **all stored employees**, even after a `find` command. It does not change
-employee records or the currently displayed search results. Run it again after adding, editing, or
-deleting employees to see updated counts.
+Without a parameter the summary includes **only the currently displayed employees**. Run `list` first
+to display and summarize everyone, or use `summary scope/all` without changing the displayed list.
+The output labels its scope explicitly. An empty filtered result produces zero counts, not a fallback
+to the full book. Neither scope changes employee records or the current filter. Run the command again
+after changes to see fresh counts; with no active filter, both scopes include the same employees.
 
 Example output:
 
 ```text
 Employee summary
+Scope: Filtered employees
 Total employees: 5
 Employees without tags: 1
 
@@ -123,6 +130,12 @@ Employees by tag:
   remote: 2
 
 Employees may have multiple tags; tag counts can overlap.
+
+Task overview
+Total assigned tasks: 6
+Employees with tasks: 3
+Employees without tasks: 2
+Most tasks assigned to one employee: 3
 
 Salary overview
 Total recorded salary: $15000.00
@@ -138,12 +151,18 @@ Highest salary: $5000.00
 * If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
 * These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
   not interpreted as structured departments. Leave balances and reminders are not included.
-* Salary statistics include every stored salary, including zero. For no employees, the total is `$0.00`
+* Salary statistics include every salary in the selected scope, including zero. For no employees, the total is `$0.00`
   and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
 * These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
   Salary statistics still appear when there are no tags and refresh after a salary change.
 
 The result appears in the existing command-result area; scroll within it to read a long summary.
+
+Task counts use the selected scope, like headcount and salary statistics. The same description assigned to two employees
+counts as two assignments. An empty book shows zero for every task statistic; if employees have no
+tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
+Run the summary again after task changes or employee deletion to refresh it. These counts do not
+indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
 
 ### Changing an employee's salary: `salary`
 
@@ -352,5 +371,5 @@ _Details coming soon ..._
 | **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`                                                                                                                            |
 | **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`                                                                                                     |
 | **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`                                                                                                         |
-| **Workforce summary** | `/summary` or `summary` (no arguments)                                                                                                                                          |
+| **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`)                                                                                                                                          |
 | **Help**              | `help`                                                                                                                                                                          |

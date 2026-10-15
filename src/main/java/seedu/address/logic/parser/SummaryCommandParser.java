@@ -7,15 +7,17 @@ import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
- * Parses the argument-free summary command.
+ * Parses a summary command with an optional, single scope parameter.
  */
 public class SummaryCommandParser implements Parser<SummaryCommand> {
     @Override
     public SummaryCommand parse(String args) throws ParseException {
         requireNonNull(args);
-        if (!args.isBlank()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, SummaryCommand.MESSAGE_USAGE));
-        }
-        return new SummaryCommand();
+        return switch (args.strip()) {
+            case "scope/all" -> new SummaryCommand(SummaryCommand.Scope.ALL);
+            case "", "scope/filtered" -> new SummaryCommand(SummaryCommand.Scope.FILTERED);
+            default -> throw new ParseException(
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, SummaryCommand.MESSAGE_USAGE));
+        };
     }
 }
