@@ -323,13 +323,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 (For all use cases below, the **System** is the `HR Book` and the **Actor** is the `HR manager`, unless specified otherwise)
 
-**Use case: Add an employee**
+**Use case: UC1 - Add an employee**
 
 **MSS**
 
-1. HR manager requests to add an employee, providing the employee's details.
-2. System adds the employee and saves the employee information.
-3. System displays the added employee and confirms that the employee was added.
+1. HR manager requests to add an employee and provides the employee's details.
+2. System adds the employee.
+3. System displays the newly added employee and confirms that the employee was added.
 
     Use case ends.
 
@@ -377,7 +377,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Delete employee**
+**Use case: UC2 - Delete employee**
 
 **MSS**
 
@@ -403,7 +403,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 3.
 
-**Use case: Find employees by attribute**
+**Use case: UC3 - Find employees by attribute**
 
 **MSS**
 
@@ -463,7 +463,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Record employee leave**
+**Use case: UC4 - Record employee leave**
 
 **MSS**
 
@@ -546,7 +546,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: Show Employee Details**
+**Use case: UC5 - Show Employee Details**
 
 **MSS**
 
