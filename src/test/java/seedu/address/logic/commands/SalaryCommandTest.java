@@ -19,9 +19,11 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -30,9 +32,10 @@ public class SalaryCommandTest {
     @Test
     public void execute_validIndex_updatesSalaryAndPreservesDetails() throws Exception {
         Model model = new ModelManager();
-        Employee original = new Employee(new Name("Alice"), new Phone("91234567"),
+        Employee original = Employee.createUnassigned(new Name("Alice"), new Phone("91234567"),
                 new Email("alice@example.com"), new Address("123 Main Street"), new Salary("1000"),
-                Set.of(new Tag("team")), List.of());
+                new LeaveEntitlement(14), Set.of(new Tag("team")),
+                List.of(new Task("Prepare report"), new Task("Meet partners")));
         model.addEmployee(original);
         Salary updatedSalary = new Salary("5000");
 
@@ -47,6 +50,7 @@ public class SalaryCommandTest {
         assertEquals(original.getTags(), updated.getTags());
         assertEquals(String.format(SalaryCommand.MESSAGE_SUCCESS, updatedSalary, Messages.format(updated)),
                 result.getFeedbackToUser());
+        assertEquals(original.getTasks(), updated.getTasks());
     }
 
     @Test
@@ -103,11 +107,13 @@ public class SalaryCommandTest {
         Employee bob = new EmployeeBuilder().withName("Bob").withSalary("2000").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
+        Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
 
-        CommandResult result = new SalaryCommand(Index.fromOneBased(2), new Salary("50000")).execute(model);
+        CommandResult result = new SalaryCommand(Index.fromOneBased(2),
+                new Salary("50000")).execute(model);
 
         assertEquals(2, model.getAddressBook().getEmployeeList().size());
-        assertEquals(alice, model.getAddressBook().getEmployeeList().get(0));
+        assertEquals(storedAlice, model.getAddressBook().getEmployeeList().get(0));
         assertEquals(new Salary("50000"), model.getAddressBook().getEmployeeList().get(1).getSalary());
         assertTrue(result.getFeedbackToUser().contains("$50000"));
         assertFalse(result.isExit());
@@ -119,11 +125,12 @@ public class SalaryCommandTest {
         Model model = new ModelManager();
         Employee original = new EmployeeBuilder().withSalary("5000").build();
         model.addEmployee(original);
+        Employee storedOriginal = model.getAddressBook().getEmployeeList().get(0);
 
         new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("005000")).execute(model);
 
         assertEquals(1, model.getAddressBook().getEmployeeList().size());
-        assertEquals(original, model.getAddressBook().getEmployeeList().get(0));
+        assertEquals(storedOriginal, model.getAddressBook().getEmployeeList().get(0));
     }
 
     @Test

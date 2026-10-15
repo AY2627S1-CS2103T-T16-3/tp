@@ -98,13 +98,13 @@ Shows a list of all employees in the address book.
 
 Format: `list`
 
-### Viewing the workforce summary: `/summary`
+### Viewing the workforce summary: `summary`
 
 Shows the total number of stored employees, employee counts by tag, and task-assignment counts.
 
-Format: `/summary` (alias: `summary`)
+Format: `summary` (alias: `/summary`)
 
-No arguments are accepted. For example, `/summary t/engineering` reports a usage error.
+No arguments are accepted. For example, `summary t/engineering` reports a usage error.
 
 The summary always includes **all stored employees**, even after a `find` command. It does not change
 employee records or the currently displayed search results. Run it again after adding, editing, or
@@ -128,7 +128,7 @@ Task overview
 Total assigned tasks: 6
 Employees with tasks: 3
 Employees without tasks: 2
-Highest tasks per employee: 3
+Most tasks assigned to one employee: 3
 ```
 
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
@@ -147,14 +147,27 @@ tasks, the employees-without-tasks count equals headcount. Task statistics appea
 Run the summary again after task changes or employee deletion to refresh it. These counts do not
 indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
 
+### Changing an employee's salary: `salary`
+
+Changes the salary of an existing employee in the address book.
+
+Format: `salary INDEX s/SALARY`
+
+* Updates the employee at the specified `INDEX` in the currently displayed employee list, including search results. The index **must be a positive integer** 1, 2, 3, …​
+* The salary is required and must contain only digits, representing a whole number from `0` to `50000` inclusive. Do not include a `$` sign, commas, or decimal points.
+* Supply `s/` exactly once. The new salary replaces the employee's existing salary; other employee details are preserved.
+* Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
+
+Examples:
+* `salary 1 s/5000` changes the 1st employee's salary in the displayed list to `$5000`.
+* `find Betsy` followed by `salary 1 s/6000` changes the salary of the 1st employee in the search results to `$6000`.
+
 ### Editing an employee: `edit`
 
 Edits an existing employee in the address book.
 
 Salary is preserved when editing other details. The `edit` command rejects `s/`;
-use `salary INDEX s/SALARY` to change salary.
-After a successful salary update, all employees are displayed.
-Older save files without salary values load with a salary of `0`.
+Use `salary INDEX s/SALARY` to change salary.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
 
@@ -235,6 +248,8 @@ Format: `exit`
 
 AddressBook automatically saves data after every command. You do not need to save manually.
 
+Older save files without salary values load with a salary of `0`.
+
 ### Editing the data file
 
 AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
@@ -268,12 +283,13 @@ _Details coming soon ..._
 
 Action | Format, Examples
 --------|------------------
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear** | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
+**Salary** | `salary INDEX s/SALARY`<br> e.g., `salary 1 s/5000`
 **Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
 **List** | `list`
-**Workforce summary** | `/summary` or `summary` (no arguments)
+**Workforce summary** | `summary` (alias: `/summary`) (no arguments)
 **Help** | `help`

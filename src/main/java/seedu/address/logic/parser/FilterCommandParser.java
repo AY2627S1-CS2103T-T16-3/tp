@@ -5,7 +5,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SALARY;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TASK;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -25,7 +27,8 @@ public class FilterCommandParser implements Parser<FilterCommand> {
 
     private static final Map<Prefix, Field> FIELDS = Map.of(
             PREFIX_NAME, Field.NAME, PREFIX_PHONE, Field.PHONE, PREFIX_EMAIL, Field.EMAIL,
-            PREFIX_ADDRESS, Field.ADDRESS, PREFIX_TAG, Field.TAG);
+            PREFIX_ADDRESS, Field.ADDRESS, PREFIX_TAG, Field.TAG,
+            PREFIX_TASK, Field.TASK, PREFIX_SALARY, Field.SALARY);
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<!\\S)[A-Za-z]+/");
 
     @Override
@@ -40,11 +43,11 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         }
 
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(normalizedArgs,
-                PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG);
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG, PREFIX_TASK, PREFIX_SALARY);
         if (!arguments.getPreamble().isEmpty()) {
             throw invalidFormat();
         }
-        arguments.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS);
+        arguments.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_SALARY);
 
         Map<Field, List<String>> criteria = new EnumMap<>(Field.class);
         for (Map.Entry<Prefix, Field> entry : FIELDS.entrySet()) {
@@ -53,6 +56,9 @@ public class FilterCommandParser implements Parser<FilterCommand> {
                 throw invalidFormat();
             }
             if (!values.isEmpty()) {
+                if (entry.getValue() == Field.SALARY) {
+                    values = List.of(ParserUtil.parseSalary(values.get(0)).salary);
+                }
                 criteria.put(entry.getValue(), values);
             }
         }

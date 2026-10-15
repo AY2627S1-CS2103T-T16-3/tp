@@ -28,7 +28,7 @@ public class EmployeeSummaryTaskTest {
     }
 
     @Test
-    public void fromEmployees_tiedMaximum_countsBothEmployees() {
+    public void fromEmployees_tiedMaximum_returnsCorrectCounts() {
         Employee alice = employee(new Task("Report"), new Task("Review"));
         Employee bob = employee(new Task("Meeting"), new Task("Budget"));
         assertCounts(EmployeeSummary.fromEmployees(List.of(alice, bob)), 4, 2, 0, 2);

@@ -11,9 +11,9 @@ import seedu.address.model.employee.EmployeeSummary;
 public class SummaryCommand extends Command {
     public static final String COMMAND_WORD = "summary";
     public static final String COMMAND_ALIAS = "/summary";
-    public static final String MESSAGE_USAGE = COMMAND_ALIAS
+    public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Shows employee counts, tags, and assigned task counts.\n"
-            + "Usage: /summary (or summary). No arguments are accepted.";
+            + "Usage: summary (alias: /summary). No arguments are accepted.";
 
     @Override
     public CommandResult execute(Model model) {
@@ -26,7 +26,7 @@ public class SummaryCommand extends Command {
         return "\n\nTask overview\nTotal assigned tasks: " + summary.getTotalTasks()
                 + "\nEmployees with tasks: " + summary.getEmployeesWithTasks()
                 + "\nEmployees without tasks: " + summary.getEmployeesWithoutTasks()
-                + "\nHighest tasks per employee: " + summary.getHighestTaskCount();
+                + "\nMost tasks assigned to one employee: " + summary.getHighestTaskCount();
     }
 
     private String formatSummary(EmployeeSummary summary) {
