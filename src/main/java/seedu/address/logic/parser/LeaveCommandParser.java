@@ -14,13 +14,15 @@ import seedu.address.logic.parser.exceptions.ParseException;
  */
 public class LeaveCommandParser implements Parser<Command> {
 
+    public static final String MESSAGE_USAGE = "Available leave commands:\n" + AddLeaveCommand.MESSAGE_USAGE;
+
     private static final Pattern SUBCOMMAND_FORMAT = Pattern.compile("(?<subcommandWord>\\S+)(?<arguments>.*)");
 
     @Override
     public Command parse(String args) throws ParseException {
         Matcher matcher = SUBCOMMAND_FORMAT.matcher(args.trim());
         if (!matcher.matches()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLeaveCommand.MESSAGE_USAGE));
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
         }
 
         String subcommandWord = matcher.group("subcommandWord");
@@ -28,6 +30,6 @@ public class LeaveCommandParser implements Parser<Command> {
         if (AddLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord)) {
             return new AddLeaveCommandParser().parse(arguments);
         }
-        throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLeaveCommand.MESSAGE_USAGE));
+        throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
     }
 }

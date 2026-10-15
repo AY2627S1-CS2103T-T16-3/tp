@@ -86,11 +86,11 @@ public class AddressBookTest {
         addressBook.addEmployee(ALICE);
         addressBook.addEmployee(BENSON);
         Leave aliceLeave = addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);
-        Leave bobLeave = addressBook.addLeave(new EmployeeId(2), MONDAY_TO_WEDNESDAY);
+        Leave bensonLeave = addressBook.addLeave(new EmployeeId(2), MONDAY_TO_WEDNESDAY);
 
         addressBook.setEmployees(List.of(BENSON));
 
-        assertEquals(List.of(bobLeave), addressBook.getLeaveList());
+        assertEquals(List.of(bensonLeave), addressBook.getLeaveList());
         assertFalse(addressBook.getLeaveList().contains(aliceLeave));
     }
 

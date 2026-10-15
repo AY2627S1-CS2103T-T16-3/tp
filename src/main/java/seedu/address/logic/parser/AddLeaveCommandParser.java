@@ -26,12 +26,7 @@ public class AddLeaveCommandParser implements Parser<AddLeaveCommand> {
         }
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_START_DATE, PREFIX_END_DATE);
-        Index employeeIndex;
-        try {
-            employeeIndex = ParserUtil.parseIndex(argMultimap.getPreamble());
-        } catch (ParseException e) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddLeaveCommand.MESSAGE_USAGE), e);
-        }
+        Index employeeIndex = ParserUtil.parseIndex(argMultimap.getPreamble());
         LocalDate startDate = ParserUtil.parseStartDate(argMultimap.getValue(PREFIX_START_DATE).orElseThrow());
         LocalDate endDate = ParserUtil.parseEndDate(argMultimap.getValue(PREFIX_END_DATE).orElseThrow());
 
