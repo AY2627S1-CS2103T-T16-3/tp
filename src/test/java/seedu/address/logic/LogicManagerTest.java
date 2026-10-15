@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
@@ -125,6 +126,33 @@ public class LogicManagerTest {
             assertEquals(displayedEmployees, model.getFilteredEmployeeList());
             assertEquals(savedData, Files.readString(dataFile));
         }
+    }
+
+    @Test
+    public void execute_summaryAfterTaskCommands_recomputesAndPreservesSavedTasks() throws Exception {
+        model.addEmployee(new EmployeeBuilder().withName("Alice").withTags().build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob").withTags()
+                .withTasks(new Task("Review")).build());
+        logic.execute("find Alice");
+        logic.execute("add-task 1 d/Report");
+        AddressBook before = new AddressBook(model.getAddressBook());
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+        String savedData = Files.readString(dataFile);
+
+        assertTrue(logic.execute("summary").getFeedbackToUser().endsWith("Total assigned tasks: 2\n"
+                + "Employees with tasks: 2\nEmployees without tasks: 0\nMost tasks assigned to one employee: 1"));
+        assertEquals(before, model.getAddressBook());
+        assertEquals(savedData, Files.readString(dataFile));
+
+        logic.execute("delete-task 1 i/1");
+        before = new AddressBook(model.getAddressBook());
+        savedData = Files.readString(dataFile);
+        assertTrue(logic.execute("summary").getFeedbackToUser().endsWith("Total assigned tasks: 1\n"
+                + "Employees with tasks: 1\nEmployees without tasks: 1\nMost tasks assigned to one employee: 1"));
+        assertEquals(before, model.getAddressBook());
+        assertEquals(savedData, Files.readString(dataFile));
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
+        assertEquals(before, new AddressBook(storage.readAddressBook().orElseThrow()));
     }
 
     @Test

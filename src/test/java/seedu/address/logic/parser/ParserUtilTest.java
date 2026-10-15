@@ -18,6 +18,7 @@ import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -54,6 +55,16 @@ public class ParserUtilTest {
 
         // Leading and trailing whitespaces
         assertEquals(INDEX_FIRST_EMPLOYEE, ParserUtil.parseIndex("  1  "));
+    }
+
+    @Test
+    public void parseTask_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, Task.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseTask(" "));
+    }
+
+    @Test
+    public void parseTask_validValue_returnsTask() throws Exception {
+        assertEquals(new Task("Prepare report"), ParserUtil.parseTask("Prepare report"));
     }
 
     @Test
