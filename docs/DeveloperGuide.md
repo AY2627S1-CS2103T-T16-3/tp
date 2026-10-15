@@ -303,33 +303,34 @@ _{Explain here how the data archiving feature will be implemented}_
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        |
-| -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
-| `* * *`  | First time user of HR Book                                 | see usage instructions         | refer to instructions when I forget how to use the App and to learn the app capabilities                |
-| `* * *`  | First time user of HR Book                                 | edit employees contact         |   make any relevant updates to employee contact fields              |
-| `* * *`  | HR Officer                                       | add a new employee profile               |     add newly hired employee profiles with their respective details                                                                  |
-| `* * *`  | HR Officer                                       | manage Employee’s leaves and off               |     can keep track of manpower in the company on a daily basis                                                                  |
-| `* * *`  | HR Officer                                       | delete an employee profile              | remove employees no longer with the company                                   |
-| `* * *`  | HR Officer                                      |   shift employees between different departments | keep check of changing roles within the startup |
-| `* * *`  | HR Officer                                      |   view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration |
-| `* *`    | HR Officer                                      | filter and find a specific employee based on a specific detail  | save time by not having to go through the entire contact book                |
-| `* *`      | Experienced HR Officer with many employees on HR Book | sort employee by department          | locate a personnel within a department of the company easily                                                |
-| `* *`  | HR Officer | have local storage for employee contact and details | have a persistent and secure database for all relevant information|
-| `* *`  | HR Officer | have automatic local backup for employee contact and details | backup the employee information locally |
-| `*`  | Experienced HR Officer | tag employees together | easily group employees based on similar tags |
-| `*`  | Experienced HR Officer | generate a list of administrative actions | to show logs in the event of audits or reviews|
+| Priority | As a …​                    | I want to …​                                                                   | So that I can…​                                                                          |
+|----------|----------------------------|--------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and to learn the app capabilities |
+| `* * *`  | HR Officer                 | edit employees contact                                                         | make any relevant updates to employee contact fields                                     |
+| `* * *`  | HR Officer                 | add a new employee profile                                                     | add newly hired employee profiles with their respective details                          |
+| `* * *`  | HR Officer                 | manage employee’s leaves and off                                               | can keep track of manpower in the company on a daily basis                               |
+| `* * *`  | HR Officer                 | delete an employee profile                                                     | remove employees no longer with the company                                              |
+| `* * *`  | HR Officer                 | shift employees between different departments                                  | keep check of changing roles within the startup                                          |
+| `* * *`  | HR Officer                 | view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration                                  |
+| `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
+| `* *`    | HR Officer                 | filter and find a specific employee based on a specific detail                 | save time by not having to go through the entire contact book                            |
+| `* *`    | Experienced HR Officer     | sort employee by department                                                    | locate a personnel within a department of the company easily                             |
+| `* *`    | HR Officer                 | have local storage for employee contact and details                            | have a persistent and secure database for all relevant information                       |
+| `* *`    | HR Officer                 | have automatic local backup for employee contact and details                   | backup the employee information locally                                                  |
+| `*`      | Experienced HR Officer     | tag employees together                                                         | easily group employees based on similar tags                                             |
+| `*`      | Experienced HR Officer     | generate a list of administrative actions                                      | to show logs in the event of audits or reviews                                           |
 
 ### Use cases
 
 (For all use cases below, the **System** is the `HR Book` and the **Actor** is the `HR manager`, unless specified otherwise)
 
-**Use case: Add an employee**
+**Use case: UC1 - Add an employee**
 
 **MSS**
 
-1. HR manager requests to add an employee, providing the employee's details.
-2. System adds the employee and saves the employee information.
-3. System displays the added employee and confirms that the employee was added.
+1. HR manager requests to add an employee and provides the employee's details.
+2. System adds the employee.
+3. System displays the newly added employee and confirms that the employee was added.
 
     Use case ends.
 
@@ -377,7 +378,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Delete employee**
+**Use case: UC2 - Delete employee**
 
 **MSS**
 
@@ -403,7 +404,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 3.
 
-**Use case: Find employees by attribute**
+**Use case: UC3 - Find employees by attribute**
 
 **MSS**
 
@@ -463,7 +464,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Record employee leave**
+**Use case: UC4 - Record employee leave**
 
 **MSS**
 
@@ -546,7 +547,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: Show Employee Details**
+**Use case: UC5 - Show Employee Details**
 
 **MSS**
 
@@ -599,6 +600,55 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+
+**Use case: Change an employee's salary**
+
+**MSS**
+
+1. HR manager requests to change an employee's salary, and provides the employee's details.
+2. System changes the employee's salary.
+3. System displays the employee with the new salary.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. The HR manager does not provide one or more required fields.
+
+    * 1a1. System informs the HR manager to provide all required fields.
+    * 1a2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 1b. The HR manager provides an invalid salary value.
+
+    * 1b1. System informs the HR manager that the salary value is invalid.
+    * 1b2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 1c. The HR manager provides more fields than required.
+
+    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 1d. The HR manager provides an invalid index.
+
+    * 1d1. System informs the HR manager that the index is invalid.
+    * 1d2. System does not change the employee's salary.
+
+    Use case ends.
+
+* 2a. An error occurs while saving new salary of employee into storage.
+
+    * 2a1. System informs the HR manager that the salary could not be changed.
+    * 2a2. System does not change the employee's salary.
+
+    Use case ends.
+
+
 {More to be added}
 
 
@@ -607,10 +657,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
 2.  HR Book should be able to hold up to 1000 employees.
 3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  A novice user should be able to use HR Book even if they have not used similar systems before.
-5.  The HR Book should respond to every command under 2 seconds.
-6.  HR Book should be able to carry out its functionality without internet access.
-7.  HR Book should preserve all successfully saved information between application sessions.
+4.  The HR Book should respond to every command under 2 seconds.
+5.  HR Book should be able to carry out its functionality without internet access.
+
 
 ### Glossary
 
