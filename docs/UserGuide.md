@@ -28,11 +28,16 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
    * `list` : Lists all contacts.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 le/14` : Adds an
+     employee named `John Doe` with 14 days of annual leave entitlement.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
+   * `leave add 1 from/20-10-2026 to/22-10-2026` : Records leave for the first employee currently shown.
 
-   * `clear` : Deletes all contacts.
+   * `leave list` : Lists all leave records and their current status.
+
+   * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
+
+   * `clear` : Deletes all employee and leave records.
 
    * `exit` : Exits the app.
 
@@ -78,19 +83,22 @@ Format: `help`
 
 Adds an employee to the address book.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​`
+Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
 Salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
 Employee cards display salary with a `$` prefix, for example `$5000`.
+
+Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
+employee who is not entitled to annual leave.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
 </div>
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 le/14`
+* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 le/20 t/criminal`
 
 ### Listing all employees: `list`
 
@@ -144,17 +152,21 @@ use `salary INDEX s/SALARY` to change salary.
 After a successful salary update, all employees are displayed.
 Older save files without salary values load with a salary of `0`.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
 
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
+  Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
+  enough leave is deleted or the entitlement is increased, no further leave can be added for that year.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
 * To remove all of an employee's tags, enter `t/` without a tag after it.
 
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st employee to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd employee to be `Betsy Crower` and clears all existing tags.
+*  `edit 3 le/21` Changes the 3rd employee's annual leave entitlement to 21 days.
 
 ### Locating employees by name: `find`
 
@@ -202,14 +214,85 @@ Format: `delete INDEX`
 * Deletes the employee at the specified `INDEX`.
 * The index refers to the index number shown in the displayed employee list.
 * The index **must be a positive integer** 1, 2, 3, …​
+* All leave records belonging to the employee are also deleted. They cannot become orphaned records that refer to a
+  missing employee.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd employee in the address book.
 * `find Betsy` followed by `delete 1` deletes the 1st employee in the results of the `find` command.
 
+### Managing employee leave
+
+Leave records are stored separately from employee records and linked internally to the correct employee. You select an
+employee using the index currently displayed in the employee list. Internal employee IDs are not shown and are not
+accepted by leave commands.
+
+Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record.
+
+#### Recording leave: `leave add`
+
+Records one leave period for the employee at the displayed index.
+
+Format: `leave add INDEX from/START_DATE to/END_DATE`
+
+* `INDEX` refers to the index shown in the current employee list and must be a positive integer.
+* Dates must use the `DD-MM-YYYY` format. Both dates are included in the leave period.
+* The start date must be on or before the end date, and both dates must be in the same calendar year.
+* Only Mondays to Fridays count against the employee's entitlement. Saturdays and Sundays are excluded.
+* Public holidays are not excluded in the MVP. A public holiday that falls from Monday to Friday counts as a working
+  leave day.
+* A period containing no weekday is rejected.
+* Leave periods for the same employee cannot overlap, including on a weekend or boundary date. Leave periods belonging
+  to different employees may overlap.
+* The number of weekdays requested cannot exceed the employee's remaining entitlement for that calendar year.
+
+The success message shows the new leave ID, employee name, period, charged working days, and remaining leave for the
+year.
+
+Examples:
+* `list` followed by `leave add 1 from/20-10-2026 to/22-10-2026` records three working days for the first employee.
+* `find Betsy` followed by `leave add 1 from/23-10-2026 to/26-10-2026` records two working days for Betsy, excluding
+  the weekend.
+
+#### Listing leave: `leave list`
+
+Lists every leave record, ordered by leave ID.
+
+Format: `leave list`
+
+Each line shows the leave ID, employee name, inclusive date range, charged working days, and one of these statuses:
+
+* `Upcoming`: today's date is before the start date.
+* `Ongoing`: today's date falls within the inclusive date range.
+* `Past`: today's date is after the end date.
+
+The status is calculated whenever the command runs and is not saved. An ongoing period remains `Ongoing` when today is
+a weekend inside that period, even though weekends do not consume entitlement.
+
+Example output:
+
+```text
+Leave records:
+ID 1 | John Doe | 20-10-2026 to 22-10-2026 | 3 working day(s) | Upcoming
+```
+
+#### Deleting leave: `leave delete`
+
+Deletes the leave record with the specified leave ID.
+
+Format: `leave delete LEAVE_ID`
+
+* `LEAVE_ID` must be a positive integer displayed by `leave list`; it is not an employee list index.
+* Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
+  balance is recalculated from the records that remain.
+* Deleted leave IDs are not reused.
+
+Example:
+* `leave list` followed by `leave delete 2` deletes the leave record whose ID is `2`.
+
 ### Clearing all entries: `clear`
 
-Clears all entries from the address book.
+Clears all employee and leave records from HR Book.
 
 Format: `clear`
 
@@ -221,15 +304,20 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+HR Book automatically saves employee and leave data after every command. You do not need to save manually.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+HR Book data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. The file contains
+employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+If your changes make the data file invalid, HR Book starts with empty data at the next run. The invalid file remains on
+disk until you run a command (HR Book saves after every command). Still, we recommend backing up the file before
+editing it.<br>
+Furthermore, certain edits can cause HR Book to behave in unexpected ways (e.g., if a value entered is outside of the
+acceptable range or a leave refers to a missing employee). Therefore, edit the data file only if you are confident that
+you can update it correctly.
 </div>
 
 ### Archiving data files `[coming in v2.0]`
@@ -241,7 +329,12 @@ _Details coming soon ..._
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous
+HR Book home folder. This transfers both employee and leave records.
+
+**Q**: Why does an employee card show a different number from the leave ID?<br>
+**A**: The employee list number is a temporary displayed index that can change after a search or filter. A leave ID is a
+stable identifier for one leave record. Use the displayed index with `leave add` and the leave ID with `leave delete`.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -256,12 +349,16 @@ _Details coming soon ..._
 
 Action | Format, Examples
 --------|------------------
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add employee** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 le/14 t/friend t/colleague`
 **Clear** | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
+**Delete employee** | `delete INDEX`<br> e.g., `delete 3`
+**Edit employee** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee le/21`
 **Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
 **List** | `list`
+**Record leave** | `leave add INDEX from/START_DATE to/END_DATE`<br> e.g., `leave add 1 from/20-10-2026 to/22-10-2026`
+**List leave** | `leave list`
+**Delete leave** | `leave delete LEAVE_ID`<br> e.g., `leave delete 2`
 **Workforce summary** | `/summary` or `summary` (no arguments)
 **Help** | `help`
+**Exit** | `exit`
