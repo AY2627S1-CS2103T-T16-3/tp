@@ -100,7 +100,7 @@ Format: `list`
 
 ### Viewing the workforce summary: `/summary`
 
-Shows the total number of stored employees, employees without tags, and employee counts for each tag.
+Shows employee counts by tag and overall recorded salary statistics.
 
 Format: `/summary` (alias: `summary`)
 
@@ -123,6 +123,12 @@ Employees by tag:
   remote: 2
 
 Employees may have multiple tags; tag counts can overlap.
+
+Salary overview
+Total recorded salary: $15000.00
+Average salary: $3000.00
+Lowest salary: $0.00
+Highest salary: $5000.00
 ```
 
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
@@ -131,7 +137,11 @@ Employees may have multiple tags; tag counts can overlap.
 * Having no tags is allowed; the untagged count is a categorization aid, not an error.
 * If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
 * These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
-  not interpreted as structured departments. Leave balances, salary totals, and reminders are not included.
+  not interpreted as structured departments. Leave balances and reminders are not included.
+* Salary statistics include every stored salary, including zero. For no employees, the total is `$0.00`
+  and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
+* These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
+  Salary statistics still appear when there are no tags and refresh after a salary change.
 
 The result appears in the existing command-result area; scroll within it to read a long summary.
 

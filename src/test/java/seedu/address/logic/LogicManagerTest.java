@@ -89,7 +89,8 @@ public class LogicManagerTest {
         String savedData = Files.readString(dataFile);
         CommandResult expected = new CommandResult("Employee summary\nTotal employees: 2\n"
                 + "Employees without tags: 1\n\nEmployees by tag:\n  engineering: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap.");
+                + "Employees may have multiple tags; tag counts can overlap.\n\nSalary overview\n"
+                + "Total recorded salary: $0.00\nAverage salary: $0.00\nLowest salary: $0.00\nHighest salary: $0.00");
 
         for (String command : new String[] {SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS}) {
             assertEquals(expected, logic.execute(command));
