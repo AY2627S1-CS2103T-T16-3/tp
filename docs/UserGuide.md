@@ -227,6 +227,62 @@ Examples:
 * `list` followed by `delete 2` deletes the 2nd employee in the address book.
 * `find Betsy` followed by `delete 1` deletes the 1st employee in the results of the `find` command.
 
+### Listing tasks on an employee: `list-tasks`
+
+Lists the tasks related to an employee.
+
+Format: `list-tasks EMPLOYEE_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* Tasks are displayed in the order in which they were added.
+* The current filtered employee list is preserved after the command.
+
+Example:
+
+* `list-tasks 1` lists the tasks related to the first displayed employee.
+
+### Adding tasks to an employee: `add-task`
+
+Adds a task to an employee.
+
+Format: `add-task EMPLOYEE_INDEX d/DETAILS`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `DETAILS` must not be empty, and it must not exceed 120 characters
+* A task that already exists for the employee cannot be added again.
+  Task comparisons ignore leading/trailing whitespace, repeated whitespace,
+  and capitalization. For example, `Prepare report` and `  prepare   REPORT  `
+  are treated as duplicates.
+* The current filtered employee list is preserved after the command.
+
+Examples:
+
+* `add-task 1 d/Prepare monthly report` adds the task to the first displayed
+  employee.
+* `find Alex` followed by `add-task 1 d/Prepare monthly report` adds the
+  task to the first employee in the filtered results.
+
+### Deleting tasks on an employee: `delete-task`
+
+Deletes a task related to an employee.
+
+Format: `delete-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The current filtered employee list is preserved after the command.
+
+Examples:
+
+* `delete-task 1 i/2` deletes the second task assigned to the first displayed
+  employee.
+* `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
+  first employee in the filtered results.
+
 ### Clearing all entries: `clear`
 
 Clears all entries from the address book.
@@ -276,15 +332,18 @@ _Details coming soon ..._
 
 ## Command summary
 
-Action | Format, Examples
---------|------------------
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
-**Clear** | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Salary** | `salary INDEX s/SALARY`<br> e.g., `salary 1 s/5000`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
-**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
-**Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
-**List** | `list`
-**Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`)
-**Help** | `help`
+| Action                | Format, Examples                                                                                                                                                     |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Add**               | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`|
+| **Clear**             | `clear`                                                                                                                                                              |
+| **Delete**            | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                  |
+| **Salary**            | `salary INDEX s/SALARY`<br> e.g., `salary 1 s/5000`                                                                                                                  |
+| **Edit**              | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`                                         |
+| **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                                           |
+| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`                                                                           |
+| **List**              | `list`                                                                                                                                                               |
+| **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`                                                                                                                 |
+| **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`                                                                                          |
+| **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`                                                                                              |
+| **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`)                                                                                                                               |
+| **Help**              | `help`                                                                                                                                                               |
