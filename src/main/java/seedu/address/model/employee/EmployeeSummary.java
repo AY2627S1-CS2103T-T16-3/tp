@@ -57,6 +57,9 @@ public final class EmployeeSummary {
         return totalEmployees;
     }
 
+    /**
+     * Returns only the employees whose tag set is empty, rather than the total headcount.
+     */
     public int getEmployeesWithoutTags() {
         return employeesWithoutTags;
     }
