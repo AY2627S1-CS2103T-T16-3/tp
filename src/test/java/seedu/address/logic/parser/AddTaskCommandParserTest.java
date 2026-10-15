@@ -1,5 +1,6 @@
 package seedu.address.logic.parser;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.getErrorMessageForDuplicatePrefixes;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TASK_DETAILS;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.AddTaskCommand;
+import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Task;
 
 public class AddTaskCommandParserTest {
@@ -32,6 +34,17 @@ public class AddTaskCommandParserTest {
     public void parse_missingDetails_throwsParseException() {
         assertParseFailure(parser, "1", "Invalid command format!\n"
                 + AddTaskCommand.MESSAGE_USAGE);
+    }
+
+    @Test
+    public void parse_emptyDetails_throwsParseException() {
+        assertParseFailure(parser, "1 d/ ", Task.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_taskDetailsExceedingLimit_throwsParseException() {
+        assertThrows(ParseException.class, () -> parser.parse("1 d/"
+                + "a".repeat(Task.MAX_DETAILS_LENGTH + 1)));
     }
 
     @Test

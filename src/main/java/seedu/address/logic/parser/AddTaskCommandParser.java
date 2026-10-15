@@ -33,7 +33,7 @@ public class AddTaskCommandParser implements Parser<AddTaskCommand> {
         try {
             employeeIndex = ParserUtil.parseIndex(argMultimap.getPreamble());
         } catch (ParseException e) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddTaskCommand.MESSAGE_USAGE));
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddTaskCommand.MESSAGE_USAGE), e);
         }
         Task task = ParserUtil.parseTask(argMultimap.getValue(PREFIX_TASK_DETAILS).get());
         return new AddTaskCommand(employeeIndex, task);

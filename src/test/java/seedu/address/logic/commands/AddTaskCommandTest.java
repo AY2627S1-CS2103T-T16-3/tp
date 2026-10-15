@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
@@ -33,6 +34,39 @@ public class AddTaskCommandTest {
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
                         employee.getName().fullName, "Prepare report"), expectedModel);
+    }
+
+    @Test
+    public void execute_validTaskWithWhitespaceAndPunctuation_appendsTask() {
+        String details = "                   task......Task                 ";
+        Employee employee = model.getFilteredEmployeeList().get(0);
+        Employee expectedEmployee = employee.addTask(new Task(details));
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.setEmployee(employee, expectedEmployee);
+
+        assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task(details)),
+                model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
+                        employee.getName().fullName, "task......Task"), expectedModel);
+    }
+
+    @Test
+    public void execute_validTaskWithLeadingWhitespace_appendsTrimmedTask() {
+        String details = " ".repeat(Task.MAX_DETAILS_LENGTH) + "T";
+        Employee employee = model.getFilteredEmployeeList().get(0);
+        Employee expectedEmployee = employee.addTask(new Task(details));
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.setEmployee(employee, expectedEmployee);
+
+        assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task(details)),
+                model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
+                        employee.getName().fullName, "T"), expectedModel);
+    }
+
+    @Test
+    public void execute_invalidTask_throwsException() {
+        assertThrows(IllegalArgumentException.class, () -> new Task("            "));
+        assertThrows(IllegalArgumentException.class, () -> new Task(
+                "a".repeat(Task.MAX_DETAILS_LENGTH + 1)));
     }
 
     @Test

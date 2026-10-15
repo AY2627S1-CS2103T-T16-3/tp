@@ -232,6 +232,9 @@ Format: `add-task EMPLOYEE_INDEX d/DETAILS`
   employee list and must be a positive integer.
 * `DETAILS` must not be empty, and it must not exceed 120 characters
 * A task that already exists for the employee cannot be added again.
+  Task comparisons ignore leading/trailing whitespace, repeated whitespace,
+  and capitalization. For example, `Prepare report` and `  prepare   REPORT  `
+  are treated as duplicates.
 * The current filtered employee list is preserved after the command.
 
 Examples:
