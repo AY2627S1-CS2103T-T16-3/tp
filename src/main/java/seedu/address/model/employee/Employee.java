@@ -29,18 +29,20 @@ public class Employee {
     // Data fields
     private final Address address;
     private final Salary salary;
+    private final LeaveEntitlement leaveEntitlement;
     private final Set<Tag> tags = new HashSet<>();
     private final List<Task> tasks = new ArrayList<>();
 
     private Employee(Optional<EmployeeId> employeeId, Name name, Phone phone, Email email, Address address,
-            Salary salary, Set<Tag> tags, List<Task> tasks) {
-        requireAllNonNull(employeeId, name, phone, email, address, tags, salary, tasks);
+            Salary salary, LeaveEntitlement leaveEntitlement, Set<Tag> tags, List<Task> tasks) {
+        requireAllNonNull(employeeId, name, phone, email, address, tags, salary, leaveEntitlement, tasks);
         this.employeeId = employeeId;
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.salary = salary;
+        this.leaveEntitlement = leaveEntitlement;
         this.tags.addAll(tags);
         this.tasks.addAll(tasks);
     }
@@ -49,8 +51,8 @@ public class Employee {
      * Creates an employee whose internal identifier has not yet been assigned by the address book.
      */
     public static Employee createUnassigned(Name name, Phone phone, Email email, Address address, Salary salary,
-            Set<Tag> tags, List<Task> tasks) {
-        return new Employee(Optional.empty(), name, phone, email, address, salary, tags, tasks);
+            LeaveEntitlement leaveEntitlement, Set<Tag> tags, List<Task> tasks) {
+        return new Employee(Optional.empty(), name, phone, email, address, salary, leaveEntitlement, tags, tasks);
     }
 
     /**
@@ -62,7 +64,8 @@ public class Employee {
         if (this.employeeId.isPresent()) {
             throw new IllegalStateException("Employee ID has already been assigned.");
         }
-        return new Employee(Optional.of(employeeId), name, phone, email, address, salary, tags, tasks);
+        return new Employee(Optional.of(employeeId), name, phone, email, address, salary, leaveEntitlement,
+                tags, tasks);
     }
 
     public Optional<EmployeeId> getEmployeeId() {
@@ -88,9 +91,10 @@ public class Employee {
     /**
      * Returns a copy with updated employee details while preserving internal identity, salary, and tasks.
      */
-    public Employee withDetails(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
-        return new Employee(employeeId, name, phone, email, address, salary, tags, tasks);
+    public Employee withDetails(Name name, Phone phone, Email email, Address address,
+            LeaveEntitlement leaveEntitlement, Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, leaveEntitlement, tags);
+        return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, tasks);
     }
 
     /**
@@ -114,7 +118,7 @@ public class Employee {
         }
         List<Task> updatedTasks = new ArrayList<>(tasks);
         updatedTasks.add(task);
-        return new Employee(employeeId, name, phone, email, address, salary, tags, updatedTasks);
+        return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, updatedTasks);
     }
 
     /** Deletes a task using a zero-based index. */
@@ -124,7 +128,7 @@ public class Employee {
         }
         List<Task> updatedTasks = new ArrayList<>(tasks);
         updatedTasks.remove(index);
-        return new Employee(employeeId, name, phone, email, address, salary, tags, updatedTasks);
+        return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, updatedTasks);
     }
 
     /** Returns the employee's salary. */
@@ -132,10 +136,15 @@ public class Employee {
         return salary;
     }
 
+    /** Returns the employee's annual leave entitlement. */
+    public LeaveEntitlement getLeaveEntitlement() {
+        return leaveEntitlement;
+    }
+
     /** Returns a copy with the updated salary while preserving internal identity and all other fields. */
     public Employee withSalary(Salary salary) {
         requireNonNull(salary);
-        return new Employee(employeeId, name, phone, email, address, salary, tags, tasks);
+        return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, tasks);
     }
 
     /**
@@ -173,13 +182,14 @@ public class Employee {
                 && address.equals(otherEmployee.address)
                 && tags.equals(otherEmployee.tags)
                 && tasks.equals(otherEmployee.tasks)
-                && salary.equals(otherEmployee.salary);
+                && salary.equals(otherEmployee.salary)
+                && leaveEntitlement.equals(otherEmployee.leaveEntitlement);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(employeeId, name, phone, email, address, tags, tasks, salary);
+        return Objects.hash(employeeId, name, phone, email, address, tags, tasks, salary, leaveEntitlement);
     }
 
     @Override
@@ -190,6 +200,7 @@ public class Employee {
                 .add("email", email)
                 .add("address", address)
                 .add("salary", salary)
+                .add("leaveEntitlement", leaveEntitlement)
                 .add("tags", tags)
                 .add("tasks", tasks)
                 .toString();

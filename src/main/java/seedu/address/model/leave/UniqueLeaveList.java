@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.exceptions.DuplicateLeaveException;
 import seedu.address.model.leave.exceptions.LeaveNotFoundException;
 
@@ -40,6 +41,26 @@ public class UniqueLeaveList implements Iterable<Leave> {
     }
 
     /**
+     * Returns all leave records belonging to {@code employeeId} in insertion order.
+     */
+    public List<Leave> getLeavesFor(EmployeeId employeeId) {
+        requireNonNull(employeeId);
+        return internalList.stream()
+                .filter(leave -> leave.getEmployeeId().equals(employeeId))
+                .toList();
+    }
+
+    /**
+     * Returns true if the employee has a leave record that overlaps {@code period}.
+     */
+    public boolean hasOverlappingLeave(EmployeeId employeeId, LeavePeriod period) {
+        requireAllNonNull(employeeId, period);
+        return internalList.stream()
+                .filter(leave -> leave.getEmployeeId().equals(employeeId))
+                .anyMatch(leave -> leave.getPeriod().overlaps(period));
+    }
+
+    /**
      * Adds a leave record. Its leave ID must not already exist in the list.
      */
     public void add(Leave toAdd) {
@@ -58,6 +79,14 @@ public class UniqueLeaveList implements Iterable<Leave> {
         if (!internalList.remove(toRemove)) {
             throw new LeaveNotFoundException();
         }
+    }
+
+    /**
+     * Removes all leave records belonging to {@code employeeId}.
+     */
+    public void removeAllFor(EmployeeId employeeId) {
+        requireNonNull(employeeId);
+        internalList.removeIf(leave -> leave.getEmployeeId().equals(employeeId));
     }
 
     public void setLeaves(UniqueLeaveList replacement) {

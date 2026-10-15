@@ -11,18 +11,21 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.exceptions.DuplicateLeaveException;
 import seedu.address.model.leave.exceptions.LeaveNotFoundException;
 
 public class UniqueLeaveListTest {
 
-    private static final Leave LEAVE_ONE = new Leave(new LeaveId(1), new LeavePeriod(
+    private static final EmployeeId EMPLOYEE_ONE = new EmployeeId(1);
+    private static final EmployeeId EMPLOYEE_TWO = new EmployeeId(2);
+    private static final Leave LEAVE_ONE = new Leave(new LeaveId(1), EMPLOYEE_ONE, new LeavePeriod(
             LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 7)));
-    private static final Leave LEAVE_TWO = new Leave(new LeaveId(2), new LeavePeriod(
+    private static final Leave LEAVE_TWO = new Leave(new LeaveId(2), EMPLOYEE_TWO, new LeavePeriod(
             LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 3)));
-    private static final Leave SAME_ID_AS_LEAVE_ONE = new Leave(new LeaveId(1), new LeavePeriod(
+    private static final Leave SAME_ID_AS_LEAVE_ONE = new Leave(new LeaveId(1), EMPLOYEE_TWO, new LeavePeriod(
             LocalDate.of(2026, 12, 1), LocalDate.of(2026, 12, 2)));
-    private static final Leave SAME_ID_AS_LEAVE_TWO = new Leave(new LeaveId(2), new LeavePeriod(
+    private static final Leave SAME_ID_AS_LEAVE_TWO = new Leave(new LeaveId(2), EMPLOYEE_ONE, new LeavePeriod(
             LocalDate.of(2026, 12, 3), LocalDate.of(2026, 12, 4)));
 
     private final UniqueLeaveList uniqueLeaveList = new UniqueLeaveList();
@@ -49,6 +52,29 @@ public class UniqueLeaveListTest {
     }
 
     @Test
+    public void getLeavesFor_returnsOnlyMatchingEmployee() {
+        uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, LEAVE_TWO));
+
+        assertEquals(List.of(LEAVE_ONE), uniqueLeaveList.getLeavesFor(EMPLOYEE_ONE));
+        assertEquals(List.of(LEAVE_TWO), uniqueLeaveList.getLeavesFor(EMPLOYEE_TWO));
+        assertThrows(NullPointerException.class, () -> uniqueLeaveList.getLeavesFor(null));
+    }
+
+    @Test
+    public void hasOverlappingLeave_checksOnlyMatchingEmployee() {
+        uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, LEAVE_TWO));
+        LeavePeriod overlappingPeriod = new LeavePeriod(
+                LocalDate.of(2026, 10, 7), LocalDate.of(2026, 10, 8));
+
+        assertTrue(uniqueLeaveList.hasOverlappingLeave(EMPLOYEE_ONE, overlappingPeriod));
+        assertFalse(uniqueLeaveList.hasOverlappingLeave(EMPLOYEE_TWO, overlappingPeriod));
+        assertThrows(NullPointerException.class, () ->
+                uniqueLeaveList.hasOverlappingLeave(null, overlappingPeriod));
+        assertThrows(NullPointerException.class, () ->
+                uniqueLeaveList.hasOverlappingLeave(EMPLOYEE_ONE, null));
+    }
+
+    @Test
     public void add() {
         assertThrows(NullPointerException.class, () -> uniqueLeaveList.add(null));
 
@@ -67,6 +93,16 @@ public class UniqueLeaveListTest {
         uniqueLeaveList.remove(LEAVE_ONE);
 
         assertTrue(uniqueLeaveList.asUnmodifiableObservableList().isEmpty());
+    }
+
+    @Test
+    public void removeAllFor_removesOnlyMatchingEmployee() {
+        uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, LEAVE_TWO));
+
+        uniqueLeaveList.removeAllFor(EMPLOYEE_ONE);
+
+        assertEquals(List.of(LEAVE_TWO), uniqueLeaveList.asUnmodifiableObservableList());
+        assertThrows(NullPointerException.class, () -> uniqueLeaveList.removeAllFor(null));
     }
 
     @Test

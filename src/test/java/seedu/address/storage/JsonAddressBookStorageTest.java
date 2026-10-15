@@ -11,6 +11,7 @@ import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,7 +20,11 @@ import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
+import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class JsonAddressBookStorageTest {
@@ -67,6 +72,9 @@ public class JsonAddressBookStorageTest {
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();
+        Leave leave = new Leave(new LeaveId(1), new EmployeeId(1), new LeavePeriod(
+                LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 7)));
+        original.setLeaves(java.util.List.of(leave));
         JsonAddressBookStorage jsonAddressBookStorage = new JsonAddressBookStorage(filePath);
 
         // Save in new file and read back
