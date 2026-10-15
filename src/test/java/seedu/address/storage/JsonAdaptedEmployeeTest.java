@@ -15,6 +15,8 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
+import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -40,7 +42,8 @@ public class JsonAdaptedEmployeeTest {
 
     @Test
     public void toModelType_validEmployeeDetails_returnsEmployee() throws Exception {
-        Employee original = BENSON.addTask(new Task("Prepare report"));
+        Employee original = new EmployeeBuilder(BENSON).withoutEmployeeId()
+                .withTasks(new Task("Prepare report")).build();
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(original);
         Employee restored = employee.toModelType();
         assertEquals(original, restored);
@@ -59,10 +62,28 @@ public class JsonAdaptedEmployeeTest {
 
     @Test
     public void constructor_employeeWithTasks_roundTripsTasks() throws Exception {
-        Employee employeeWithTasks = BENSON.addTask(new Task("Prepare report"));
+        Employee employeeWithTasks = new EmployeeBuilder(BENSON).withoutEmployeeId()
+                .withTasks(new Task("Prepare report")).build();
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(employeeWithTasks);
 
         assertEquals(employeeWithTasks, employee.toModelType());
+    }
+
+    @Test
+    public void constructor_employeeWithId_roundTripsEmployeeId() throws Exception {
+        Employee employeeWithId = new EmployeeBuilder(BENSON).withEmployeeId(12).build();
+
+        Employee restored = new JsonAdaptedEmployee(employeeWithId).toModelType();
+
+        assertEquals(employeeWithId.getEmployeeId(), restored.getEmployeeId());
+    }
+
+    @Test
+    public void toModelType_invalidEmployeeId_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(0, VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of());
+
+        assertThrows(IllegalValueException.class, EmployeeId.MESSAGE_CONSTRAINTS, employee::toModelType);
     }
 
     @Test
@@ -195,6 +216,22 @@ public class JsonAdaptedEmployeeTest {
     public void toModelType_nonDefaultSalary_preserved() throws Exception {
         Employee original = new EmployeeBuilder(BENSON).withSalary("5000").build();
         assertEquals(original.getSalary(), new JsonAdaptedEmployee(original).toModelType().getSalary());
+    }
+
+    @Test
+    public void toModelType_missingLeaveEntitlement_defaultsToZero() throws Exception {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of());
+
+        assertEquals(new LeaveEntitlement(0), employee.toModelType().getLeaveEntitlement());
+    }
+
+    @Test
+    public void toModelType_invalidLeaveEntitlement_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(null, VALID_NAME, VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_SALARY, 366, VALID_TAGS, List.of());
+
+        assertThrows(IllegalValueException.class, LeaveEntitlement.MESSAGE_CONSTRAINTS, employee::toModelType);
     }
 
 }

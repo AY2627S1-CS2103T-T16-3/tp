@@ -58,6 +58,8 @@ public class SummaryCommandTest {
         Employee bob = employee("Bob", "remote");
         model.addEmployee(alice);
         model.addEmployee(bob);
+        Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
+        Employee storedBob = model.getAddressBook().getEmployeeList().get(1);
         Predicate<Employee> filter = employee -> employee.getName().fullName.startsWith("A");
         model.updateFilteredEmployeeList(filter);
         AddressBook before = new AddressBook(model.getAddressBook());
@@ -66,12 +68,12 @@ public class SummaryCommandTest {
         Model unfiltered = new ModelManager(before, model.getUserPrefs());
         assertEquals(new SummaryCommand().execute(unfiltered), filteredResult);
         assertEquals(before, model.getAddressBook());
-        assertEquals(List.of(alice), model.getFilteredEmployeeList());
+        assertEquals(List.of(storedAlice), model.getFilteredEmployeeList());
 
         // Verify the predicate remains active, not just the previously displayed contents.
-        Employee renamedBob = new EmployeeBuilder(bob).withName("Andrew").build();
-        model.setEmployee(bob, renamedBob);
-        assertEquals(List.of(alice, renamedBob), model.getFilteredEmployeeList());
+        Employee renamedBob = new EmployeeBuilder(storedBob).withName("Andrew").build();
+        model.setEmployee(storedBob, renamedBob);
+        assertEquals(List.of(storedAlice, renamedBob), model.getFilteredEmployeeList());
     }
 
     @Test
