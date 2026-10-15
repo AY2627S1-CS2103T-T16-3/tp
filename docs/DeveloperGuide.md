@@ -308,6 +308,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and to learn the app capabilities |
 | `* * *`  | HR Officer                 | edit employees contact                                                         | make any relevant updates to employee contact fields                                     |
 | `* * *`  | HR Officer                 | add a new employee profile                                                     | add newly hired employee profiles with their respective details                          |
+| `* * *`  | HR Officer                 | keep track of tasks for an employee                                            | remember the tasks which needs to be completed for that employee                         |
+| `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                 |
+| `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
 | `* * *`  | HR Officer                 | manage employee’s leaves and off                                               | can keep track of manpower in the company on a daily basis                               |
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find those that match specific criteria(s)                                        |
 | `* * *`  | HR Officer                 | delete an employee profile                                                     | remove employees no longer with the company                                              |
@@ -405,7 +408,87 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 3.
 
-**Use case: UC3 - Find employees by attribute**
+**Use case: UC3 - List employee tasks**
+
+**MSS**
+
+1. HR manager requests for the list of tasks for an employee.
+2. System displays the list of tasks for the employee.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The employee does not exist.
+
+    * 1a1. System informs the HR manager that the employee does not exist.
+
+      Use case ends.
+
+* 1b. The employee does not have any task.
+
+    * 1b1. System informs the HR manager that the employee does not have any task.
+
+      Use case ends.
+
+**Use case: UC4 - Add employee task**
+
+**MSS**
+
+1. HR manager specify details of a task to add to an employee.
+2. System adds the task to the employee.
+3. System confirms that the task was added.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The employee does not exist.
+
+    * 1a1. System informs the HR manager that the employee does not exist.
+    * 1a2. System does not add the task.
+
+      Use case ends.
+
+* 1b. The index of the task to be deleted is invalid.
+
+    * 1b1. System informs the HR manager that the task index is invalid.
+    * 1b2. System does not add the task.
+
+      Use case ends.
+
+* 1c. The task already exists.
+
+    * 1c1. System informs the HR manager that the task already exists.
+    * 1c2. System does not add the task.
+
+      Use case ends.
+
+**Use case: UC5 - Delete employee task**
+
+**MSS**
+
+1. HR manager requests to delete a task from an employee.
+2. System deletes the selected task.
+3. System confirms that the task was deleted.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The employee does not exist.
+
+    * 1a1. System informs the HR manager that the employee does not exist.
+
+      Use case ends.
+
+* 1b. The task does not exist.
+
+    * 1b1. System informs the HR manager that the task does not exist.
+
+      Use case ends.
+
+**Use case: UC6 - Find employees by attribute**
 
 **MSS**
 
@@ -465,7 +548,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC4 - Filter employees**
+**Use case: UC7 - Filter employees**
 
 **MSS**
 
@@ -518,7 +601,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC5 - Record employee leave**
+**Use case: UC8 - Record employee leave**
 
 **MSS**
 
@@ -601,7 +684,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC6 - Show Employee Details**
+**Use case: UC9 - Show Employee Details**
 
 **MSS**
 
@@ -655,7 +738,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC7 - Change an employee's salary**
+**Use case: UC10 - Change an employee's salary**
 
 **MSS**
 
