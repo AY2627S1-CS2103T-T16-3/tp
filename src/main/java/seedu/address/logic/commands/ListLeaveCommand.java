@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Map;
@@ -26,6 +27,18 @@ public class ListLeaveCommand extends Command {
     public static final String MESSAGE_NO_LEAVE = "No leave records found.";
     public static final String MESSAGE_SUCCESS = "Leave records:\n%1$s";
 
+    private final Clock clock;
+
+    /** Creates a command that determines leave statuses using the system clock. */
+    public ListLeaveCommand() {
+        this(Clock.systemDefaultZone());
+    }
+
+    /** Creates a command that determines leave statuses using {@code clock}. */
+    ListLeaveCommand(Clock clock) {
+        this.clock = requireNonNull(clock);
+    }
+
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
@@ -35,7 +48,7 @@ public class ListLeaveCommand extends Command {
 
         Map<EmployeeId, Name> employeeNames = model.getAddressBook().getEmployeeList().stream()
                 .collect(Collectors.toMap(employee -> employee.getEmployeeId().orElseThrow(), Employee::getName));
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         String records = model.getAddressBook().getLeaveList().stream()
                 .sorted(Comparator.comparingInt(leave -> leave.getLeaveId().value))
                 .map(leave -> formatLeave(leave, employeeNames, today))
