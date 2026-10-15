@@ -93,7 +93,8 @@ public class LogicManagerTest {
                 + "Employees without tags: 1\n\nEmployees by tag:\n  engineering: 1\n\n"
                 + "Employees may have multiple tags; tag counts can overlap.\n\nTask overview\n"
                 + "Total assigned tasks: 3\nEmployees with tasks: 2\nEmployees without tasks: 0\n"
-                + "Most tasks assigned to one employee: 2");
+                + "Most tasks assigned to one employee: 2\n\nSalary overview\n"
+                + "Total recorded salary: $0.00\nAverage salary: $0.00\nLowest salary: $0.00\nHighest salary: $0.00");
 
         for (String selection : new String[] {"find Alice", "filter t/engineering"}) {
             logic.execute(selection);
@@ -139,7 +140,7 @@ public class LogicManagerTest {
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
 
-        assertTrue(logic.execute("summary").getFeedbackToUser().endsWith("Total assigned tasks: 2\n"
+        assertTrue(logic.execute("summary").getFeedbackToUser().contains("Total assigned tasks: 2\n"
                 + "Employees with tasks: 2\nEmployees without tasks: 0\nMost tasks assigned to one employee: 1"));
         assertEquals(before, model.getAddressBook());
         assertEquals(savedData, Files.readString(dataFile));
@@ -147,7 +148,7 @@ public class LogicManagerTest {
         logic.execute("delete-task 1 i/1");
         before = new AddressBook(model.getAddressBook());
         savedData = Files.readString(dataFile);
-        assertTrue(logic.execute("summary").getFeedbackToUser().endsWith("Total assigned tasks: 1\n"
+        assertTrue(logic.execute("summary").getFeedbackToUser().contains("Total assigned tasks: 1\n"
                 + "Employees with tasks: 1\nEmployees without tasks: 1\nMost tasks assigned to one employee: 1"));
         assertEquals(before, model.getAddressBook());
         assertEquals(savedData, Files.readString(dataFile));
