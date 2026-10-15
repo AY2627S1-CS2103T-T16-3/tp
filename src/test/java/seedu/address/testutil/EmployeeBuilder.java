@@ -3,11 +3,14 @@ package seedu.address.testutil;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
+import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -25,6 +28,7 @@ public class EmployeeBuilder {
     public static final String DEFAULT_EMAIL = "amy@gmail.com";
     public static final String DEFAULT_ADDRESS = "123, Jurong West Ave 6, #08-111";
     public static final String DEFAULT_SALARY = "0";
+    public static final int DEFAULT_LEAVE_ENTITLEMENT = 14;
 
     private Name name;
     private Phone phone;
@@ -32,7 +36,9 @@ public class EmployeeBuilder {
     private Address address;
     private Set<Tag> tags;
     private Salary salary;
+    private LeaveEntitlement leaveEntitlement;
     private List<Task> tasks;
+    private Optional<EmployeeId> employeeId;
 
     /**
      * Creates a {@code EmployeeBuilder} with the default details.
@@ -44,7 +50,9 @@ public class EmployeeBuilder {
         address = new Address(DEFAULT_ADDRESS);
         tags = new HashSet<>();
         salary = new Salary(DEFAULT_SALARY);
+        leaveEntitlement = new LeaveEntitlement(DEFAULT_LEAVE_ENTITLEMENT);
         tasks = new ArrayList<>();
+        employeeId = Optional.empty();
     }
 
     /**
@@ -57,7 +65,9 @@ public class EmployeeBuilder {
         address = employeeToCopy.getAddress();
         tags = new HashSet<>(employeeToCopy.getTags());
         salary = employeeToCopy.getSalary();
+        leaveEntitlement = employeeToCopy.getLeaveEntitlement();
         tasks = new ArrayList<>(employeeToCopy.getTasks());
+        employeeId = employeeToCopy.getEmployeeId();
     }
 
     /**
@@ -108,14 +118,35 @@ public class EmployeeBuilder {
         return this;
     }
 
+    /** Sets the annual leave entitlement of the employee being built. */
+    public EmployeeBuilder withLeaveEntitlement(int leaveEntitlement) {
+        this.leaveEntitlement = new LeaveEntitlement(leaveEntitlement);
+        return this;
+    }
+
     /** Sets the tasks of the employee being built. */
     public EmployeeBuilder withTasks(Task... tasks) {
         this.tasks = new ArrayList<>(List.of(tasks));
         return this;
     }
 
+    /** Assigns an internal employee ID to the employee being built. */
+    public EmployeeBuilder withEmployeeId(int employeeId) {
+        this.employeeId = Optional.of(new EmployeeId(employeeId));
+        return this;
+    }
+
+    /** Leaves the employee without an assigned internal ID. */
+    public EmployeeBuilder withoutEmployeeId() {
+        employeeId = Optional.empty();
+        return this;
+    }
+
+    /** Builds the employee with the configured fields and optional internal ID. */
     public Employee build() {
-        return new Employee(name, phone, email, address, salary, tags, tasks);
+        Employee employee = Employee.createUnassigned(name, phone, email, address, salary, leaveEntitlement,
+                tags, tasks);
+        return employeeId.map(employee::withEmployeeId).orElse(employee);
     }
 
 }

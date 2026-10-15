@@ -8,6 +8,7 @@ import seedu.address.logic.commands.EditCommand.EditEmployeeDescriptor;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.tag.Tag;
@@ -36,6 +37,7 @@ public class EditEmployeeDescriptorBuilder {
         descriptor.setPhone(employee.getPhone());
         descriptor.setEmail(employee.getEmail());
         descriptor.setAddress(employee.getAddress());
+        descriptor.setLeaveEntitlement(employee.getLeaveEntitlement());
         descriptor.setTags(employee.getTags());
     }
 
@@ -60,6 +62,12 @@ public class EditEmployeeDescriptorBuilder {
      */
     public EditEmployeeDescriptorBuilder withEmail(String email) {
         descriptor.setEmail(new Email(email));
+        return this;
+    }
+
+    /** Parses and sets the annual leave entitlement of the descriptor being built. */
+    public EditEmployeeDescriptorBuilder withLeaveEntitlement(int leaveEntitlement) {
+        descriptor.setLeaveEntitlement(new LeaveEntitlement(leaveEntitlement));
         return this;
     }
 

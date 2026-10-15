@@ -5,6 +5,7 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_IN
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.LEAVE_ENTITLEMENT_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -79,6 +80,8 @@ public class LogicManagerTest {
         Employee bob = new EmployeeBuilder().withName("Bob").withTags().build();
         model.addEmployee(alice);
         model.addEmployee(bob);
+        Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
+        Employee storedBob = model.getAddressBook().getEmployeeList().get(1);
         logic.execute("find Alice");
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
@@ -88,8 +91,8 @@ public class LogicManagerTest {
 
         for (String command : new String[] {SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS}) {
             assertEquals(expected, logic.execute(command));
-            assertEquals(List.of(alice), logic.getFilteredEmployeeList());
-            assertEquals(List.of(alice, bob), model.getAddressBook().getEmployeeList());
+            assertEquals(List.of(storedAlice), logic.getFilteredEmployeeList());
+            assertEquals(List.of(storedAlice, storedBob), model.getAddressBook().getEmployeeList());
             assertEquals(savedData, Files.readString(dataFile));
         }
     }
@@ -189,8 +192,8 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
-                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Employee expectedEmployee = new EmployeeBuilder(AMY).withTags().build();
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + LEAVE_ENTITLEMENT_DESC_AMY;
+        Employee expectedEmployee = new EmployeeBuilder(AMY).withoutEmployeeId().withTags().build();
         ModelManager expectedModel = new ModelManager();
         expectedModel.addEmployee(expectedEmployee);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
