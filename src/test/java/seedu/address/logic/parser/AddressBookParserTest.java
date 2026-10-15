@@ -15,9 +15,11 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddLeaveCommand;
+import seedu.address.logic.commands.AddTaskCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.DeleteLeaveCommand;
+import seedu.address.logic.commands.DeleteTaskCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditEmployeeDescriptor;
 import seedu.address.logic.commands.ExitCommand;
@@ -25,6 +27,7 @@ import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.ListLeaveCommand;
+import seedu.address.logic.commands.ListTasksCommand;
 import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -77,6 +80,13 @@ public class AddressBookParserTest {
         DeleteCommand command = (DeleteCommand) parser.parseCommand(
                 DeleteCommand.COMMAND_WORD + " " + INDEX_FIRST_EMPLOYEE.getOneBased());
         assertEquals(new DeleteCommand(INDEX_FIRST_EMPLOYEE), command);
+    }
+
+    @Test
+    public void parseCommand_taskCommands() throws Exception {
+        assertTrue(parser.parseCommand("list-tasks 1") instanceof ListTasksCommand);
+        assertTrue(parser.parseCommand("add-task 1 d/Prepare report") instanceof AddTaskCommand);
+        assertTrue(parser.parseCommand("delete-task 1 i/1") instanceof DeleteTaskCommand);
     }
 
     @Test
