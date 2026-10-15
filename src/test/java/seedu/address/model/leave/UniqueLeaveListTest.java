@@ -75,6 +75,18 @@ public class UniqueLeaveListTest {
     }
 
     @Test
+    public void getWorkingDaysUsed_sumsOnlyMatchingEmployeeAndYear() {
+        Leave followingYear = new Leave(new LeaveId(3), EMPLOYEE_ONE, new LeavePeriod(
+                LocalDate.of(2027, 10, 4), LocalDate.of(2027, 10, 5)));
+        uniqueLeaveList.setLeaves(List.of(LEAVE_ONE, LEAVE_TWO, followingYear));
+
+        assertEquals(3, uniqueLeaveList.getWorkingDaysUsed(EMPLOYEE_ONE, 2026));
+        assertEquals(2, uniqueLeaveList.getWorkingDaysUsed(EMPLOYEE_ONE, 2027));
+        assertEquals(2, uniqueLeaveList.getWorkingDaysUsed(EMPLOYEE_TWO, 2026));
+        assertThrows(NullPointerException.class, () -> uniqueLeaveList.getWorkingDaysUsed(null, 2026));
+    }
+
+    @Test
     public void add() {
         assertThrows(NullPointerException.class, () -> uniqueLeaveList.add(null));
 

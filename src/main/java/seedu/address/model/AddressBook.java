@@ -16,7 +16,11 @@ import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.UniqueEmployeeList;
 import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
+import seedu.address.model.leave.LeavePeriod;
 import seedu.address.model.leave.UniqueLeaveList;
+import seedu.address.model.leave.exceptions.InsufficientLeaveException;
+import seedu.address.model.leave.exceptions.LeaveIdExhaustedException;
 import seedu.address.model.leave.exceptions.OverlappingLeaveException;
 
 /**
@@ -155,6 +159,39 @@ public class AddressBook implements ReadOnlyAddressBook {
         leaves.removeAllFor(employeeId);
     }
 
+    //// leave-level operations
+
+    /**
+     * Records leave for an existing employee and assigns the next leave ID.
+     */
+    public Leave addLeave(EmployeeId employeeId, LeavePeriod leavePeriod) {
+        requireAllNonNull(employeeId, leavePeriod);
+        Employee employee = findEmployeeById(employeeId);
+        if (leaves.hasOverlappingLeave(employeeId, leavePeriod)) {
+            throw new OverlappingLeaveException();
+        }
+
+        int requestedDays = leavePeriod.getWorkingDayCount();
+        int remainingDays = calculateRemainingLeave(employee, leavePeriod.getYear());
+        if (requestedDays > remainingDays) {
+            throw new InsufficientLeaveException(requestedDays, remainingDays);
+        }
+        if (nextLeaveId > Integer.MAX_VALUE) {
+            throw new LeaveIdExhaustedException();
+        }
+
+        Leave leave = new Leave(new LeaveId((int) nextLeaveId), employeeId, leavePeriod);
+        leaves.add(leave);
+        nextLeaveId++;
+        return leave;
+    }
+
+    /** Returns the employee's remaining annual leave entitlement for {@code year}. */
+    public int getRemainingLeave(EmployeeId employeeId, int year) {
+        requireNonNull(employeeId);
+        return calculateRemainingLeave(findEmployeeById(employeeId), year);
+    }
+
     //// util methods
 
     @Override
@@ -258,6 +295,19 @@ public class AddressBook implements ReadOnlyAddressBook {
         return employees.asUnmodifiableObservableList().stream()
                 .flatMap(employee -> employee.getEmployeeId().stream())
                 .anyMatch(employeeId::equals);
+    }
+
+    private Employee findEmployeeById(EmployeeId employeeId) {
+        return employees.asUnmodifiableObservableList().stream()
+                .filter(employee -> employee.getEmployeeId().orElseThrow().equals(employeeId))
+                .findFirst()
+                .orElseThrow(EmployeeNotFoundException::new);
+    }
+
+    private int calculateRemainingLeave(Employee employee, int year) {
+        EmployeeId employeeId = employee.getEmployeeId().orElseThrow();
+        int usedDays = leaves.getWorkingDaysUsed(employeeId, year);
+        return Math.max(0, employee.getLeaveEntitlement().value - usedDays);
     }
 
     /**

@@ -2,8 +2,13 @@ package seedu.address.logic.parser;
 
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import seedu.address.commons.core.index.Index;
@@ -24,6 +29,14 @@ import seedu.address.model.tag.Tag;
 public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
+    public static final String MESSAGE_INVALID_START_DATE =
+            "Start date must be a valid date in dd-MM-yyyy format.";
+    public static final String MESSAGE_INVALID_END_DATE =
+            "End date must be a valid date in dd-MM-yyyy format.";
+
+    private static final DateTimeFormatter LEAVE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-uuuu",
+            Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT);
+
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
      * trimmed.
@@ -49,6 +62,25 @@ public class ParserUtil {
             throw new ParseException(LeaveEntitlement.MESSAGE_CONSTRAINTS);
         }
         return new LeaveEntitlement(value);
+    }
+
+    /** Parses {@code startDate} as a strict calendar date in dd-MM-yyyy format. */
+    public static LocalDate parseStartDate(String startDate) throws ParseException {
+        return parseLeaveDate(startDate, MESSAGE_INVALID_START_DATE);
+    }
+
+    /** Parses {@code endDate} as a strict calendar date in dd-MM-yyyy format. */
+    public static LocalDate parseEndDate(String endDate) throws ParseException {
+        return parseLeaveDate(endDate, MESSAGE_INVALID_END_DATE);
+    }
+
+    private static LocalDate parseLeaveDate(String date, String errorMessage) throws ParseException {
+        requireNonNull(date);
+        try {
+            return LocalDate.parse(date.trim(), LEAVE_DATE_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new ParseException(errorMessage);
+        }
     }
 
     /**

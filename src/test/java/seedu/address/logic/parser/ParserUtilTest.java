@@ -6,6 +6,7 @@ import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_EMPLOYEE;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -80,6 +81,21 @@ public class ParserUtilTest {
         assertEquals(new LeaveEntitlement(0), ParserUtil.parseLeaveEntitlement("0"));
         assertEquals(new LeaveEntitlement(14), ParserUtil.parseLeaveEntitlement(" 14 "));
         assertEquals(new LeaveEntitlement(365), ParserUtil.parseLeaveEntitlement("365"));
+    }
+
+    @Test
+    public void parseLeaveDate_validDate_returnsDate() throws Exception {
+        LocalDate expectedDate = LocalDate.of(2026, 10, 5);
+        assertEquals(expectedDate, ParserUtil.parseStartDate("05-10-2026"));
+        assertEquals(expectedDate, ParserUtil.parseEndDate(" 05-10-2026 "));
+    }
+
+    @Test
+    public void parseLeaveDate_invalidDate_throwsParseException() {
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_START_DATE, () ->
+                ParserUtil.parseStartDate("31-02-2026"));
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_END_DATE, () ->
+                ParserUtil.parseEndDate("2026-10-05"));
     }
 
     @Test
