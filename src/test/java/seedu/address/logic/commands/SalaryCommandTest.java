@@ -23,6 +23,7 @@ import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -33,7 +34,8 @@ public class SalaryCommandTest {
         Model model = new ModelManager();
         Employee original = Employee.createUnassigned(new Name("Alice"), new Phone("91234567"),
                 new Email("alice@example.com"), new Address("123 Main Street"), new Salary("1000"),
-                new LeaveEntitlement(14), Set.of(new Tag("team")), List.of());
+                new LeaveEntitlement(14), Set.of(new Tag("team")),
+                List.of(new Task("Prepare report"), new Task("Meet partners")));
         model.addEmployee(original);
         Salary updatedSalary = new Salary("5000");
 
@@ -48,6 +50,7 @@ public class SalaryCommandTest {
         assertEquals(original.getTags(), updated.getTags());
         assertEquals(String.format(SalaryCommand.MESSAGE_SUCCESS, updatedSalary, Messages.format(updated)),
                 result.getFeedbackToUser());
+        assertEquals(original.getTasks(), updated.getTasks());
     }
 
     @Test
@@ -106,7 +109,8 @@ public class SalaryCommandTest {
         model.addEmployee(bob);
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
 
-        CommandResult result = new SalaryCommand(Index.fromOneBased(2), new Salary("50000")).execute(model);
+        CommandResult result = new SalaryCommand(Index.fromOneBased(2),
+                new Salary("50000")).execute(model);
 
         assertEquals(2, model.getAddressBook().getEmployeeList().size());
         assertEquals(storedAlice, model.getAddressBook().getEmployeeList().get(0));

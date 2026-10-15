@@ -13,7 +13,8 @@ import seedu.address.commons.util.ToStringBuilder;
 
 /**
  * Matches employees against all supplied field criteria. Text matches are case-insensitive substrings;
- * tag matches are case-insensitive whole tag names.
+ * task matches are case-insensitive substrings, tag matches are case-insensitive whole tag names,
+ * and salary matches are exact amounts.
  */
 public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
 
@@ -21,7 +22,7 @@ public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
      * Fields available for filtering.
      */
     public enum Field {
-        NAME, PHONE, EMAIL, ADDRESS, TAG
+        NAME, PHONE, EMAIL, ADDRESS, TAG, TASK, SALARY
     }
 
     private final Map<Field, List<String>> criteria;
@@ -59,6 +60,9 @@ public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
             case PHONE -> containsIgnoreCase(employee.getPhone().value, value);
             case EMAIL -> containsIgnoreCase(employee.getEmail().value, value);
             case ADDRESS -> containsIgnoreCase(employee.getAddress().value, value);
+            case TASK -> employee.getTasks().stream()
+                    .anyMatch(task -> containsIgnoreCase(task.getDetails(), value));
+            case SALARY -> employee.getSalary().salary.equals(value);
             case TAG -> employee.getTags().stream().anyMatch(tag -> tag.tagName.equalsIgnoreCase(value));
         };
     }

@@ -14,7 +14,10 @@ public class SalaryTest {
     private static final List<String> INVALID_SALARIES = List.of(
             "", " ", "-1", "-9999999", "50001", "99999", "1000000000", "2147483648",
             "999999999999999999999999", "abc", "12abc", "12a34", "5000$", "$5000",
-            "1.5", "5,000", "+1", "1 000", " 5000 ", "000050001");
+            "1.5", "5,000", "+1", "1 000", " 5000 ", "000050001", "50000.0", "1.1.1", " 100", "[].]'./");
+
+    private static final List<String> VALID_SALARIES = List.of(
+            "0", "1", "49999", "50000", "12345", "2345", "10202");
 
     @Test
     public void constructor_null_throwsNullPointerException() {
@@ -42,7 +45,7 @@ public class SalaryTest {
 
     @Test
     public void isValidSalary_validValues_returnsTrue() {
-        for (String salary : List.of("0", "1", "49999", "50000")) {
+        for (String salary : VALID_SALARIES) {
             assertTrue(Salary.isValidSalary(salary), "Unexpected invalid salary: " + salary);
             assertEquals(salary, new Salary(salary).salary);
         }
@@ -57,6 +60,7 @@ public class SalaryTest {
         assertEquals(new Salary("1").hashCode(), new Salary("0001").hashCode());
         assertEquals("1", new Salary("0".repeat(1000) + "1").salary);
         assertEquals("0", new Salary("0".repeat(1000)).salary);
+        assertEquals("50000", new Salary("00050000").salary);
     }
 
     @Test
@@ -71,11 +75,16 @@ public class SalaryTest {
 
     @Test
     public void hashCode_equalSalaries_returnsSameHashCode() {
-        assertEquals(new Salary("5000").hashCode(), new Salary("5000").hashCode());
+        for (String salary : VALID_SALARIES) {
+            Salary salary1 = new Salary(salary);
+            assertEquals(salary1.hashCode(), new Salary(salary).hashCode());
+        }
     }
 
     @Test
     public void toString_returnsSalaryWithDollarPrefix() {
-        assertEquals("$5000", new Salary("5000").toString());
+        for (String salary : VALID_SALARIES) {
+            assertEquals("$" + salary, new Salary(salary).toString());
+        }
     }
 }

@@ -100,7 +100,7 @@ Format: `list`
 
 ### Viewing the workforce summary: `/summary`
 
-Shows the total number of stored employees, employees without tags, and employee counts for each tag.
+Shows employee counts by tag and overall recorded salary statistics.
 
 Format: `/summary` (alias: `summary`)
 
@@ -123,6 +123,12 @@ Employees by tag:
   remote: 2
 
 Employees may have multiple tags; tag counts can overlap.
+
+Salary overview
+Total recorded salary: $15000.00
+Average salary: $3000.00
+Lowest salary: $0.00
+Highest salary: $5000.00
 ```
 
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
@@ -131,18 +137,35 @@ Employees may have multiple tags; tag counts can overlap.
 * Having no tags is allowed; the untagged count is a categorization aid, not an error.
 * If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
 * These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
-  not interpreted as structured departments. Leave balances, salary totals, and reminders are not included.
+  not interpreted as structured departments. Leave balances and reminders are not included.
+* Salary statistics include every stored salary, including zero. For no employees, the total is `$0.00`
+  and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
+* These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
+  Salary statistics still appear when there are no tags and refresh after a salary change.
 
 The result appears in the existing command-result area; scroll within it to read a long summary.
+
+### Changing an employee's salary: `salary`
+
+Changes the salary of an existing employee in the address book.
+
+Format: `salary INDEX s/SALARY`
+
+* Updates the employee at the specified `INDEX` in the currently displayed employee list, including search results. The index **must be a positive integer** 1, 2, 3, …​
+* The salary is required and must contain only digits, representing a whole number from `0` to `50000` inclusive. Do not include a `$` sign, commas, or decimal points.
+* Supply `s/` exactly once. The new salary replaces the employee's existing salary; other employee details are preserved.
+* Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
+
+Examples:
+* `salary 1 s/5000` changes the 1st employee's salary in the displayed list to `$5000`.
+* `find Betsy` followed by `salary 1 s/6000` changes the salary of the 1st employee in the search results to `$6000`.
 
 ### Editing an employee: `edit`
 
 Edits an existing employee in the address book.
 
 Salary is preserved when editing other details. The `edit` command rejects `s/`;
-use `salary INDEX s/SALARY` to change salary.
-After a successful salary update, all employees are displayed.
-Older save files without salary values load with a salary of `0`.
+Use `salary INDEX s/SALARY` to change salary.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
 
@@ -177,13 +200,15 @@ Examples:
 
 Lists employees who match all supplied criteria.
 
-Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`
 
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
+* Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
+* Salary matches an exact amount from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
-* All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag.
-* Each of `n/`, `p/`, `e/`, and `a/` may appear only once. Unsupported prefixes are rejected.
+* All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
+* Each of `n/`, `p/`, `e/`, `a/`, and `s/` may appear only once. Unsupported prefixes are rejected.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -192,6 +217,8 @@ Examples:
 * `filter e/@example.com` lists employees with an email address containing `@example.com`.
 * `filter n/Alice a/Jurong` lists employees whose name contains `Alice` and whose address contains `Jurong`.
 * `filter t/friends t/owesMoney` lists employees with both tags.
+* `filter task/report task/review` lists employees with tasks matching both descriptions.
+* `filter task/report s/3000` lists employees with a matching task and salary 3000.
 
 ### Deleting an employee: `delete`
 
@@ -206,6 +233,62 @@ Format: `delete INDEX`
 Examples:
 * `list` followed by `delete 2` deletes the 2nd employee in the address book.
 * `find Betsy` followed by `delete 1` deletes the 1st employee in the results of the `find` command.
+
+### Listing tasks on an employee: `list-tasks`
+
+Lists the tasks related to an employee.
+
+Format: `list-tasks EMPLOYEE_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* Tasks are displayed in the order in which they were added.
+* The current filtered employee list is preserved after the command.
+
+Example:
+
+* `list-tasks 1` lists the tasks related to the first displayed employee.
+
+### Adding tasks to an employee: `add-task`
+
+Adds a task to an employee.
+
+Format: `add-task EMPLOYEE_INDEX d/DETAILS`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `DETAILS` must not be empty, and it must not exceed 120 characters
+* A task that already exists for the employee cannot be added again.
+  Task comparisons ignore leading/trailing whitespace, repeated whitespace,
+  and capitalization. For example, `Prepare report` and `  prepare   REPORT  `
+  are treated as duplicates.
+* The current filtered employee list is preserved after the command.
+
+Examples:
+
+* `add-task 1 d/Prepare monthly report` adds the task to the first displayed
+  employee.
+* `find Alex` followed by `add-task 1 d/Prepare monthly report` adds the
+  task to the first employee in the filtered results.
+
+### Deleting tasks on an employee: `delete-task`
+
+Deletes a task related to an employee.
+
+Format: `delete-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The current filtered employee list is preserved after the command.
+
+Examples:
+
+* `delete-task 1 i/2` deletes the second task assigned to the first displayed
+  employee.
+* `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
+  first employee in the filtered results.
 
 ### Clearing all entries: `clear`
 
@@ -222,6 +305,8 @@ Format: `exit`
 ### Saving the data
 
 AddressBook automatically saves data after every command. You do not need to save manually.
+
+Older save files without salary values load with a salary of `0`.
 
 ### Editing the data file
 
@@ -254,14 +339,18 @@ _Details coming soon ..._
 
 ## Command summary
 
-Action | Format, Examples
---------|------------------
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
-**Clear** | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
-**Find** | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
-**Filter** | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g., `filter p/91235321`
-**List** | `list`
-**Workforce summary** | `/summary` or `summary` (no arguments)
-**Help** | `help`
+| Action                | Format, Examples                                                                                                                                                                |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Add**               | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`|
+| **Clear**             | `clear`                                                                                                                                                                         |
+| **Delete**            | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                             |
+| **Salary**            | `salary INDEX s/SALARY`<br> e.g., `salary 1 s/5000`                                                                                                                             |
+| **Edit**              | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`                                                    |
+| **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                                                      |
+| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br> e.g., `filter p/91235321`                                                         |
+| **List**              | `list`                                                                                                                                                                          |
+| **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`                                                                                                                            |
+| **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`                                                                                                     |
+| **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`                                                                                                         |
+| **Workforce summary** | `/summary` or `summary` (no arguments)                                                                                                                                          |
+| **Help**              | `help`                                                                                                                                                                          |
