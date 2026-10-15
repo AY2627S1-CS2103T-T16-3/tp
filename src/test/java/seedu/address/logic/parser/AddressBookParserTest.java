@@ -18,6 +18,7 @@ import seedu.address.logic.commands.AddLeaveCommand;
 import seedu.address.logic.commands.AddTaskCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
+import seedu.address.logic.commands.DeleteLeaveCommand;
 import seedu.address.logic.commands.DeleteTaskCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditEmployeeDescriptor;
@@ -25,6 +26,7 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.ListLeaveCommand;
 import seedu.address.logic.commands.ListTasksCommand;
 import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
@@ -32,6 +34,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EditEmployeeDescriptorBuilder;
 import seedu.address.testutil.EmployeeBuilder;
@@ -54,6 +57,16 @@ public class AddressBookParserTest {
 
         assertEquals(new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, period),
                 parser.parseCommand("leave add 1 from/05-10-2026 to/07-10-2026"));
+    }
+
+    @Test
+    public void parseCommand_listLeave() throws Exception {
+        assertTrue(parser.parseCommand("leave list") instanceof ListLeaveCommand);
+    }
+
+    @Test
+    public void parseCommand_deleteLeave() throws Exception {
+        assertEquals(new DeleteLeaveCommand(new LeaveId(1)), parser.parseCommand("leave delete 1"));
     }
 
     @Test

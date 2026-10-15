@@ -21,6 +21,7 @@ import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
 import seedu.address.model.employee.Task;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -62,6 +63,16 @@ public class ParserUtil {
             throw new ParseException(LeaveEntitlement.MESSAGE_CONSTRAINTS);
         }
         return new LeaveEntitlement(value);
+    }
+
+    /** Parses a positive leave-record ID. */
+    public static LeaveId parseLeaveId(String leaveId) throws ParseException {
+        requireNonNull(leaveId);
+        String trimmedLeaveId = leaveId.trim();
+        if (!StringUtil.isNonZeroUnsignedInteger(trimmedLeaveId)) {
+            throw new ParseException(LeaveId.MESSAGE_CONSTRAINTS);
+        }
+        return new LeaveId(Integer.parseInt(trimmedLeaveId));
     }
 
     /** Parses {@code startDate} as a strict calendar date in dd-MM-yyyy format. */

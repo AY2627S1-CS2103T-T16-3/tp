@@ -383,6 +383,27 @@ public class AddressBookTest {
     }
 
     @Test
+    public void removeLeave_existingLeave_removesOnlyTargetAndRestoresEntitlement() {
+        addressBook.addEmployee(ALICE);
+        Leave addedLeave = addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);
+        Leave remainingLeave = addressBook.addLeave(new EmployeeId(1), THURSDAY_TO_FRIDAY);
+
+        Leave removedLeave = addressBook.removeLeave(addedLeave.getLeaveId());
+
+        assertEquals(addedLeave, removedLeave);
+        assertEquals(List.of(remainingLeave), addressBook.getLeaveList());
+        assertEquals(ALICE.getLeaveEntitlement().value - THURSDAY_TO_FRIDAY.getWorkingDayCount(),
+                addressBook.getRemainingLeave(new EmployeeId(1), 2026));
+        assertEquals(3, addressBook.getNextLeaveId());
+    }
+
+    @Test
+    public void removeLeave_unknownId_throwsLeaveNotFoundException() {
+        assertThrows(seedu.address.model.leave.exceptions.LeaveNotFoundException.class, () ->
+                addressBook.removeLeave(new LeaveId(1)));
+    }
+
+    @Test
     public void getRemainingLeave_entitlementReducedBelowUsed_returnsZero() {
         addressBook.addEmployee(ALICE);
         addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);

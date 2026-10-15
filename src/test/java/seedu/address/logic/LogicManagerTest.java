@@ -92,6 +92,19 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_deleteLeave_deletesAndPersistsLeave() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/123 Main Street le/14");
+        logic.execute("leave add 1 from/05-10-2026 to/07-10-2026");
+
+        logic.execute("leave delete 1");
+
+        assertEquals(0, model.getAddressBook().getLeaveList().size());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        ReadOnlyAddressBook savedData = storage.readAddressBook().orElseThrow();
+        assertEquals(new AddressBook(model.getAddressBook()), new AddressBook(savedData));
+    }
+
+    @Test
     public void execute_summaryAliasesWithTasksAndActiveFilter_preservesModelAndSavedData() throws Exception {
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering")
                 .withTasks(new Task("Report")).build();

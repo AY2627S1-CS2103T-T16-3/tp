@@ -7,6 +7,7 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 
 /**
@@ -66,6 +67,9 @@ public interface Model {
 
     /** Records leave for an existing employee and returns the assigned record. */
     Leave addLeave(EmployeeId employeeId, LeavePeriod leavePeriod);
+
+    /** Deletes and returns the leave record identified by {@code leaveId}. */
+    Leave deleteLeave(LeaveId leaveId);
 
     /** Returns the employee's remaining annual leave entitlement for the given year. */
     int getRemainingLeave(EmployeeId employeeId, int year);

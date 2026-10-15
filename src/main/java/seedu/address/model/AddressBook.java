@@ -21,6 +21,7 @@ import seedu.address.model.leave.LeavePeriod;
 import seedu.address.model.leave.UniqueLeaveList;
 import seedu.address.model.leave.exceptions.InsufficientLeaveException;
 import seedu.address.model.leave.exceptions.LeaveIdExhaustedException;
+import seedu.address.model.leave.exceptions.LeaveNotFoundException;
 import seedu.address.model.leave.exceptions.OverlappingLeaveException;
 
 /**
@@ -183,6 +184,16 @@ public class AddressBook implements ReadOnlyAddressBook {
         Leave leave = new Leave(new LeaveId((int) nextLeaveId), employeeId, leavePeriod);
         leaves.add(leave);
         nextLeaveId++;
+        return leave;
+    }
+
+    /**
+     * Removes and returns the leave record identified by {@code leaveId}.
+     */
+    public Leave removeLeave(LeaveId leaveId) {
+        requireNonNull(leaveId);
+        Leave leave = leaves.findById(leaveId).orElseThrow(LeaveNotFoundException::new);
+        leaves.remove(leave);
         return leave;
     }
 
