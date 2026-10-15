@@ -51,7 +51,7 @@ public class AddCommandParser implements Parser<AddCommand> {
         Set<Tag> tagList = ParserUtil.parseTags(argMultimap.getAllValues(PREFIX_TAG));
         Salary salary = ParserUtil.parseSalary(argMultimap.getValue(PREFIX_SALARY).orElse("0"));
 
-        Employee employee = new Employee(name, phone, email, address, salary, tagList, List.of());
+        Employee employee = Employee.createUnassigned(name, phone, email, address, salary, tagList, List.of());
 
         return new AddCommand(employee);
     }

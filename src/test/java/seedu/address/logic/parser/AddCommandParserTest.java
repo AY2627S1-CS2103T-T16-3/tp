@@ -52,14 +52,14 @@ public class AddCommandParserTest {
 
     @Test
     public void parse_salaryPresent_success() {
-        Employee expected = new EmployeeBuilder(BOB).withSalary("5000").build();
+        Employee expected = new EmployeeBuilder(BOB).withoutEmployeeId().withSalary("5000").build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
                 + ADDRESS_DESC_BOB + TAG_DESC_FRIEND + TAG_DESC_HUSBAND + " s/5000", new AddCommand(expected));
     }
 
     @Test
     public void parse_salaryAbsent_defaultsToZero() {
-        Employee expected = new EmployeeBuilder(BOB).withTags().withSalary("0").build();
+        Employee expected = new EmployeeBuilder(BOB).withoutEmployeeId().withTags().withSalary("0").build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
                 new AddCommand(expected));
     }
@@ -80,7 +80,7 @@ public class AddCommandParserTest {
 
     @Test
     public void parse_allFieldsPresent_success() {
-        Employee expectedEmployee = new EmployeeBuilder(BOB).withTags(VALID_TAG_FRIEND).build();
+        Employee expectedEmployee = new EmployeeBuilder(BOB).withoutEmployeeId().withTags(VALID_TAG_FRIEND).build();
 
         // whitespace only preamble
         assertParseSuccess(parser, PREAMBLE_WHITESPACE + NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
@@ -88,8 +88,8 @@ public class AddCommandParserTest {
 
 
         // multiple tags - all accepted
-        Employee expectedEmployeeMultipleTags = new EmployeeBuilder(BOB).withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND)
-                .build();
+        Employee expectedEmployeeMultipleTags = new EmployeeBuilder(BOB).withoutEmployeeId()
+                .withTags(VALID_TAG_FRIEND, VALID_TAG_HUSBAND).build();
         assertParseSuccess(parser,
                 NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB + TAG_DESC_HUSBAND + TAG_DESC_FRIEND,
                 new AddCommand(expectedEmployeeMultipleTags));
@@ -162,7 +162,7 @@ public class AddCommandParserTest {
     @Test
     public void parse_optionalFieldsMissing_success() {
         // zero tags
-        Employee expectedEmployee = new EmployeeBuilder(AMY).withTags().build();
+        Employee expectedEmployee = new EmployeeBuilder(AMY).withoutEmployeeId().withTags().build();
         assertParseSuccess(parser, NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY + ADDRESS_DESC_AMY,
                 new AddCommand(expectedEmployee));
     }
