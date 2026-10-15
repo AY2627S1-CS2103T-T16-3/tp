@@ -61,6 +61,18 @@ public class UniqueLeaveList implements Iterable<Leave> {
     }
 
     /**
+     * Returns the employee's total recorded working leave days for {@code year}.
+     */
+    public int getWorkingDaysUsed(EmployeeId employeeId, int year) {
+        requireNonNull(employeeId);
+        return internalList.stream()
+                .filter(leave -> leave.getEmployeeId().equals(employeeId))
+                .filter(leave -> leave.getPeriod().getYear() == year)
+                .mapToInt(leave -> leave.getPeriod().getWorkingDayCount())
+                .sum();
+    }
+
+    /**
      * Adds a leave record. Its leave ID must not already exist in the list.
      */
     public void add(Leave toAdd) {
