@@ -64,7 +64,8 @@ public class EmployeeTest {
                 .build();
 
         Employee withDetails = employee.withDetails(new Name(VALID_NAME_BOB), new Phone(VALID_PHONE_BOB),
-                new Email(VALID_EMAIL_BOB), new Address(VALID_ADDRESS_BOB), employee.getTags());
+                new Email(VALID_EMAIL_BOB), new Address(VALID_ADDRESS_BOB), employee.getLeaveEntitlement(),
+                employee.getTags());
         Employee withSalary = employee.withSalary(new Salary("5000"));
         Employee withAddedTask = employee.addTask(new Task("Submit report"));
         Employee withDeletedTask = employee.deleteTask(0);
@@ -179,6 +180,10 @@ public class EmployeeTest {
         editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
         assertFalse(ALICE.equals(editedAlice));
 
+        // different leave entitlement -> returns false
+        editedAlice = new EmployeeBuilder(ALICE).withLeaveEntitlement(21).build();
+        assertFalse(ALICE.equals(editedAlice));
+
         // different tasks -> returns false
         editedAlice = ALICE.addTask(new Task("Prepare report"));
         assertFalse(ALICE.equals(editedAlice));
@@ -215,6 +220,7 @@ public class EmployeeTest {
                 + ", email=" + ALICE.getEmail()
                 + ", address=" + ALICE.getAddress()
                 + ", salary=" + ALICE.getSalary()
+                + ", leaveEntitlement=" + ALICE.getLeaveEntitlement()
                 + ", tags=" + ALICE.getTags()
                 + ", tasks=" + ALICE.getTasks() + "}";
         assertEquals(expected, ALICE.toString());

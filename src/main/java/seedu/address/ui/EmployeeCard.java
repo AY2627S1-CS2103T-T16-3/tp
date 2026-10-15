@@ -42,6 +42,8 @@ public class EmployeeCard extends UiPart<Region> {
     private FlowPane tags;
     @FXML
     private Label salary;
+    @FXML
+    private Label leaveEntitlement;
 
     /**
      * Creates a {@code EmployeeCard} with the given {@code Employee} and index to display.
@@ -58,5 +60,6 @@ public class EmployeeCard extends UiPart<Region> {
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
         salary.setText("$" + employee.getSalary().salary);
+        leaveEntitlement.setText("Annual leave: " + employee.getLeaveEntitlement().value + " day(s)");
     }
 }

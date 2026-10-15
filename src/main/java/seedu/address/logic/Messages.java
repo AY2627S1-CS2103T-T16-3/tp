@@ -43,6 +43,9 @@ public class Messages {
                 .append(employee.getEmail())
                 .append("; Address: ")
                 .append(employee.getAddress())
+                .append("; Annual leave: ")
+                .append(employee.getLeaveEntitlement())
+                .append(" day(s)")
                 .append("; Tags: ");
         employee.getTags().forEach(builder::append);
         return builder.toString();

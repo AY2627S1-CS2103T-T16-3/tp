@@ -19,6 +19,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.LeaveEntitlement;
 import seedu.address.model.employee.Name;
 import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
@@ -33,7 +34,7 @@ public class SalaryCommandTest {
         Model model = new ModelManager();
         Employee original = Employee.createUnassigned(new Name("Alice"), new Phone("91234567"),
                 new Email("alice@example.com"), new Address("123 Main Street"), new Salary("1000"),
-                Set.of(new Tag("team")),
+                new LeaveEntitlement(14), Set.of(new Tag("team")),
                 List.of(new Task("Prepare report"), new Task("Meet partners")));
         model.addEmployee(original);
         Salary updatedSalary = new Salary("5000");
