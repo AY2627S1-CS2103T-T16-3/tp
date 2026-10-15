@@ -308,8 +308,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book                                 | see usage instructions         | refer to instructions when I forget how to use the App and to learn the app capabilities                |
 | `* * *`  | First time user of HR Book                                 | edit employees contact         |   make any relevant updates to employee contact fields              |
 | `* * *`  | HR Officer                                       | add a new employee profile               |     add newly hired employee profiles with their respective details                                                                  |
-| `* * *`  | HR Officer                                       | manage Employee’s leaves and off               |     can keep track of manpower in the company on a daily basis                                                                  |
-| `* * *`  | HR Officer                                       | filter through a list of employees              |      can find easily find those that match specific criteria(s)                                                                |
+| `* * *`  | HR Officer                                       | manage Employee’s leaves and off               |      keep track of manpower in the company on a daily basis                                                                  |
+| `* * *`  | HR Officer                                       | filter through a list of employees              |       easily find those that match specific criteria(s)                                                                |
 | `* * *`  | HR Officer                                       | delete an employee profile              | remove employees no longer with the company                                   |
 | `* * *`  | HR Officer                                      |   shift employees between different departments | keep check of changing roles within the startup |
 | `* * *`  | HR Officer                                      |   view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration |
@@ -468,7 +468,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to filter employees and provides one or more criteria, such as name, phone, email, address, tags, tasks, or salary.
+1. HR manager requests to filter employees that meets a certain criteria(s)
 2. System identifies employees who match all supplied criteria.
 3. System displays the matching employees and the number of matches.
 
@@ -476,9 +476,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 1a. The HR manager does not provide any criteria or provides an empty criterion.
+* 1a. The HR manager does not provide any criteria.
 
-    * 1a1. System informs the HR manager that at least one criterion is required and supplied criteria must not be empty.
+    * 1a1. System informs the HR manager that at least one criterion is required.
     * 1a2. System keeps the currently displayed employee list.
 
       Use case ends.
@@ -501,6 +501,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     * 1d1. System informs the HR manager that salary must be a whole number from 0 to 50000.
     * 1d2. System keeps the currently displayed employee list.
+
+      Use case ends.
+      
+* 1e. The HR manager provides an empty criterion.
+
+    * 1a1. System informs the HR manager that supplied criteria must not be empty.
+    * 1a2. System keeps the currently displayed employee list.
 
       Use case ends.
 
