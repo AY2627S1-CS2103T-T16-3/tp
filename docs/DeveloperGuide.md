@@ -789,7 +789,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: List employee leave**
+**Use case: UC9 - List employee leave**
 
 **MSS**
 
@@ -807,7 +807,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: Delete employee leave**
+**Use case: UC10 - Delete employee leave**
 
 **MSS**
 
@@ -826,7 +826,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC9 - Show Employee Details**
+**Use case: UC11 - Show Employee Details**
 
 **MSS**
 
@@ -880,7 +880,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC10 - Change an employee's salary**
+**Use case: UC12 - Change an employee's salary**
 
 **MSS**
 
