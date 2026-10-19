@@ -14,7 +14,7 @@ import seedu.address.commons.util.ToStringBuilder;
 /**
  * Matches employees against all supplied field criteria. Text matches are case-insensitive substrings;
  * task matches are case-insensitive substrings, tag matches are case-insensitive whole tag names,
- * and salary matches are exact amounts.
+ * and salary and annual leave entitlement matches are exact amounts or strict numeric comparisons.
  */
 public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
 
@@ -22,7 +22,7 @@ public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
      * Fields available for filtering.
      */
     public enum Field {
-        NAME, PHONE, EMAIL, ADDRESS, TAG, TASK, SALARY
+        NAME, PHONE, EMAIL, ADDRESS, TAG, TASK, SALARY, LEAVE_ENTITLEMENT
     }
 
     private final Map<Field, List<String>> criteria;
@@ -62,9 +62,18 @@ public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
             case ADDRESS -> containsIgnoreCase(employee.getAddress().value, value);
             case TASK -> employee.getTasks().stream()
                     .anyMatch(task -> containsIgnoreCase(task.getDetails(), value));
-            case SALARY -> employee.getSalary().salary.equals(value);
+            case SALARY -> matchesAmount(Integer.parseInt(employee.getSalary().salary), value);
+            case LEAVE_ENTITLEMENT -> matchesAmount(employee.getLeaveEntitlement().value, value);
             case TAG -> employee.getTags().stream().anyMatch(tag -> tag.tagName.equalsIgnoreCase(value));
         };
+    }
+
+    private boolean matchesAmount(int amount, String criterion) {
+        if (criterion.startsWith("<") || criterion.startsWith(">")) {
+            int threshold = Integer.parseInt(criterion.substring(1));
+            return criterion.startsWith("<") ? amount < threshold : amount > threshold;
+        }
+        return amount == Integer.parseInt(criterion);
     }
 
     private boolean containsIgnoreCase(String fieldValue, String query) {

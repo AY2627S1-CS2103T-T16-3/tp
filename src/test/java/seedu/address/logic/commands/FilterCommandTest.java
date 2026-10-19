@@ -10,6 +10,7 @@ import static seedu.address.testutil.TypicalEmployees.DANIEL;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalEmployees.getTypicalEmployees;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
+import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EmployeeBuilder;
 
 /**
@@ -105,6 +107,99 @@ public class FilterCommandTest {
         assertFilter("n/Alice t/friends task/invoices s/3000", List.of(alice));
         assertFilter("task/report s/0", List.of());
         assertEquals(addressBook, model.getAddressBook());
+    }
+
+    @Test
+    public void execute_salaryComparators_matchesStrictNumericAmounts() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withSalary("900").build();
+        Employee benson = new EmployeeBuilder(BENSON).withSalary("4000").build();
+        Employee daniel = new EmployeeBuilder(DANIEL).withSalary("10000").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addEmployee(alice);
+        addressBook.addEmployee(benson);
+        addressBook.addEmployee(daniel);
+        model.setAddressBook(addressBook);
+
+        assertFilter("s/<4000", List.of(alice));
+        assertFilter("s/>4000", List.of(daniel));
+        assertFilter("s/<004000", List.of(alice));
+        assertFilter("s/>004000", List.of(daniel));
+        assertFilter("s/4000", List.of(benson));
+        assertFilter("s/<0", List.of());
+        assertFilter("s/>50000", List.of());
+        assertFilter("s/>0", List.of(alice, benson, daniel));
+        assertFilter("s/<50000", List.of(alice, benson, daniel));
+        assertEquals(addressBook, model.getAddressBook());
+    }
+
+    @Test
+    public void execute_salaryComparatorsWithOtherFields_requiresEveryCriterion() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withSalary("3000")
+                .withTasks(new Task("Quarterly report")).build();
+        Employee benson = new EmployeeBuilder(BENSON).withSalary("5000").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addEmployee(alice);
+        addressBook.addEmployee(benson);
+        model.setAddressBook(addressBook);
+
+        assertFilter("n/Alice p/943 s/<4000", List.of(alice));
+        assertFilter("n/Alice p/987 s/<4000", List.of());
+        assertFilter("n/Alice p/943 s/>4000", List.of());
+        assertFilter("n/Meier p/987 s/>4000", List.of(benson));
+        assertFilter("n/Meier p/987 s/<4000", List.of());
+        assertFilter("e/alice@ a/Jurong t/friends task/report s/<4000", List.of(alice));
+        assertFilter("task/missing s/<4000", List.of());
+    }
+
+    @Test
+    public void execute_leaveEntitlement_matchesExactAmountsAndStrictComparisons() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withLeaveEntitlement(0).build();
+        Employee benson = new EmployeeBuilder(BENSON).withLeaveEntitlement(14).build();
+        Employee daniel = new EmployeeBuilder(DANIEL).withLeaveEntitlement(365).build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addEmployee(alice);
+        addressBook.addEmployee(benson);
+        addressBook.addEmployee(daniel);
+        model.setAddressBook(addressBook);
+
+        assertFilter("le/14", List.of(benson));
+        assertFilter("le/<14", List.of(alice));
+        assertFilter("le/>14", List.of(daniel));
+        assertFilter("le/>9", List.of(benson, daniel));
+        assertFilter("le/0", List.of(alice));
+        assertFilter("le/365", List.of(daniel));
+        assertFilter("le/<0", List.of());
+        assertFilter("le/>365", List.of());
+        assertFilter("le/>0", List.of(benson, daniel));
+        assertFilter("le/<365", List.of(alice, benson));
+        new ListCommand().execute(model);
+        assertEquals(addressBook.getEmployeeList(), model.getFilteredEmployeeList());
+        assertEquals(addressBook, model.getAddressBook());
+    }
+
+    @Test
+    public void execute_leaveEntitlementWithOtherFields_requiresEveryCriterion() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withLeaveEntitlement(14).withSalary("3000")
+                .withTasks(new Task("Quarterly report")).build();
+        Employee benson = new EmployeeBuilder(BENSON).withLeaveEntitlement(7).withSalary("5000").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addEmployee(alice);
+        addressBook.addEmployee(benson);
+        model.setAddressBook(addressBook);
+
+        assertFilter("n/Alice p/943 s/<4000 le/>10", List.of(alice));
+        assertFilter("n/Alice p/943 s/>4000 le/>10", List.of());
+        assertFilter("n/Alice p/943 s/<4000 le/<10", List.of());
+        assertFilter("n/Alice p/987 le/>10", List.of());
+        assertFilter("n/Benson le/>10", List.of());
+        assertFilter("n/Meier le/<10", List.of(benson));
+        assertFilter("e/alice@ a/Jurong t/friends task/report le/14", List.of(alice));
+        assertFilter("task/missing le/14", List.of());
+
+        model.addLeave(model.getAddressBook().getEmployeeList().get(0).getEmployeeId().orElseThrow(),
+                new LeavePeriod(LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 6)));
+        assertFilter("n/Alice le/14", List.of(alice));
+        assertFilter("n/Alice le/9", List.of());
     }
 
     private void assertFilter(String arguments, List<Employee> expectedEmployees) throws Exception {
