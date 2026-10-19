@@ -239,6 +239,26 @@ Examples:
 * `filter task/report task/review` lists employees with tasks matching both descriptions.
 * `filter task/report s/3000` lists employees with a matching task and salary 3000.
 
+### Sorting the displayed employees: `sort`
+
+Sorts the currently displayed list by exactly one field, keeping the active `find` or `filter` criteria.
+
+Format: `sort FIELD/ORDER`
+
+* Fields: `n/` (name), `p/` (phone), `e/` (email), `a/` (address), `s/` (salary), or `le/` (annual leave entitlement).
+* Order: `asc` for ascending or `des` for descending. Supply exactly one field and order.
+* Salary, phone numbers, and annual leave entitlement sort numerically. Text sorts alphabetically, ignoring case.
+* Employees with equal values retain their original address book order.
+* Sorting changes the display only; employee details and the stored address book order stay unchanged.
+* The chosen sort stays active when you filter, find, edit, or list employees. `list` shows all employees in that order. Another `sort` replaces it; restarting the app restores the stored order.
+* Index commands such as `edit`, `salary`, and `delete` use the positions in the sorted displayed list.
+* Sorting an empty list is allowed.
+
+Examples:
+* `sort s/asc` sorts the displayed employees from lowest to highest salary.
+* `sort p/des` sorts the displayed employees by phone number in descending order.
+* `filter t/friends`, followed by `sort le/des`, shows only employees tagged `friends`, ordered from highest to lowest annual leave entitlement.
+
 ### Deleting an employee: `delete`
 
 Deletes the specified employee from the address book.
@@ -367,6 +387,7 @@ _Details coming soon ..._
 | **Edit**              | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`                                                    |
 | **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                                                      |
 | **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br> e.g., `filter p/91235321`                                                         |
+| **Sort**              | `sort FIELD/ORDER`<br> e.g., `sort s/asc` or `sort p/des` |
 | **List**              | `list`                                                                                                                                                                          |
 | **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`                                                                                                                            |
 | **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`                                                                                                     |
