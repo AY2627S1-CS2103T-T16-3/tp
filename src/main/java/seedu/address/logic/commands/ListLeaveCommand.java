@@ -18,14 +18,14 @@ import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.LeavePeriod;
 
 /**
- * Lists all centrally stored leave records.
+ * Lists leave records belonging to employees in the currently displayed employee list.
  */
 public class ListLeaveCommand extends Command {
 
     public static final String SUBCOMMAND_WORD = "list";
     public static final String MESSAGE_USAGE = "leave " + SUBCOMMAND_WORD
-            + ": Lists all leave records.\n"
-            + "Example: leave " + SUBCOMMAND_WORD;
+            + ": Lists leave records for the currently displayed employees.\n"
+            + "  Example: leave " + SUBCOMMAND_WORD;
     public static final String MESSAGE_NO_LEAVE = "No leave records found.";
     public static final String MESSAGE_SUCCESS = "Leave records:\n%1$s";
 
