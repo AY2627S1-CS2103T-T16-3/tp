@@ -31,6 +31,7 @@ import seedu.address.logic.commands.ListTasksCommand;
 import seedu.address.logic.commands.MarkTaskCommand;
 import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
+import seedu.address.logic.commands.UnmarkTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
@@ -89,6 +90,7 @@ public class AddressBookParserTest {
         assertTrue(parser.parseCommand("add-task 1 d/Prepare report") instanceof AddTaskCommand);
         assertTrue(parser.parseCommand("delete-task 1 i/1") instanceof DeleteTaskCommand);
         assertTrue(parser.parseCommand("mark-task 1 i/1") instanceof MarkTaskCommand);
+        assertTrue(parser.parseCommand("unmark-task 1 i/1") instanceof UnmarkTaskCommand);
     }
 
     @Test
