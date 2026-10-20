@@ -170,7 +170,7 @@ Task counts use the selected scope, like headcount and salary statistics. The sa
 counts as two assignments. An empty book shows zero for every task statistic; if employees have no
 tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
 Run the summary again after task changes or employee deletion to refresh it. These counts do not
-indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
+distinguish between completed and pending tasks; completion status is managed through the task commands.
 
 ### Changing an employee's salary: `salary`
 
@@ -345,11 +345,19 @@ Format: `list-tasks EMPLOYEE_INDEX`
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
 * Tasks are displayed in the order in which they were added.
+* Pending tasks are displayed with `[ ]`, while completed tasks are displayed with `[x]`.
+* `TASK_INDEX` refers to the number displayed next to the task.
 * The current filtered employee list is preserved after the command.
 
 Example:
 
-* `list-tasks 1` lists the tasks related to the first displayed employee.
+* `list-tasks 1` lists the tasks related to the first displayed employee, for example:
+
+  ```text
+  Tasks for Alice Pauline:
+  1. [ ] Prepare monthly report
+  2. [x] Submit access request
+  ```
 
 ### Adding tasks to an employee: `add-task`
 
@@ -391,6 +399,44 @@ Examples:
   employee.
 * `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
   first employee in the filtered results.
+
+### Marking a task as done: `mark-task`
+
+Marks a task as completed.
+
+Format: `mark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Marking an already completed task succeeds without changing its state.
+
+Examples:
+
+* `mark-task 1 i/1` marks the first task assigned to the first displayed employee as done.
+* `find Alex` followed by `mark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as done.
+
+### Marking a task as pending: `unmark-task`
+
+Marks a completed task as pending.
+
+Format: `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Unmarking an already pending task succeeds without changing its state.
+
+Examples:
+
+* `unmark-task 1 i/1` marks the first task assigned to the first displayed employee as pending.
+* `find Alex` followed by `unmark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as pending.
 
 ### Clearing all entries: `clear`
 
@@ -467,6 +513,8 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br>e.g., `list-tasks 1` |
 | **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br>e.g., `add-task 1 d/Prepare report` |
 | **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `delete-task 1 i/1` |
+| **Mark task**         | `mark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `mark-task 1 i/1` |
+| **Unmark task**       | `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `unmark-task 1 i/1` |
 | **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |
