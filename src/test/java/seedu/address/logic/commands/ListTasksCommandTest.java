@@ -28,7 +28,7 @@ public class ListTasksCommandTest {
         model.setEmployee(employee, updatedEmployee);
 
         String expected = "Tasks for " + employee.getName().fullName + ":\n"
-                + "1. Prepare report\n2. Submit report";
+                + "1. [ ] Prepare report\n2. [ ] Submit report";
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandSuccess(new ListTasksCommand(Index.fromOneBased(1)), model, expected, expectedModel);
     }

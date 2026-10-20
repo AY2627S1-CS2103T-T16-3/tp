@@ -54,8 +54,8 @@ public class JsonAdaptedEmployeeTest {
     @Test
     public void toModelType_validTasks_returnsEmployeeWithTasks() throws Exception {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
-                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report"),
-                        new JsonAdaptedTask("Submit report")));
+                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report", false),
+                        new JsonAdaptedTask("Submit report", false)));
 
         assertEquals(List.of(new Task("Prepare report"), new Task("Submit report")), employee.toModelType().getTasks());
     }
@@ -97,8 +97,8 @@ public class JsonAdaptedEmployeeTest {
     @Test
     public void toModelType_duplicateTasks_throwsIllegalValueException() {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
-                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report"),
-                        new JsonAdaptedTask(" prepare  REPORT ")));
+                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report", false),
+                        new JsonAdaptedTask(" prepare  REPORT ", false)));
 
         assertThrows(IllegalValueException.class, employee::toModelType);
     }
@@ -106,7 +106,7 @@ public class JsonAdaptedEmployeeTest {
     @Test
     public void toModelType_invalidTask_throwsIllegalValueException() {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
-                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask(" ")));
+                VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask(" ", false)));
 
         assertThrows(IllegalValueException.class, employee::toModelType);
     }
