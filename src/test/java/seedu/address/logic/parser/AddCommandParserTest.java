@@ -71,6 +71,14 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_paddedLeaveEntitlement_success() {
+        Employee expected = new EmployeeBuilder(BOB).withoutEmployeeId().withTags().withLeaveEntitlement(14).build();
+
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + " " + PREFIX_LEAVE_ENTITLEMENT + "00014", new AddCommand(expected));
+    }
+
+    @Test
     public void parse_invalidSalary_failure() {
         String details = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
                 + LEAVE_ENTITLEMENT_DESC_BOB;
