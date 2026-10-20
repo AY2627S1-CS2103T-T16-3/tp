@@ -12,7 +12,9 @@ import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
 
-/** Lists the tasks assigned to an employee. */
+/**
+ * Lists the tasks assigned to an employee.
+ */
 public class ListTasksCommand extends Command {
 
     public static final String COMMAND_WORD = "list-tasks";

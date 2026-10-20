@@ -12,7 +12,9 @@ import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
 
-/** Marks a task as done for an employee identified by the displayed employee index. */
+/**
+ * Marks a task as done for an employee identified by the displayed employee index.
+ */
 public class MarkTaskCommand extends Command {
 
     public static final String COMMAND_WORD = "mark-task";
@@ -27,7 +29,12 @@ public class MarkTaskCommand extends Command {
     private final Index employeeIndex;
     private final Index taskIndex;
 
-    /** Creates a command to mark a task as done. */
+    /**
+     * Creates a command to mark a task as done.
+     *
+     * @param employeeIndex Index of the employee in the displayed list.
+     * @param taskIndex Index of the task in the employee's task list.
+     */
     public MarkTaskCommand(Index employeeIndex, Index taskIndex) {
         this.employeeIndex = requireNonNull(employeeIndex);
         this.taskIndex = requireNonNull(taskIndex);

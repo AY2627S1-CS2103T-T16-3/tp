@@ -58,6 +58,10 @@ public class Employee {
     /**
      * Returns a copy with the given internal identifier assigned.
      * This operation is only valid for an employee that has not already been assigned an identifier.
+     *
+     * @param employeeId Internal identifier to assign.
+     * @return A copy of this employee with the assigned identifier.
+     * @throws IllegalStateException If this employee already has an identifier.
      */
     public Employee withEmployeeId(EmployeeId employeeId) {
         requireNonNull(employeeId);
@@ -105,12 +109,19 @@ public class Employee {
         return Collections.unmodifiableSet(tags);
     }
 
-    /** Returns an immutable task list. */
+    /**
+     * Returns an immutable task list.
+     */
     public List<Task> getTasks() {
         return Collections.unmodifiableList(tasks);
     }
 
-    /** Adds a task to this employee. */
+    /**
+     * Adds a task to this employee.
+     *
+     * @param task Task to add.
+     * @return A copy of this employee with the task added.
+     */
     public Employee addTask(Task task) {
         requireNonNull(task);
         if (tasks.stream().anyMatch(existingTask -> existingTask.hasSameDetails(task))) {
@@ -121,7 +132,12 @@ public class Employee {
         return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, updatedTasks);
     }
 
-    /** Deletes a task using a zero-based index. */
+    /**
+     * Deletes a task using a zero-based index.
+     *
+     * @param index Zero-based index of the task to delete.
+     * @return A copy of this employee without the selected task.
+     */
     public Employee deleteTask(int index) {
         if (index < 0 || index >= tasks.size()) {
             throw new IndexOutOfBoundsException("Task index is out of bounds.");
@@ -131,7 +147,13 @@ public class Employee {
         return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, updatedTasks);
     }
 
-    /** Replaces a task using a zero-based index. */
+    /**
+     * Replaces a task using a zero-based index.
+     *
+     * @param index Zero-based index of the task to replace.
+     * @param task Replacement task.
+     * @return A copy of this employee with the selected task replaced.
+     */
     public Employee updateTask(int index, Task task) {
         requireNonNull(task);
         if (index < 0 || index >= tasks.size()) {
@@ -152,7 +174,9 @@ public class Employee {
         return leaveEntitlement;
     }
 
-    /** Returns a copy with the updated salary while preserving internal identity and all other fields. */
+    /**
+     * Returns a copy with the updated salary while preserving internal identity and all other fields.
+     */
     public Employee withSalary(Salary salary) {
         requireNonNull(salary);
         return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, tasks);
