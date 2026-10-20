@@ -131,6 +131,17 @@ public class Employee {
         return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, updatedTasks);
     }
 
+    /** Replaces a task using a zero-based index. */
+    public Employee updateTask(int index, Task task) {
+        requireNonNull(task);
+        if (index < 0 || index >= tasks.size()) {
+            throw new IndexOutOfBoundsException("Task index is out of bounds.");
+        }
+        List<Task> updatedTasks = new ArrayList<>(tasks);
+        updatedTasks.set(index, task);
+        return new Employee(employeeId, name, phone, email, address, salary, leaveEntitlement, tags, updatedTasks);
+    }
+
     /** Returns the employee's salary. */
     public Salary getSalary() {
         return salary;
