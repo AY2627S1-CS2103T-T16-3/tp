@@ -56,6 +56,7 @@ public class MarkTaskCommandTest {
     @Test
     public void equals() {
         MarkTaskCommand command = new MarkTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1));
+        assertEquals(command, command);
         assertEquals(command, new MarkTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)));
         assertNotEquals(command, new MarkTaskCommand(Index.fromOneBased(2), Index.fromOneBased(1)));
         assertNotEquals(command, new MarkTaskCommand(Index.fromOneBased(1), Index.fromOneBased(2)));

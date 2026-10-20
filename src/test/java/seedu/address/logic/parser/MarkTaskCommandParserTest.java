@@ -23,6 +23,8 @@ public class MarkTaskCommandParserTest {
 
     @Test
     public void parse_invalidArgs_throwsParseException() {
+        assertParseFailure(parser, "", "Invalid command format!\n" + MarkTaskCommand.MESSAGE_USAGE);
+        assertParseFailure(parser, "i/1", "Invalid command format!\n" + MarkTaskCommand.MESSAGE_USAGE);
         assertParseFailure(parser, "1", "Invalid command format!\n" + MarkTaskCommand.MESSAGE_USAGE);
         assertParseFailure(parser, "1 i/1 i/2", getErrorMessageForDuplicatePrefixes(PREFIX_TASK_INDEX));
         assertParseFailure(parser, "zero i/1",
