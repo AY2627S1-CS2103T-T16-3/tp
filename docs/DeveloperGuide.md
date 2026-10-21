@@ -255,8 +255,10 @@ Remaining leave is derived as:
 `max(0, annual entitlement - recorded working leave days in that calendar year)`
 
 This avoids a second mutable balance that could drift out of sync. An employee's annual entitlement is compulsory when
-the employee is added, is editable, and accepts whole numbers from 0 to 365. For backward compatibility, employees in
-older data files with no entitlement load with an entitlement of 0.
+the employee is added, is editable, and accepts whole numbers from 0 to 365. `ParserUtil#parseLeaveEntitlement`
+accepts digit-only input with leading zeros and removes that padding before constructing `LeaveEntitlement`; an
+all-zero input is normalized to 0. Validation of the normalized value still rejects entitlements outside 0 to 365.
+For backward compatibility, employees in older data files with no entitlement load with an entitlement of 0.
 
 #### Listing and deleting leave
 
