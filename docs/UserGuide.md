@@ -65,7 +65,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
-  Exception: `/summary` and `summary` accept only an optional `scope/all` or `scope/filtered` parameter.
+  Exception: `/summary` and `summary` accept an optional scope followed by index selections using `i/` and `e/`.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -110,13 +110,26 @@ Format: `list`
 
 Shows employee counts by tag, task-assignment counts, and recorded salary statistics in the selected scope.
 
-Format: `summary [scope/all|scope/filtered]` (alias: `/summary`)
+Format: `summary [scope/all|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`)
 
-Omit the parameter or use `scope/filtered` to summarize the currently displayed employees after `find`
+Omit the scope or use `scope/filtered` to summarize the currently displayed employees after `find`
 or `filter`. For example, run `filter t/engineering` then `summary`. Use `summary scope/all` to summarize
 all stored employees while keeping the current filter active.
 Values are case-sensitive and must immediately follow `scope/`; surrounding whitespace is allowed.
-Empty, unknown, repeated parameters and extra text report a usage error, e.g. `summary t/engineering`.
+Empty, unknown, repeated parameters and extra text are rejected, e.g. `summary t/engineering`.
+
+To select particular employees for the summary:
+
+* Use `i/` to include only the listed indexes, e.g. `summary i/1 3` summarizes employees 1 and 3.
+* Use `e/` to exclude the listed indexes, e.g. `summary e/2 4` summarizes everyone except employees 2 and 4.
+* You can combine them: `summary i/1 2 3 e/2` summarizes employees 1 and 3. Exclusions take precedence.
+* Indexes must be positive integers separated by whitespace. Repeated indexes count only once.
+  Supply each prefix at most once; an empty list or any index outside the selected scope is rejected.
+* Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
+  displayed list. With `scope/all`, they refer to the full employee list; run `list` first to view that numbering.
+  Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
+* Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
+  Excluding everyone produces an empty summary. Selections apply only to this invocation.
 
 Without a parameter the summary includes **only the currently displayed employees**. Run `list` first
 to display and summarize everyone, or use `summary scope/all` without changing the displayed list.
@@ -467,6 +480,6 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br>e.g., `list-tasks 1` |
 | **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br>e.g., `add-task 1 d/Prepare report` |
 | **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `delete-task 1 i/1` |
-| **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`) |
+| **Workforce summary** | `summary [scope/all\|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |

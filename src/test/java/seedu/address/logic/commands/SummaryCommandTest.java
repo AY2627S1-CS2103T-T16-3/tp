@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
@@ -29,12 +30,12 @@ public class SummaryCommandTest {
     }
 
     @Test
-    public void execute_emptyBook_returnsZeroCounts() {
+    public void execute_emptyBook_returnsZeroCounts() throws CommandException {
         assertEquals(new CommandResult(EMPTY_SUMMARY), new SummaryCommand().execute(new ModelManager()));
     }
 
     @Test
-    public void execute_noTags_returnsHeadcountAndNoTagsMessage() {
+    public void execute_noTags_returnsHeadcountAndNoTagsMessage() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice"));
         assertEquals(new CommandResult("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
@@ -43,7 +44,7 @@ public class SummaryCommandTest {
     }
 
     @Test
-    public void execute_mixedTags_formatsSortedCountsWithoutChangingModel() {
+    public void execute_mixedTags_formatsSortedCountsWithoutChangingModel() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice", "Remote", "Engineering", "engineering"));
         model.addEmployee(employee("Bob", "engineering", "intern"));
@@ -58,7 +59,7 @@ public class SummaryCommandTest {
     }
 
     @Test
-    public void execute_explicitAllScope_summarizesWholeBookAndPreservesPredicate() {
+    public void execute_explicitAllScope_summarizesWholeBookAndPreservesPredicate() throws CommandException {
         Model model = new ModelManager();
         Employee alice = employee("Alice", "engineering");
         Employee bob = employee("Bob", "remote");
@@ -83,7 +84,7 @@ public class SummaryCommandTest {
     }
 
     @Test
-    public void execute_explicitAllWithNoMatches_stillCountsStoredEmployees() {
+    public void execute_explicitAllWithNoMatches_stillCountsStoredEmployees() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice"));
         CommandResult expected = new SummaryCommand(SummaryCommand.Scope.ALL).execute(model);
