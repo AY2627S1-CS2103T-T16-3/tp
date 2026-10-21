@@ -205,7 +205,10 @@ surrounding whitespace, and rejection of unexpected arguments. `SummaryScopeComm
 selection, empty matches, execution-time reads, and preservation of the filter predicate. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
 `SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
-`CommandResultTest` checks presentation metadata. The JavaFX result-panel preview was checked with synthetic data
+`CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,
+normal/error font restoration, caret reset, and null input handling on the JavaFX thread.
+Linux CI runs these tests with Xvfb to provide a virtual display.
+The JavaFX result-panel preview was checked with synthetic data
 for aligned columns, empty results, and restoration of the normal feedback font.
 
 #### Task counts
