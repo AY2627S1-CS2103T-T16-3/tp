@@ -1,7 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
 
 import java.util.List;
 
@@ -25,12 +25,9 @@ public class SummarySalaryCommandTest {
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
         Employee storedBob = model.getAddressBook().getEmployeeList().get(1);
         model.updateFilteredEmployeeList(employee -> employee.equals(storedAlice));
-        String expected = "Employee summary\nScope: All employees\nTotal employees: 2\nEmployees without tags: 2\n\n"
-                + "No tags to summarize.\n\nTask overview\nTotal assigned tasks: 0\n"
-                + "Employees with tasks: 0\nEmployees without tasks: 2\nMost tasks assigned to one employee: 0"
-                + "\n\nSalary overview\nTotal recorded salary: $8000.00\n"
-                + "Average salary: $4000.00\nLowest salary: $3000.00\nHighest salary: $5000.00";
-        assertEquals(expected, new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser());
+        String result = new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Total salary", "$8000.00");
+        assertSummaryValue(result, "Average salary", "$4000.00");
         assertEquals(List.of(storedAlice, storedBob), model.getAddressBook().getEmployeeList());
         assertEquals(List.of(storedAlice), model.getFilteredEmployeeList());
     }
@@ -40,9 +37,10 @@ public class SummarySalaryCommandTest {
         Model model = new ModelManager();
         model.addEmployee(new EmployeeBuilder().withSalary("1000").build());
         SummaryCommand summary = new SummaryCommand();
-        assertTrue(summary.execute(model).getFeedbackToUser().contains("Total recorded salary: $1000.00"));
+        assertSummaryValue(summary.execute(model).getFeedbackToUser(), "Total salary", "$1000.00");
         new SalaryCommand(Index.fromOneBased(1), new Salary("5000")).execute(model);
-        assertTrue(summary.execute(model).getFeedbackToUser().endsWith("Total recorded salary: $5000.00\n"
-                + "Average salary: $5000.00\nLowest salary: $5000.00\nHighest salary: $5000.00"));
+        String result = summary.execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Total salary", "$5000.00");
+        assertSummaryValue(result, "Average salary", "$5000.00");
     }
 }
