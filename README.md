@@ -8,7 +8,8 @@ HR Book enables an HR manager to:
 
 * add and delete employee records containing contact details, annual leave entitlement, reporting relationships, and tags;
 * retrieve specific employee details and find employees by attributes such as name, contact number, email, employee ID, boss ID, leave entitlement, leave date, or tag;
-* record and cancel employee leave while validating leave quotas, working days, and overlapping leave periods; and
+* record, list, and cancel employee leave while validating annual leave entitlement, working days, and overlapping
+  periods, and distinguish upcoming, ongoing, and past leave; and
 * continue working across sessions through automatic local saving and loading of employee and leave data.
 
 HR Book is intended for internal employee administration. Recruitment, talent acquisition, and communication between employees are outside the scope of the application.
