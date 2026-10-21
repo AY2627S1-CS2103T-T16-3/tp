@@ -19,6 +19,7 @@ Class Email
 Class Name
 Class Phone
 Class Tag
+Class Salary
 
 Class I #FFFFFF
 }
@@ -42,6 +43,7 @@ Employee *--> Phone
 Employee *--> Email
 Employee *--> Address
 Employee *--> "*" Tag
+Employee *--> Salary
 
 Employee -[hidden]up--> I
 UniqueEmployeeList -[hidden]right-> I
