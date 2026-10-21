@@ -129,48 +129,45 @@ Example output:
 ```text
 Employee summary
 Scope: Filtered employees
-Total employees: 5
-Employees without tags: 1
 
-Employees by tag:
-  engineering: 3
-  intern: 1
-  remote: 2
++----------------------+-----------+
+| Metric               |     Value |
++----------------------+-----------+
+| Employees            |         5 |
+| Without tags         |         1 |
+| Assigned tasks       |         6 |
+| Employees with tasks |         3 |
+| Total salary         | $15000.00 |
+| Average salary       |  $3000.00 |
++----------------------+-----------+
 
-Employees may have multiple tags; tag counts can overlap.
-
-Task overview
-Total assigned tasks: 6
-Employees with tasks: 3
-Employees without tasks: 2
-Most tasks assigned to one employee: 3
-
-Salary overview
-Total recorded salary: $15000.00
-Average salary: $3000.00
-Lowest salary: $0.00
-Highest salary: $5000.00
++-------------+-----------+
+| Tag         | Employees |
++-------------+-----------+
+| engineering |         2 |
+| intern      |         1 |
+| remote      |         2 |
++-------------+-----------+
 ```
 
+![Summary result panel](images/summary-table.png)
+
+* The first table shows headcount, employees without tags, assigned tasks, employees with tasks,
+  and total/average recorded salary. The tag table appears only when there are tags.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
-* Employees with several different tags count in each group, so tag counts can exceed the total headcount.
-* Having no tags is allowed; the untagged count is a categorization aid, not an error.
-* If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
-* These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
-  not interpreted as structured departments. Leave balances and reminders are not included.
-* Salary statistics include every salary in the selected scope, including zero. For no employees, the total is `$0.00`
-  and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
-* These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
-  Salary statistics still appear when there are no tags and refresh after a salary change.
+  Employees with several tags count in each group, so tag counts can overlap.
+* Identical task descriptions assigned to different employees count as separate assignments.
+  Task counts do not indicate completion, deadlines, effort, or productivity.
+* Salary figures include zero salaries. An empty selection shows zero counts, a total salary of `$0.00`,
+  and an average of `N/A`. Amounts use two decimal places; averages round half up.
+  These are recorded amounts, not payroll, tax, benefits, or payments.
+* These figures describe stored records, not attendance or active employment. Tags are not interpreted
+  as structured departments; leave balances and reminders are not included.
 
-The result appears in the existing command-result area; scroll within it to read a long summary.
-
-Task counts use the selected scope, like headcount and salary statistics. The same description assigned to two employees
-counts as two assignments. An empty book shows zero for every task statistic; if employees have no
-tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
-Run the summary again after task changes or employee deletion to refresh it. These counts do not
-indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
+The tables use a monospaced font with right-aligned values. Columns expand to fit long tags and large amounts.
+Scroll within the result area or drag the divider below it to see more rows; wide tables can be scrolled horizontally.
+Run the command again after employee, task, or salary changes to refresh the figures.
 
 ### Changing an employee's salary: `salary`
 
