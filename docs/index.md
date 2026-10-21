@@ -8,7 +8,9 @@ title: HR Book
 
 ![Ui](images/Ui.png)
 
-**HR Book is a desktop application for HR managers who need to manage employee records and routine administrative work efficiently.** While it has a GUI, most of the user interactions happen using a CLI (Command Line Interface).
+**HR Book is a desktop application for HR managers who need to manage employee records and annual leave efficiently.**
+While it has a GUI, most user interactions happen using a CLI (Command Line Interface). HR Book records each
+employee's annual leave entitlement and supports adding, listing, and deleting leave records.
 
 * If you are interested in using HR Book, head over to the [_Quick Start_ section of the **User Guide**](UserGuide.html#quick-start).
 * If you are interested in developing HR Book, the [**Developer Guide**](DeveloperGuide.html) is a good place to start.
