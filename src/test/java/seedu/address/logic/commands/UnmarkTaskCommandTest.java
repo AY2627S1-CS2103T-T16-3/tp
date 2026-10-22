@@ -2,6 +2,8 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
@@ -15,6 +17,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
+import seedu.address.testutil.TypicalEmployees;
 
 public class UnmarkTaskCommandTest {
 
@@ -51,6 +54,28 @@ public class UnmarkTaskCommandTest {
                 Index.fromOneBased(1)), model, Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_INDEX);
         assertCommandFailure(new UnmarkTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)), model,
                 UnmarkTaskCommand.MESSAGE_INVALID_TASK_INDEX);
+    }
+
+    @Test
+    public void execute_filteredList_preservesFilter() throws Exception {
+        Employee employee = TypicalEmployees.BENSON;
+        Employee otherEmployee = TypicalEmployees.ALICE;
+        model.updateFilteredEmployeeList(candidate -> candidate.getName().equals(employee.getName()));
+        Employee filteredEmployee = model.getFilteredEmployeeList().get(0);
+        model.setEmployee(filteredEmployee, filteredEmployee.addTask(new Task("Prepare report").markDone()));
+
+        new UnmarkTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)).execute(model);
+
+        assertEquals(1, model.getFilteredEmployeeList().size());
+        assertEquals(employee.getName(), model.getFilteredEmployeeList().get(0).getName());
+        assertEquals(new Task("Prepare report"), model.getFilteredEmployeeList().get(0).getTasks().get(0));
+        assertTrue(model.getAddressBook().getEmployeeList().contains(otherEmployee));
+    }
+
+    @Test
+    public void execute_nullModel_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new UnmarkTaskCommand(Index.fromOneBased(1),
+                Index.fromOneBased(1)).execute(null));
     }
 
     @Test
