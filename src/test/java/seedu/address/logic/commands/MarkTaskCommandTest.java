@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
+import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
 
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,12 @@ public class MarkTaskCommandTest {
                 Index.fromOneBased(1)), model, Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_INDEX);
         assertCommandFailure(new MarkTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)), model,
                 MarkTaskCommand.MESSAGE_INVALID_TASK_INDEX);
+    }
+
+    @Test
+    public void execute_nullModel_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new MarkTaskCommand(Index.fromOneBased(1),
+                Index.fromOneBased(1)).execute(null));
     }
 
     @Test
