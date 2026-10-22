@@ -98,7 +98,7 @@ public class JsonAdaptedEmployeeTest {
     public void toModelType_duplicateTasks_throwsIllegalValueException() {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(VALID_NAME, VALID_PHONE, VALID_EMAIL,
                 VALID_ADDRESS, VALID_SALARY, VALID_TAGS, List.of(new JsonAdaptedTask("Prepare report", false),
-                        new JsonAdaptedTask(" prepare  REPORT ", false)));
+                        new JsonAdaptedTask(" prepare  REPORT ", true)));
 
         assertThrows(IllegalValueException.class, employee::toModelType);
     }
