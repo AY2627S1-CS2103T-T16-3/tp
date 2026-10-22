@@ -64,6 +64,13 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_paddedLeaveEntitlement_success() {
+        EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder().withLeaveEntitlement(14).build();
+
+        assertParseSuccess(parser, "1 le/00014", new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor));
+    }
+
+    @Test
     public void parse_missingParts_failure() {
         // no index specified
         assertParseFailure(parser, VALID_NAME_AMY, MESSAGE_INVALID_FORMAT);
