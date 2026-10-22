@@ -69,7 +69,13 @@ skinparam Participant {
 
 skinparam ArrowFontStyle bold
 skinparam MinClassWidth 50
-skinparam ParticipantPadding 10
+<style>
+sequenceDiagram {
+    participant {
+        Margin 0 10
+    }
+}
+</style>
 skinparam Shadowing false
 skinparam DefaultTextAlignment center
 skinparam packageStyle Rectangle
