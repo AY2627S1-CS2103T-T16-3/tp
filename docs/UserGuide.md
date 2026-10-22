@@ -482,7 +482,7 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 
 | Action                | Format, Examples                                                                                                                                                                |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Add**               | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`|
+| **Add**               | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 le/14 t/friend t/colleague`|
 | **Clear**             | `clear`                                                                                                                                                                         |
 | **Delete**            | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                             |
 | **Salary**            | `salary INDEX s/SALARY`<br> e.g., `salary 1 s/5000`                                                                                                                             |
@@ -496,3 +496,4 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`                                                                                                         |
 | **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`)                                                                                                                                          |
 | **Help**              | `help`                                                                                                                                                                          |
+| **Exit**              | `exit` |
