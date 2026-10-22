@@ -7,6 +7,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.AddLeaveCommand;
 import seedu.address.logic.commands.DeleteLeaveCommand;
 import seedu.address.logic.commands.ListLeaveCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -15,6 +16,16 @@ import seedu.address.model.leave.LeaveId;
 public class LeaveCommandParserTest {
 
     private final LeaveCommandParser parser = new LeaveCommandParser();
+
+    @Test
+    public void messageUsage_commandsSeparatedByBlankLines() {
+        String expected = "Available leave commands:\n\n"
+                + AddLeaveCommand.MESSAGE_USAGE + "\n\n"
+                + ListLeaveCommand.MESSAGE_USAGE + "\n\n"
+                + DeleteLeaveCommand.MESSAGE_USAGE;
+
+        assertEquals(expected, LeaveCommandParser.MESSAGE_USAGE);
+    }
 
     @Test
     public void parse_missingSubcommand_throwsUsageMessage() {
