@@ -168,6 +168,11 @@
     -fx-text-fill: black !important;
 }
 
+.result-display:table {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12pt;
+}
+
 .status-bar .label {
     -fx-font-family: "Segoe UI Light";
     -fx-text-fill: white;

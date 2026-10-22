@@ -181,7 +181,8 @@ This approach preserves the immutability of `Employee` and keeps salary validati
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
-total employees, employees without tags, employee counts by tag, task counts, and salary statistics.
+headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks,
+and total/average recorded salary.
 
 `AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts no argument,
 `scope/all`, or `scope/filtered`, rejecting every other argument string with `SummaryCommand.MESSAGE_USAGE`.
@@ -191,6 +192,10 @@ It stores only a `SummaryCommand.Scope` enum, not a list or snapshot. At executi
 passed to `EmployeeSummary.fromEmployees`, so all statistics share the same scope. The command labels
 the multiline result `Scope: All employees` or
 `Scope: Filtered employees`. Empty filtered lists remain empty; no fallback or filter mutation occurs.
+`SummaryFormatter` renders the essential figures as ASCII tables with dynamically sized columns and
+right-aligned values. The tag table is omitted when there are no tags. Explanatory notes remain in the User Guide.
+`CommandResult.DisplayFormat.TABLE` carries the presentation choice to `ResultDisplay`, which applies
+the `table` CSS pseudo-class for a monospaced font. Ordinary feedback and errors restore the normal font.
 No new window, storage fields, or model API is needed.
 
 `EmployeeSummary.fromEmployees` owns aggregation independently of presentation:
@@ -200,7 +205,7 @@ No new window, storage fields, or model API is needed.
 * Normalized tags are deduplicated per employee before counting, so case variants on one employee
   do not inflate that tag's count. Different tag groups may overlap.
 * A `TreeMap` provides alphabetical ordering. The snapshot exposes an unmodifiable copy of the counts.
-* An empty input produces zero counts. If no tags exist, the command displays `No tags to summarize.`
+* An empty input produces zero counts. If no tags exist, the formatter omits the tag table.
 
 Aggregation is recomputed on each invocation, without stored counters, new JSON fields, or changes to
 employees, tags, user preferences, or the current filter. The existing application-wide automatic
@@ -213,6 +218,12 @@ of the filter predicate, and fresh results after add/edit/delete. Parser tests c
 surrounding whitespace, and rejection of unexpected arguments. `SummaryScopeCommandTest` covers scope
 selection, empty matches, execution-time reads, and preservation of the filter predicate. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
+`SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
+`CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,
+normal/error font restoration, caret reset, and null input handling on the JavaFX thread.
+Linux CI runs these tests with Xvfb to provide a virtual display.
+The JavaFX result-panel preview was checked with synthetic data
+for aligned columns, empty results, and restoration of the normal feedback font.
 
 #### Task counts
 
@@ -221,8 +232,9 @@ with nonempty task lists, and the maximum per-employee task count in the same pa
 Employees without tasks are derived from headcount minus employees with tasks. Empty input yields
 zero for all task statistics; identical descriptions on different employees count separately.
 
-`SummaryCommand` appends the task section after formatting the headcount/tag section, even if there are
-no tags. The snapshot contains counts only and remains unchanged when source records are replaced.
+`SummaryFormatter` displays assigned tasks and employees with tasks in the metrics table, even when
+there are no tags. Derived counts and per-employee maxima remain available in the snapshot but are not displayed.
+The snapshot contains counts only and remains unchanged when source records are replaced.
 Tests cover mixed and empty lists, tied maxima, repeated descriptions across employees, filtered views,
 unchanged records, and fresh snapshots after task and employee changes. No completion or due-date
 semantics, storage fields, or task commands are introduced by this feature.
@@ -235,8 +247,8 @@ The total is a `long`; minimum and maximum are `OptionalInt` values, empty for a
 The average is an optional `BigDecimal`, calculated directly from the integer total and employee count
 with scale 2 and `RoundingMode.HALF_UP`, without converting to floating point. Zero salaries are included.
 
-`SummaryCommand` formats a separate salary section after the headcount/tag section, including when
-there are no tags. It displays `$0.00` for an empty total and `N/A` for absent average/minimum/maximum.
+`SummaryFormatter` displays total and average salary in the metrics table. An empty collection displays
+`$0.00` for the total and `N/A` for the average. Minimum and maximum remain available in the snapshot but are not displayed.
 No currency period, benefits, or payroll assumptions are added. Tests cover empty/single inputs,
 zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
 and recomputation after a salary command.
