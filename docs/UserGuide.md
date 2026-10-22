@@ -90,7 +90,8 @@ Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
 Employee cards display salary with a `$` prefix, for example `$5000`.
 
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
-employee who is not entitled to annual leave.
+employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
+stored as `14`. The value after removing leading zeros must still be within the allowed range.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -200,6 +201,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
+  Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
   enough leave is deleted or the entitlement is increased, no further leave can be added for that year.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
@@ -208,7 +210,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st employee to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd employee to be `Betsy Crower` and clears all existing tags.
-*  `edit 3 le/21` Changes the 3rd employee's annual leave entitlement to 21 days.
+*  `edit 3 le/00021` Changes the 3rd employee's annual leave entitlement to 21 days.
 
 ### Locating employees by name: `find`
 
