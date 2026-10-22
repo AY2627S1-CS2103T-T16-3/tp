@@ -122,18 +122,10 @@ How the parsing works:
 
 The `Model` component,
 
-* stores all `Employee` objects in a `UniqueEmployeeList` and all `Leave` objects in a central `UniqueLeaveList`.
-* assigns each stored employee a private, stable `EmployeeId`. Leave records use that ID to retain the association even
-  if the employee list is filtered or reordered. Users select employees by displayed index and never enter this ID.
-* assigns each leave record a public, stable `LeaveId`, which is shown by `leave list` and accepted by `leave delete`.
-  Deleted identifiers are not reused.
-* stores an annual `LeaveEntitlement` on each employee. Remaining leave for a year is derived from that entitlement and
-  the centrally stored leave records, rather than stored as a separate value.
-* stores employees selected by the current filter in a separate _filtered_ list. It exposes this list as an unmodifiable
-  `ObservableList<Employee>` that the UI can observe and bind to.
-* maintains referential integrity: deleting an employee removes every leave record linked to that employee.
-* stores a `UserPrefs` object representing GUI preferences, exposed as `ReadOnlyUserPrefs`.
-* does not depend on the UI, Logic, or Storage components.
+* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* selects employees using a JavaFX `FilteredList<Employee>` and wraps it in a `SortedList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
+* stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
+* does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
 <div markdown="span" class="alert alert-info">:information_source: **Note:** The alternative, arguably more object-oriented, design below keeps a unique list of tags in `AddressBook`, and each `Person` references tags from that list. This lets `AddressBook` maintain one `Tag` object per unique tag instead of each `Person` holding its own `Tag` objects.<br>
 
@@ -178,6 +170,51 @@ At execution, the command follows these steps:
 4. Resets the employee filter to show all employees and returns a success message containing the updated employee's details.
 
 This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The updated salary is saved with the rest of the employee data after the command runs.
+
+### Sorting displayed employees
+
+`sort FIELD/ORDER` orders the current displayed list without changing its filter or the stored employee order.
+`AddressBookParser` dispatches the command to `SortCommandParser`, which requires exactly one supported
+prefix (`n/`, `p/`, `e/`, `a/`, `s/`, or `le/`) and the lowercase direction `asc` or `des`.
+Missing values, unknown fields, unsupported directions, extra arguments, and multiple fields are rejected
+with `SortCommand.MESSAGE_USAGE`. Tags and tasks are not sortable because each employee can have multiple values.
+
+`SortCommand` stores a `Field` enum and an ascending flag. At execution time it creates a comparator:
+
+* Name, email, and address use `String.CASE_INSENSITIVE_ORDER`.
+* Salary and annual leave entitlement use integer comparison. Leave sorting uses annual entitlement,
+  rather than remaining leave or leave dates.
+* Phone numbers use `BigInteger` comparison, supporting differing digit lengths, leading zeros,
+  and numbers too large for primitive integer types.
+* Descending order reverses the field comparator. Ties retain the underlying address book order.
+
+The model maintains this observable transformation chain:
+
+`AddressBook.getEmployeeList()` → `FilteredList<Employee>` → `SortedList<Employee>` → UI
+
+`ModelManager.sortFilteredEmployeeList` sets the comparator on the existing sorted view.
+`getFilteredEmployeeList()` returns that same view, preserving references already held by the UI and logic.
+The filter predicate is unchanged, hidden employees stay hidden, and an empty list can be sorted normally.
+Employee updates propagate through the chain, so changing a salary repositions the employee as needed.
+Index-based commands read the sorted view and therefore act on the employee at the displayed index.
+
+The comparator remains active across `find`, `filter`, `list`, and employee changes until another sort replaces it.
+`list` clears the filter but retains the sort. Sorting is display state only: no JSON fields or stored
+employee order are changed. The usual save after command execution still occurs. Restarting creates a
+new sorted view without a comparator and restores the stored employee order.
+
+A sorted observable view was chosen over sorting the address book in place to preserve stored order,
+and over copying the visible list to keep subsequent edits and filter changes observable.
+`SortCommandParserTest` covers field/direction validation. `SortCommandTest` covers both directions for
+all supported fields, numeric ordering, long and padded phone numbers, ties, filtered/empty lists,
+shared view references, unchanged stored order, and index-based salary changes and deletion after sorting.
+
+The following sequence diagram illustrates a successful `sort s/asc` command. It shows parsing,
+command execution, and the comparator update on the existing sorted view. The usual storage save
+is omitted from the diagram for clarity.
+
+![Sequence diagram for sorting displayed employees by ascending salary](images/SortSequenceDiagram.png)
+
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
@@ -1077,6 +1114,22 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: Repeat the same `leave delete` command.<br>
       Expected: No record is deleted because that leave ID no longer exists.
+
+### Sorting employees
+
+1. With employees having different salaries, run `sort s/asc`, then `sort s/des`.
+   Expected: the displayed salaries increase, then decrease. Try `sort p/des` and `sort le/asc` as well.
+2. Run `filter t/friends`, then `sort s/asc`.
+   Expected: only employees with the `friends` tag remain, ordered by salary.
+   Run `list`: all employees return, still sorted by salary.
+3. Run `salary 1 s/50000` after sorting by ascending salary.
+   Expected: the employee previously shown at index 1 receives the new salary and moves to its sorted position.
+4. Try `sort`, `sort s/`, `sort s/up`, and `sort s/asc p/des`.
+   Expected: an error with sort usage instructions; the displayed order and filter remain unchanged.
+5. Run `filter n/NoMatchingEmployee`, then `sort n/asc`.
+   Expected: successful sorting of an empty list without restoring hidden employees.
+6. Close and reopen the app after sorting.
+   Expected: the stored employee order returns; sorting has not changed employee details or saved order.
 
 ### Saving data
 
