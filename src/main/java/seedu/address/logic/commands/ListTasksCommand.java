@@ -53,7 +53,7 @@ public class ListTasksCommand extends Command {
         IntStream.range(0, tasks.size())
                 .forEach(index -> result.append(index + 1)
                         .append(". ")
-                        .append(tasks.get(index).getDetails())
+                        .append(tasks.get(index))
                         .append("\n"));
         result.deleteCharAt(result.length() - 1);
         return new CommandResult(result.toString());
