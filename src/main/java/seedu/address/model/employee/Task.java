@@ -53,22 +53,30 @@ public class Task {
         return details != null && !details.isBlank() && details.length() <= MAX_DETAILS_LENGTH;
     }
 
-    /** Returns the task details. */
+    /**
+     * Returns the task details.
+     */
     public String getDetails() {
         return details;
     }
 
-    /** Returns true if this task is completed. */
+    /**
+     * Returns true if this task is completed.
+     */
     public boolean isDone() {
         return isDone;
     }
 
-    /** Returns a copy of this task marked as completed. */
+    /**
+     * Returns a copy of this task marked as completed.
+     */
     public Task markDone() {
         return new Task(details, true);
     }
 
-    /** Returns a copy of this task marked as not completed. */
+    /**
+     * Returns a copy of this task marked as not completed.
+     */
     public Task markUndone() {
         return new Task(details, false);
     }
@@ -82,7 +90,12 @@ public class Task {
         return details.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
-    /** Returns true if this task has the same normalized details as the given task. */
+    /**
+     * Returns true if this task has the same normalized details as the given task.
+     *
+     * @param otherTask Task whose details are compared with this task.
+     * @return True if the tasks have the same normalized details.
+     */
     public boolean hasSameDetails(Task otherTask) {
         requireNonNull(otherTask);
         return getNormalizedDetails().equals(otherTask.getNormalizedDetails());
