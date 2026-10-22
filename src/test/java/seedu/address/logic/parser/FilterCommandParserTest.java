@@ -172,6 +172,15 @@ public class FilterCommandParserTest {
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_LEAVE_ENTITLEMENT));
     }
 
+    @Test
+public void parse_leaveEntitlementLeadingZeros_returnsNormalizedCommand() throws Exception {
+    for (String operator : List.of("", "<", ">")) {
+        assertEquals(
+                parser.parse("le/" + operator + "14"),
+                parser.parse("le/" + operator + "014"));
+    }
+}
+
     private void assertInvalidFormat(String input) {
         assertParseFailure(parser, input, String.format(MESSAGE_INVALID_COMMAND_FORMAT, FilterCommand.MESSAGE_USAGE));
     }
