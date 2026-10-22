@@ -12,15 +12,18 @@ import seedu.address.model.employee.Task;
 class JsonAdaptedTask {
 
     private final String details;
+    private final boolean isDone;
 
     /**
-     * Constructs a JSON-adapted task with the given details.
+     * Constructs a JSON-adapted task with the given details and completion status.
      *
      * @param details Details of the task.
+     * @param isDone Whether the task is completed.
      */
     @JsonCreator
-    public JsonAdaptedTask(@JsonProperty("details") String details) {
+    public JsonAdaptedTask(@JsonProperty("details") String details, @JsonProperty("isDone") Boolean isDone) {
         this.details = details;
+        this.isDone = isDone != null && isDone;
     }
 
     /**
@@ -30,6 +33,7 @@ class JsonAdaptedTask {
      */
     public JsonAdaptedTask(Task source) {
         details = source.getDetails();
+        isDone = source.isDone();
     }
 
     /**
@@ -40,7 +44,8 @@ class JsonAdaptedTask {
      */
     public Task toModelType() throws IllegalValueException {
         try {
-            return new Task(details);
+            Task task = new Task(details);
+            return isDone ? task.markDone() : task;
         } catch (NullPointerException | IllegalArgumentException exception) {
             throw new IllegalValueException(Task.MESSAGE_CONSTRAINTS, exception);
         }

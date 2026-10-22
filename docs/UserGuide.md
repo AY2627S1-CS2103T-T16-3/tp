@@ -130,48 +130,45 @@ Example output:
 ```text
 Employee summary
 Scope: Filtered employees
-Total employees: 5
-Employees without tags: 1
 
-Employees by tag:
-  engineering: 3
-  intern: 1
-  remote: 2
++----------------------+-----------+
+| Metric               |     Value |
++----------------------+-----------+
+| Employees            |         5 |
+| Without tags         |         1 |
+| Assigned tasks       |         6 |
+| Employees with tasks |         3 |
+| Total salary         | $15000.00 |
+| Average salary       |  $3000.00 |
++----------------------+-----------+
 
-Employees may have multiple tags; tag counts can overlap.
-
-Task overview
-Total assigned tasks: 6
-Employees with tasks: 3
-Employees without tasks: 2
-Most tasks assigned to one employee: 3
-
-Salary overview
-Total recorded salary: $15000.00
-Average salary: $3000.00
-Lowest salary: $0.00
-Highest salary: $5000.00
++-------------+-----------+
+| Tag         | Employees |
++-------------+-----------+
+| engineering |         2 |
+| intern      |         1 |
+| remote      |         2 |
++-------------+-----------+
 ```
 
+![Summary result panel](images/summary-table.png)
+
+* The first table shows headcount, employees without tags, assigned tasks, employees with tasks,
+  and total/average recorded salary. The tag table appears only when there are tags.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
-* Employees with several different tags count in each group, so tag counts can exceed the total headcount.
-* Having no tags is allowed; the untagged count is a categorization aid, not an error.
-* If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
-* These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
-  not interpreted as structured departments. Leave balances and reminders are not included.
-* Salary statistics include every salary in the selected scope, including zero. For no employees, the total is `$0.00`
-  and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
-* These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
-  Salary statistics still appear when there are no tags and refresh after a salary change.
+  Employees with several tags count in each group, so tag counts can overlap.
+* Identical task descriptions assigned to different employees count as separate assignments.
+  Task counts do not indicate completion, deadlines, effort, or productivity.
+* Salary figures include zero salaries. An empty selection shows zero counts, a total salary of `$0.00`,
+  and an average of `N/A`. Amounts use two decimal places; averages round half up.
+  These are recorded amounts, not payroll, tax, benefits, or payments.
+* These figures describe stored records, not attendance or active employment. Tags are not interpreted
+  as structured departments; leave balances and reminders are not included.
 
-The result appears in the existing command-result area; scroll within it to read a long summary.
-
-Task counts use the selected scope, like headcount and salary statistics. The same description assigned to two employees
-counts as two assignments. An empty book shows zero for every task statistic; if employees have no
-tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
-Run the summary again after task changes or employee deletion to refresh it. These counts do not
-indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
+The tables use a monospaced font with right-aligned values. Columns expand to fit long tags and large amounts.
+Scroll within the result area or drag the divider below it to see more rows; wide tables can be scrolled horizontally.
+Run the command again after employee, task, or salary changes to refresh the figures.
 
 ### Changing an employee's salary: `salary`
 
@@ -233,15 +230,16 @@ Examples:
 
 Lists employees who match all supplied criteria.
 
-Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`
 
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* Salary matches an exact amount from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000.
+* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Comparisons exclude the specified amount itself. Amounts must be whole numbers from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000. Operators such as `<=`, `>=`, and `=` are not supported.
+* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Days must be whole numbers from 0 to 365 with no leading zeros, as with `add` and `edit`. Operators such as `<=`, `>=`, and `=` are not supported.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
 * All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
-* Each of `n/`, `p/`, `e/`, `a/`, and `s/` may appear only once. Unsupported prefixes are rejected.
+* Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -252,6 +250,12 @@ Examples:
 * `filter t/friends t/owesMoney` lists employees with both tags.
 * `filter task/report task/review` lists employees with tasks matching both descriptions.
 * `filter task/report s/3000` lists employees with a matching task and salary 3000.
+* `filter le/14` lists employees with an annual leave entitlement of exactly 14 days.
+* `filter le/<14` lists employees with an annual leave entitlement below 14 days.
+* `filter n/Alice s/<4000 le/>10` lists employees whose name contains `Alice`, salary is below 4000, and annual leave entitlement is above 10 days.
+* `filter s/<4000` lists employees earning less than 4000.
+* `filter s/>4000` lists employees earning more than 4000.
+* `filter n/Alice p/912 s/<4000` lists employees whose name contains `Alice`, whose phone number contains `912`, and whose salary is less than 4000.
 
 ### Sorting the displayed employees: `sort`
 
@@ -374,11 +378,19 @@ Format: `list-tasks EMPLOYEE_INDEX`
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
 * Tasks are displayed in the order in which they were added.
+* Pending tasks are displayed with `[ ]`, while completed tasks are displayed with `[x]`.
+* `TASK_INDEX` refers to the number displayed next to the task.
 * The current filtered employee list is preserved after the command.
 
 Example:
 
-* `list-tasks 1` lists the tasks related to the first displayed employee.
+* `list-tasks 1` lists the tasks related to the first displayed employee, for example:
+
+  ```text
+  Tasks for Alice Pauline:
+  1. [ ] Prepare monthly report
+  2. [x] Submit access request
+  ```
 
 ### Adding tasks to an employee: `add-task`
 
@@ -420,6 +432,44 @@ Examples:
   employee.
 * `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
   first employee in the filtered results.
+
+### Marking a task as done: `mark-task`
+
+Marks a task as completed.
+
+Format: `mark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Marking an already completed task succeeds without changing its state.
+
+Examples:
+
+* `mark-task 1 i/1` marks the first task assigned to the first displayed employee as done.
+* `find Alex` followed by `mark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as done.
+
+### Marking a task as pending: `unmark-task`
+
+Marks a completed task as pending.
+
+Format: `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Unmarking an already pending task succeeds without changing its state.
+
+Examples:
+
+* `unmark-task 1 i/1` marks the first task assigned to the first displayed employee as pending.
+* `find Alex` followed by `unmark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as pending.
 
 ### Clearing all entries: `clear`
 
@@ -480,20 +530,25 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 
 ## Command summary
 
-| Action                | Format, Examples                                                                                                                                                                |
-|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Add**               | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 le/14 t/friend t/colleague`|
-| **Clear**             | `clear`                                                                                                                                                                         |
-| **Delete**            | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                             |
-| **Salary**            | `salary INDEX s/SALARY`<br> e.g., `salary 1 s/5000`                                                                                                                             |
-| **Edit**              | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`                                                    |
-| **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                                                      |
-| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br> e.g., `filter p/91235321`                                                         |
+| Action                | Format, Examples |
+|-----------------------|------------------|
+| **Add employee**      | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`<br>e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123 Clementi Rd le/14 t/friend` |
+| **Clear**             | `clear` |
+| **Delete employee**   | `delete INDEX`<br>e.g., `delete 3` |
+| **Salary**            | `salary INDEX s/SALARY`<br>e.g., `salary 1 s/5000` |
+| **Edit employee**     | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`<br>e.g., `edit 2 n/James Lee le/21` |
+| **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br>e.g., `find James Jake` |
+| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br>e.g., `filter task/report s/3000` |
 | **Sort**              | `sort FIELD/ORDER`<br> e.g., `sort s/asc` or `sort p/des` |
-| **List**              | `list`                                                                                                                                                                          |
-| **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br> e.g., `list-tasks 1`                                                                                                                            |
-| **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br> e.g., `add-task 1 d/Prepare report`                                                                                                     |
-| **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `delete-task 1 i/1`                                                                                                         |
-| **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`)                                                                                                                                          |
-| **Help**              | `help`                                                                                                                                                                          |
+| **List employees**    | `list` |
+| **Record leave**      | `leave add INDEX from/START_DATE to/END_DATE`<br>e.g., `leave add 1 from/20-10-2026 to/22-10-2026` |
+| **List leaves**       | `leave list` |
+| **Delete leave**      | `leave delete LEAVE_ID`<br>e.g., `leave delete 2` |
+| **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br>e.g., `list-tasks 1` |
+| **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br>e.g., `add-task 1 d/Prepare report` |
+| **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `delete-task 1 i/1` |
+| **Mark task**         | `mark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `mark-task 1 i/1` |
+| **Unmark task**       | `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `unmark-task 1 i/1` |
+| **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`) |
+| **Help**              | `help` |
 | **Exit**              | `exit` |

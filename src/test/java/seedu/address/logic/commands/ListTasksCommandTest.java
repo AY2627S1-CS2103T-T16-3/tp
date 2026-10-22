@@ -24,11 +24,11 @@ public class ListTasksCommandTest {
     public void execute_employeeWithTasks_listsTasksInOrder() {
         Employee employee = model.getFilteredEmployeeList().get(0);
         Employee updatedEmployee = employee.addTask(new Task("Prepare report"))
-                .addTask(new Task("Submit report"));
+                .addTask(new Task("Submit report").markDone());
         model.setEmployee(employee, updatedEmployee);
 
         String expected = "Tasks for " + employee.getName().fullName + ":\n"
-                + "1. Prepare report\n2. Submit report";
+                + "1. [ ] Prepare report\n2. [x] Submit report";
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandSuccess(new ListTasksCommand(Index.fromOneBased(1)), model, expected, expectedModel);
     }

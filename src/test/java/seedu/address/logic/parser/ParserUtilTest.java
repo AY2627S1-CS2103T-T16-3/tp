@@ -71,7 +71,8 @@ public class ParserUtilTest {
 
     @Test
     public void parseLeaveEntitlement_invalidValue_throwsParseException() {
-        for (String value : List.of("", " ", "-1", "366", "000366", "1.5", "abc", "9".repeat(1000))) {
+        for (String value : List.of("", " ", "-1", "366", "000366", "1.5", "abc",
+                "999999999999999999999", "9".repeat(1000))) {
             assertThrows(ParseException.class, LeaveEntitlement.MESSAGE_CONSTRAINTS, () ->
                     ParserUtil.parseLeaveEntitlement(value));
         }
@@ -87,6 +88,13 @@ public class ParserUtilTest {
         assertEquals(new LeaveEntitlement(365), ParserUtil.parseLeaveEntitlement("365"));
         assertEquals(new LeaveEntitlement(365), ParserUtil.parseLeaveEntitlement("000365"));
         assertEquals(new LeaveEntitlement(1), ParserUtil.parseLeaveEntitlement("0".repeat(1000) + "1"));
+    }
+
+    @Test
+    public void parseLeaveEntitlement_leadingZeros_returnsNormalizedEntitlement() throws Exception {
+        assertEquals(new LeaveEntitlement(0), ParserUtil.parseLeaveEntitlement("000"));
+        assertEquals(new LeaveEntitlement(14), ParserUtil.parseLeaveEntitlement("014"));
+        assertEquals(new LeaveEntitlement(365), ParserUtil.parseLeaveEntitlement("000365"));
     }
 
     @Test
