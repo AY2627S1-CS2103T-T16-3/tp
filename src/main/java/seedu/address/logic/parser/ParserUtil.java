@@ -51,18 +51,23 @@ public class ParserUtil {
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
     }
 
-    /** Parses an annual leave entitlement in whole days. */
+    /** Parses an annual leave entitlement in whole days, normalizing leading zeros. */
     public static LeaveEntitlement parseLeaveEntitlement(String leaveEntitlement) throws ParseException {
         requireNonNull(leaveEntitlement);
         String trimmedEntitlement = leaveEntitlement.trim();
-        if (!trimmedEntitlement.matches("0|[1-9][0-9]{0,2}")) {
+        if (!trimmedEntitlement.matches("[0-9]+")) {
             throw new ParseException(LeaveEntitlement.MESSAGE_CONSTRAINTS);
         }
-        int value = Integer.parseInt(trimmedEntitlement);
-        if (!LeaveEntitlement.isValidLeaveEntitlement(value)) {
+        String normalizedEntitlement = trimmedEntitlement.replaceFirst("^0+(?!$)", "");
+        try {
+            int value = Integer.parseInt(normalizedEntitlement);
+            if (!LeaveEntitlement.isValidLeaveEntitlement(value)) {
+                throw new ParseException(LeaveEntitlement.MESSAGE_CONSTRAINTS);
+            }
+            return new LeaveEntitlement(value);
+        } catch (NumberFormatException e) {
             throw new ParseException(LeaveEntitlement.MESSAGE_CONSTRAINTS);
         }
-        return new LeaveEntitlement(value);
     }
 
     /** Parses a positive leave-record ID. */
