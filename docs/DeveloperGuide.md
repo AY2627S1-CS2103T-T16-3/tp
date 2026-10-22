@@ -164,6 +164,20 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Employee salary management
+
+The `salary INDEX s/SALARY` command replaces the salary of the employee identified by their displayed index. For example, `salary 1 s/5000` sets the first employee's salary in the current list to 5000.
+
+`AddressBookParser` routes the command to `SalaryCommandParser`, which parses the index and the compulsory `s/` prefix. It rejects invalid indices, missing or repeated salary prefixes, and salary values that are not whole numbers from 0 to 50000. Valid input produces a `SalaryCommand` containing an `Index` and a validated `Salary` value object.
+
+At execution, the command follows these steps:
+
+1. Retrieves the currently filtered employee list through `Model#getFilteredEmployeeList` and checks that the index is within its bounds.
+2. Selects the employee and calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
+3. Replaces the original employee through `Model#setEmployee`.
+4. Resets the employee filter to show all employees and returns a success message containing the updated employee's details.
+
+This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The updated salary is saved with the rest of the employee data after the command runs.
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
@@ -255,14 +269,19 @@ Remaining leave is derived as:
 `max(0, annual entitlement - recorded working leave days in that calendar year)`
 
 This avoids a second mutable balance that could drift out of sync. An employee's annual entitlement is compulsory when
-the employee is added, is editable, and accepts whole numbers from 0 to 365. For backward compatibility, employees in
-older data files with no entitlement load with an entitlement of 0.
+the employee is added, is editable, and accepts whole numbers from 0 to 365. `ParserUtil#parseLeaveEntitlement`
+accepts digit-only input with leading zeros and removes that padding before constructing `LeaveEntitlement`; an
+all-zero input is normalized to 0. Validation of the normalized value still rejects entitlements outside 0 to 365.
+For backward compatibility, employees in older data files with no entitlement load with an entitlement of 0.
 
 #### Listing and deleting leave
 
-`leave list` reads the central leave list, sorts it by `LeaveId`, resolves each internal employee ID to the employee's
-current name, and returns a multiline result. The status is derived using `LocalDate.now(clock)` on every invocation.
-Production commands use the system-default clock, while tests inject a fixed clock for deterministic status checks:
+`leave list` reads the currently filtered employee list from `Model`, collects those employees' internal IDs, and
+retains only matching records from the central leave list. It then sorts the records by `LeaveId`, resolves each
+internal employee ID to the employee's current name, and returns a multiline result. Consequently, `find` and `filter`
+also scope the following `leave list`, while running `list` first restores an all-employee scope. The status is derived
+using `LocalDate.now(clock)` on every invocation. Production commands use the system-default clock, while tests inject
+a fixed clock for deterministic status checks:
 
 * `Upcoming` when today is before the start date.
 * `Past` when today is after the end date.
@@ -793,17 +812,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to list leave records.
-2. System displays every leave record in leave ID order, including the employee name, dates, charged working days, and
-   status relative to today's date.
+1. HR manager requests to list leave records for the currently displayed employees.
+2. System displays matching leave records in leave ID order, including the employee name, dates, charged working days,
+   and status relative to today's date.
 
     Use case ends.
 
 **Extensions**
 
-* 1a. No leave has been recorded.
+* 2a. None of the currently displayed employees has a leave record.
 
-    * 1a1. System informs the HR manager that no leave records were found.
+    * 2a1. System informs the HR manager that no leave records were found.
 
       Use case ends.
 
@@ -1020,11 +1039,17 @@ testers are expected to do more *exploratory* testing.
 
 2. Listing and deleting leave
 
-   1. Prerequisites: Record at least one leave period and note the ID returned by `leave add`.
+   1. Prerequisites: Record leave periods for at least two employees and note the IDs returned by `leave add`.
 
-   1. Test case: `leave list`<br>
+   1. Test case: Run `list`, followed by `leave list`.<br>
       Expected: All leave records appear in leave ID order with employee name, period, working days, and a status of
       `Upcoming`, `Ongoing`, or `Past` based on today's date.
+
+   1. Test case: Use `find` or `filter` to display one of the employees, followed by `leave list`.<br>
+      Expected: Only leave records belonging to the displayed employee appear.
+
+   1. Test case: Use `find` or `filter` so that no displayed employee has a leave record, followed by `leave list`.<br>
+      Expected: The result reports that no leave records were found.
 
    1. Test case: `leave delete 1` (replace `1` with the recorded ID)<br>
       Expected: That record is deleted and the result shows the employee's restored remaining leave.

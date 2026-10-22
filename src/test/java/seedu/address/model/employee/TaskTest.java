@@ -36,6 +36,32 @@ public class TaskTest {
     }
 
     @Test
+    public void constructor_withoutStatus_createsPendingTask() {
+        assertFalse(new Task("Prepare report").isDone());
+    }
+
+    @Test
+    public void constructor_withDoneStatus_createsCompletedTask() {
+        assertTrue(new Task("Prepare report").markDone().isDone());
+    }
+
+    @Test
+    public void markDone_returnsCompletedCopy() {
+        Task task = new Task("Prepare report");
+
+        assertEquals(new Task("Prepare report").markDone(), task.markDone());
+        assertFalse(task.isDone());
+    }
+
+    @Test
+    public void markUndone_returnsPendingCopy() {
+        Task task = new Task("Prepare report").markDone();
+
+        assertEquals(new Task("Prepare report"), task.markUndone());
+        assertTrue(task.isDone());
+    }
+
+    @Test
     public void constructor_nullDetails_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new Task(null));
     }
@@ -68,6 +94,21 @@ public class TaskTest {
     }
 
     @Test
+    public void hasSameDetails_caseAndWhitespaceDifferences_returnsTrue() {
+        assertTrue(new Task("Prepare   Report").hasSameDetails(new Task(" prepare report ").markDone()));
+    }
+
+    @Test
+    public void hasSameDetails_differentDetails_returnsFalse() {
+        assertFalse(new Task("Prepare report").hasSameDetails(new Task("Submit report").markDone()));
+    }
+
+    @Test
+    public void equals_differentStatus_returnsFalse() {
+        assertFalse(new Task("Prepare report").equals(new Task("Prepare report").markDone()));
+    }
+
+    @Test
     public void equals_sameObject_returnsTrue() {
         Task task = new Task("Prepare report");
 
@@ -81,6 +122,7 @@ public class TaskTest {
 
     @Test
     public void toString_returnsTaskDetails() {
-        assertEquals("Prepare report", new Task("Prepare report").toString());
+        assertEquals("[ ] Prepare report", new Task("Prepare report").toString());
+        assertEquals("[x] Prepare report", new Task("Prepare report").markDone().toString());
     }
 }
