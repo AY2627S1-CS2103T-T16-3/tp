@@ -33,7 +33,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
    * `leave add 1 from/20-10-2026 to/22-10-2026` : Records leave for the first employee currently shown.
 
-   * `leave list` : Lists all leave records and their current status.
+   * `leave list` : Lists leave records for the employees currently displayed and shows each record's current status.
 
    * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
 
@@ -275,7 +275,9 @@ Leave records are stored separately from employee records and linked internally 
 employee using the index currently displayed in the employee list. Internal employee IDs are not shown and are not
 accepted by leave commands.
 
-Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record.
+Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record. As
+`leave list` follows the currently displayed employee list, run `list` first if you need to find a leave record for any
+employee.
 
 #### Recording leave: `leave add`
 
@@ -304,9 +306,14 @@ Examples:
 
 #### Listing leave: `leave list`
 
-Lists every leave record, ordered by leave ID.
+Lists leave records belonging to employees in the currently displayed employee list, ordered by leave ID.
 
 Format: `leave list`
+
+The command uses whichever employees are currently displayed. For example, after `find Betsy` or a `filter` command,
+only leave records belonging to the matching employees are listed. Run `list` before `leave list` to display leave
+records for all employees. If none of the displayed employees has a leave record, the command reports that no leave
+records were found.
 
 Each line shows the leave ID, employee name, inclusive date range, charged working days, and one of these statuses:
 

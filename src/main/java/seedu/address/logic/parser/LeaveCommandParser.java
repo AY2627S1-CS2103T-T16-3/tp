@@ -16,9 +16,9 @@ import seedu.address.logic.parser.exceptions.ParseException;
  */
 public class LeaveCommandParser implements Parser<Command> {
 
-    public static final String MESSAGE_USAGE = "Available leave commands:\n"
-            + AddLeaveCommand.MESSAGE_USAGE + "\n"
-            + ListLeaveCommand.MESSAGE_USAGE + "\n"
+    public static final String MESSAGE_USAGE = "Available leave commands:\n\n"
+            + AddLeaveCommand.MESSAGE_USAGE + "\n\n"
+            + ListLeaveCommand.MESSAGE_USAGE + "\n\n"
             + DeleteLeaveCommand.MESSAGE_USAGE;
 
     private static final Pattern SUBCOMMAND_FORMAT = Pattern.compile("(?<subcommandWord>\\S+)(?<arguments>.*)");
