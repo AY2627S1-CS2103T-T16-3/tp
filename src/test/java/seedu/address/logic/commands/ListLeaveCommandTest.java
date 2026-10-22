@@ -3,6 +3,7 @@ package seedu.address.logic.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
+import static seedu.address.testutil.TypicalEmployees.BENSON;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -61,6 +62,33 @@ public class ListLeaveCommandTest {
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
         assertEquals(String.format(ListLeaveCommand.MESSAGE_SUCCESS, expectedRecords), result.getFeedbackToUser());
+    }
+
+    @Test
+    public void execute_filteredEmployees_listsOnlyMatchingLeaves() {
+        Leave aliceLeave = new Leave(new LeaveId(1), new EmployeeId(1), PAST_PERIOD);
+        Leave bensonLeave = new Leave(new LeaveId(2), new EmployeeId(2), ONGOING_PERIOD);
+        AddressBook addressBook = new AddressBook(List.of(ALICE, BENSON), 3,
+                List.of(aliceLeave, bensonLeave), 3);
+        Model model = new ModelManager(addressBook, new UserPrefs());
+        model.updateFilteredEmployeeList(employee -> employee.getName().equals(ALICE.getName()));
+        String expectedRecord = "ID 1 | Alice Pauline | 01-10-2026 to 02-10-2026 | 2 working day(s) | Past";
+
+        CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
+
+        assertEquals(String.format(ListLeaveCommand.MESSAGE_SUCCESS, expectedRecord), result.getFeedbackToUser());
+    }
+
+    @Test
+    public void execute_noLeaveForFilteredEmployees_returnsNoLeaveMessage() {
+        Leave bensonLeave = new Leave(new LeaveId(1), new EmployeeId(2), ONGOING_PERIOD);
+        AddressBook addressBook = new AddressBook(List.of(ALICE, BENSON), 3, List.of(bensonLeave), 2);
+        Model model = new ModelManager(addressBook, new UserPrefs());
+        model.updateFilteredEmployeeList(employee -> employee.getName().equals(ALICE.getName()));
+
+        CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
+
+        assertEquals(ListLeaveCommand.MESSAGE_NO_LEAVE, result.getFeedbackToUser());
     }
 
     @Test
