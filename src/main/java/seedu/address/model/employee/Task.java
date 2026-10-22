@@ -60,21 +60,6 @@ public class Task {
         return details;
     }
 
-    /** Returns true if this task is completed. */
-    public boolean isDone() {
-        return isDone;
-    }
-
-    /** Returns a copy of this task marked as completed. */
-    public Task markDone() {
-        return new Task(details, true);
-    }
-
-    /** Returns a copy of this task marked as not completed. */
-    public Task markUndone() {
-        return new Task(details, false);
-    }
-
     /**
      * Returns true if this task is completed.
      */
