@@ -120,6 +120,17 @@
     -fx-text-fill: white;
 }
 
+.index-column {
+    -fx-padding: 5 10;
+    -fx-border-color: #888888;
+    -fx-border-width: 0 1 0 0;
+}
+
+.employee-index {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
 .cell_big_label {
     -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 16px;

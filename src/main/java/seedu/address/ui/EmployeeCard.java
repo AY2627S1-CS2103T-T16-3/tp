@@ -51,7 +51,7 @@ public class EmployeeCard extends UiPart<Region> {
     public EmployeeCard(Employee employee, int displayedIndex) {
         super(FXML);
         this.employee = employee;
-        id.setText(displayedIndex + ". ");
+        id.setText((displayedIndex + ""));
         name.setText(employee.getName().fullName);
         phone.setText(employee.getPhone().value);
         address.setText(employee.getAddress().value);
