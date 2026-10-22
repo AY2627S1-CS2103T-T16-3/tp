@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_EMPLOYEES_LISTED_OVERVIEW;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
 import static seedu.address.testutil.TypicalEmployees.BENSON;
+import static seedu.address.testutil.TypicalEmployees.CARL;
 import static seedu.address.testutil.TypicalEmployees.DANIEL;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalEmployees.getTypicalEmployees;
@@ -129,6 +130,37 @@ public class FilterCommandTest {
         assertFilter("s/>50000", List.of());
         assertFilter("s/>0", List.of(alice, benson, daniel));
         assertFilter("s/<50000", List.of(alice, benson, daniel));
+        assertEquals(addressBook, model.getAddressBook());
+    }
+
+    @Test
+    public void execute_salaryBoundaries_matchesExactAmountsAndStrictComparisons() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withSalary("0").build();
+        Employee benson = new EmployeeBuilder(BENSON).withSalary("1").build();
+        Employee carl = new EmployeeBuilder(CARL).withSalary("49999").build();
+        Employee daniel = new EmployeeBuilder(DANIEL).withSalary("50000").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addEmployee(alice);
+        addressBook.addEmployee(benson);
+        addressBook.addEmployee(carl);
+        addressBook.addEmployee(daniel);
+        model.setAddressBook(addressBook);
+
+        // Exact matches at both limits and immediately inside them.
+        assertFilter("s/0", List.of(alice));
+        assertFilter("s/1", List.of(benson));
+        assertFilter("s/49999", List.of(carl));
+        assertFilter("s/50000", List.of(daniel));
+
+        // Strict comparisons must exclude salaries equal to the threshold.
+        assertFilter("s/<0", List.of());
+        assertFilter("s/>0", List.of(benson, carl, daniel));
+        assertFilter("s/<1", List.of(alice));
+        assertFilter("s/>1", List.of(carl, daniel));
+        assertFilter("s/<49999", List.of(alice, benson));
+        assertFilter("s/>49999", List.of(daniel));
+        assertFilter("s/<50000", List.of(alice, benson, carl));
+        assertFilter("s/>50000", List.of());
         assertEquals(addressBook, model.getAddressBook());
     }
 

@@ -88,7 +88,7 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_salary_normalizesLeadingZerosAndAcceptsBounds() {
-        for (String input : List.of("0", "50000", "003000")) {
+        for (String input : List.of("0", "1", "49999", "50000", "003000")) {
             assertParseSuccess(parser, "s/" + input, new FilterCommand(new EmployeeMatchesCriteriaPredicate(
                     Map.of(Field.SALARY, List.of(new Salary(input).salary)))));
         }
@@ -97,10 +97,19 @@ public class FilterCommandParserTest {
     @Test
     public void parse_salaryComparators_normalizesAmountAndAcceptsBounds() {
         for (String comparator : List.of("<", ">")) {
-            for (String amount : List.of("0", "50000", "004000")) {
+            for (String amount : List.of("0", "1", "49999", "50000", "004000")) {
                 assertParseSuccess(parser, "s/" + comparator + amount,
                         new FilterCommand(new EmployeeMatchesCriteriaPredicate(
                                 Map.of(Field.SALARY, List.of(comparator + new Salary(amount).salary)))));
+            }
+        }
+    }
+
+    @Test
+    public void parse_salaryOutsideBounds_throwsParseException() {
+        for (String amount : List.of("-1", "50001")) {
+            for (String operator : List.of("", "<", ">")) {
+                assertParseFailure(parser, "s/" + operator + amount, Salary.MESSAGE_CONSTRAINTS);
             }
         }
     }
