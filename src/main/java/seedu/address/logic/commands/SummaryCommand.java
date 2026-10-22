@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -27,7 +28,7 @@ public class SummaryCommand extends Command {
             + "Default scope: filtered. Indexes must be positive integers in the selected scope.\n"
             + "i/ includes only the listed indexes; e/ excludes them. Exclusions take precedence.\n"
             + "Example: summary i/1 2 3 e/2";
-    public static final String MESSAGE_INVALID_INDEX = "An employee index is outside the selected summary scope.";
+    public static final String MESSAGE_INVALID_INDEX = "Index %1$d is invalid. %2$s: %3$d. Valid indexes: %4$s.";
 
     /** Selects the employee collection to summarize at execution time. */
     public enum Scope {
@@ -74,9 +75,14 @@ public class SummaryCommand extends Command {
 
     /** Validates every supplied index before applying inclusion and exclusion to the same list. */
     private List<Employee> selectEmployees(List<Employee> employees) throws CommandException {
-        if (Stream.concat(includedIndexes.stream(), excludedIndexes.stream())
-                .anyMatch(index -> index.getZeroBased() >= employees.size())) {
-            throw new CommandException(MESSAGE_INVALID_INDEX);
+        OptionalInt invalidIndex = Stream.concat(includedIndexes.stream(), excludedIndexes.stream())
+                .mapToInt(Index::getOneBased)
+                .filter(index -> index > employees.size())
+                .min();
+        if (invalidIndex.isPresent()) {
+            String validRange = employees.isEmpty() ? "none" : "1-" + employees.size();
+            throw new CommandException(String.format(MESSAGE_INVALID_INDEX,
+                    invalidIndex.getAsInt(), scope.label, employees.size(), validRange));
         }
         return IntStream.range(0, employees.size())
                 .mapToObj(Index::fromZeroBased)

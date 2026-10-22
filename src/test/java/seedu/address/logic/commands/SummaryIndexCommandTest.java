@@ -32,9 +32,12 @@ public class SummaryIndexCommandTest {
     @Test
     public void execute_includeIndexes_summarizesOnlySelectedEmployees() throws Exception {
         Model model = modelWithEmployees(ALICE, BOB, CAROL);
-        String expected = new SummaryCommand().execute(modelWithEmployees(ALICE, CAROL)).getFeedbackToUser()
-                .replace("Scope: Filtered employees", "Scope: Filtered employees\nIncluded indexes: [1, 3]");
-        assertEquals(expected, new SummaryCommandParser().parse("i/3 1 3").execute(model).getFeedbackToUser());
+        String result = new SummaryCommandParser().parse("i/3 1 3").execute(model).getFeedbackToUser();
+        assertTrue(result.contains("Included indexes: [1, 3]\n"));
+        assertTrue(result.contains("\nTotal employees: 2\n"));
+        assertTrue(result.contains("\nTotal assigned tasks: 3\n"));
+        assertTrue(result.contains("\nTotal recorded salary: $4000.00\n"));
+        assertTrue(result.contains("\nAverage salary: $2000.00\n"));
     }
 
     @Test
@@ -99,15 +102,29 @@ public class SummaryIndexCommandTest {
         for (String input : new String[] {"i/2", "e/2", "i/1 e/2", "i/2 e/2", "scope/all i/4",
             "scope/all e/4"}) {
             SummaryCommand command = new SummaryCommandParser().parse(input);
-            assertThrows(CommandException.class, SummaryCommand.MESSAGE_INVALID_INDEX, () -> command.execute(model));
+            String expected = input.startsWith("scope/all")
+                    ? "Index 4 is invalid. All employees: 3. Valid indexes: 1-3."
+                    : "Index 2 is invalid. Filtered employees: 1. Valid indexes: 1-1.";
+            assertThrows(CommandException.class, expected, () -> command.execute(model));
         }
         assertEquals(before, model.getAddressBook());
         assertEquals(List.of(BOB), model.getFilteredEmployeeList());
         model.updateFilteredEmployeeList(employee -> false);
-        assertThrows(CommandException.class, SummaryCommand.MESSAGE_INVALID_INDEX, () ->
+        assertThrows(CommandException.class,
+                "Index 1 is invalid. Filtered employees: 0. Valid indexes: none.", () ->
                 new SummaryCommandParser().parse("i/1").execute(model));
-        assertThrows(CommandException.class, SummaryCommand.MESSAGE_INVALID_INDEX, () ->
+        assertThrows(CommandException.class,
+                "Index 1 is invalid. Filtered employees: 0. Valid indexes: none.", () ->
                 new SummaryCommandParser().parse("e/1").execute(new ModelManager()));
+    }
+
+    @Test
+    public void execute_multipleInvalidIndexes_reportsSmallestInvalidIndex() throws Exception {
+        Model model = modelWithEmployees(ALICE, BOB, CAROL);
+        SummaryCommand command = new SummaryCommandParser().parse("i/7 5 e/4");
+        assertThrows(CommandException.class,
+                "Index 4 is invalid. Filtered employees: 3. Valid indexes: 1-3.", () ->
+                command.execute(model));
     }
 
     @Test
@@ -117,7 +134,9 @@ public class SummaryIndexCommandTest {
         model.deleteEmployee(ALICE);
         assertTrue(command.execute(model).getFeedbackToUser().contains("Total recorded salary: $3000.00"));
         model.deleteEmployee(BOB);
-        assertThrows(CommandException.class, SummaryCommand.MESSAGE_INVALID_INDEX, () -> command.execute(model));
+        assertThrows(CommandException.class,
+                "Index 2 is invalid. Filtered employees: 1. Valid indexes: 1-1.", () ->
+                command.execute(model));
     }
 
     @Test

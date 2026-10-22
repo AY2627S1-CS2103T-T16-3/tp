@@ -125,6 +125,7 @@ To select particular employees for the summary:
 * You can combine them: `summary i/1 2 3 e/2` summarizes employees 1 and 3. Exclusions take precedence.
 * Indexes must be positive integers separated by whitespace. Repeated indexes count only once.
   Supply each prefix at most once; an empty list or any index outside the selected scope is rejected.
+  For an out-of-range index, the error shows that index, the selected scope, and its valid index range.
 * Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
   displayed list. With `scope/all`, they refer to the full employee list; run `list` first to view that numbering.
   Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
