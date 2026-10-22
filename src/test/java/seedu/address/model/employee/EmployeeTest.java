@@ -115,6 +115,35 @@ public class EmployeeTest {
     }
 
     @Test
+    public void updateTask_validIndex_replacesTask() {
+        Employee employee = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"));
+
+        Employee updatedEmployee = employee.updateTask(0, new Task("Prepare report").markDone());
+
+        assertEquals(List.of(new Task("Prepare report").markDone()), updatedEmployee.getTasks());
+    }
+
+    @Test
+    public void updateTask_duplicateTask_throwsIllegalArgumentException() {
+        Employee employee = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"))
+                .addTask(new Task("Submit report"));
+
+        assertThrows(IllegalArgumentException.class, () -> employee.updateTask(0, new Task("submit REPORT")));
+    }
+
+    @Test
+    public void updateTask_invalidIndex_throwsIndexOutOfBoundsException() {
+        Employee employee = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> employee.updateTask(-1, new Task("Updated")));
+        assertThrows(IndexOutOfBoundsException.class, () -> employee.updateTask(
+                employee.getTasks().size(), new Task("Updated")));
+    }
+
+    @Test
     public void isSameEmployee() {
         // same object -> returns true
         assertTrue(ALICE.isSameEmployee(ALICE));

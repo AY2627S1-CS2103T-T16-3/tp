@@ -5,7 +5,9 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import seedu.address.logic.commands.ListTasksCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
-/** Parses arguments for {@link ListTasksCommand}. */
+/**
+ * Parses arguments for {@link ListTasksCommand}.
+ */
 public class ListTasksCommandParser implements Parser<ListTasksCommand> {
 
     /**

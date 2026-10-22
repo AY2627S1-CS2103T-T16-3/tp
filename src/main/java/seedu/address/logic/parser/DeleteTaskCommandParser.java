@@ -8,7 +8,9 @@ import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.DeleteTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
-/** Parses arguments for {@link DeleteTaskCommand}. */
+/**
+ * Parses arguments for {@link DeleteTaskCommand}.
+ */
 public class DeleteTaskCommandParser implements Parser<DeleteTaskCommand> {
 
     /**

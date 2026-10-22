@@ -244,15 +244,16 @@ Examples:
 
 Lists employees who match all supplied criteria.
 
-Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`
 
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* Salary matches an exact amount from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000.
+* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Comparisons exclude the specified amount itself. Amounts must be whole numbers from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000. Operators such as `<=`, `>=`, and `=` are not supported.
+* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Days must be whole numbers from 0 to 365 with no leading zeros, as with `add` and `edit`. Operators such as `<=`, `>=`, and `=` are not supported.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
 * All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
-* Each of `n/`, `p/`, `e/`, `a/`, and `s/` may appear only once. Unsupported prefixes are rejected.
+* Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -263,6 +264,12 @@ Examples:
 * `filter t/friends t/owesMoney` lists employees with both tags.
 * `filter task/report task/review` lists employees with tasks matching both descriptions.
 * `filter task/report s/3000` lists employees with a matching task and salary 3000.
+* `filter le/14` lists employees with an annual leave entitlement of exactly 14 days.
+* `filter le/<14` lists employees with an annual leave entitlement below 14 days.
+* `filter n/Alice s/<4000 le/>10` lists employees whose name contains `Alice`, salary is below 4000, and annual leave entitlement is above 10 days.
+* `filter s/<4000` lists employees earning less than 4000.
+* `filter s/>4000` lists employees earning more than 4000.
+* `filter n/Alice p/912 s/<4000` lists employees whose name contains `Alice`, whose phone number contains `912`, and whose salary is less than 4000.
 
 ### Deleting an employee: `delete`
 
@@ -365,11 +372,19 @@ Format: `list-tasks EMPLOYEE_INDEX`
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
 * Tasks are displayed in the order in which they were added.
+* Pending tasks are displayed with `[ ]`, while completed tasks are displayed with `[x]`.
+* `TASK_INDEX` refers to the number displayed next to the task.
 * The current filtered employee list is preserved after the command.
 
 Example:
 
-* `list-tasks 1` lists the tasks related to the first displayed employee.
+* `list-tasks 1` lists the tasks related to the first displayed employee, for example:
+
+  ```text
+  Tasks for Alice Pauline:
+  1. [ ] Prepare monthly report
+  2. [x] Submit access request
+  ```
 
 ### Adding tasks to an employee: `add-task`
 
@@ -411,6 +426,44 @@ Examples:
   employee.
 * `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
   first employee in the filtered results.
+
+### Marking a task as done: `mark-task`
+
+Marks a task as completed.
+
+Format: `mark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Marking an already completed task succeeds without changing its state.
+
+Examples:
+
+* `mark-task 1 i/1` marks the first task assigned to the first displayed employee as done.
+* `find Alex` followed by `mark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as done.
+
+### Marking a task as pending: `unmark-task`
+
+Marks a completed task as pending.
+
+Format: `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Unmarking an already pending task succeeds without changing its state.
+
+Examples:
+
+* `unmark-task 1 i/1` marks the first task assigned to the first displayed employee as pending.
+* `find Alex` followed by `unmark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as pending.
 
 ### Clearing all entries: `clear`
 
@@ -487,6 +540,8 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br>e.g., `list-tasks 1` |
 | **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br>e.g., `add-task 1 d/Prepare report` |
 | **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `delete-task 1 i/1` |
+| **Mark task**         | `mark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `mark-task 1 i/1` |
+| **Unmark task**       | `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `unmark-task 1 i/1` |
 | **Workforce summary** | `summary [scope/all\|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |
