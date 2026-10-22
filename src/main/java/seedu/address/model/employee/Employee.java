@@ -113,7 +113,7 @@ public class Employee {
     /** Adds a task to this employee. */
     public Employee addTask(Task task) {
         requireNonNull(task);
-        if (tasks.contains(task)) {
+        if (tasks.stream().anyMatch(existingTask -> existingTask.hasSameDetails(task))) {
             throw new IllegalArgumentException("Task already exists for this employee.");
         }
         List<Task> updatedTasks = new ArrayList<>(tasks);

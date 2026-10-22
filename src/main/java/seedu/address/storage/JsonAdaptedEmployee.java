@@ -148,7 +148,9 @@ class JsonAdaptedEmployee {
         final List<Task> modelTasks = new ArrayList<>();
         for (JsonAdaptedTask task : tasks) {
             Task modelTask = task.toModelType();
-            if (modelTasks.contains(modelTask)) {
+            boolean hasDuplicateDetails = modelTasks.stream()
+                    .anyMatch(existingTask -> existingTask.hasSameDetails(modelTask));
+            if (hasDuplicateDetails) {
                 throw new IllegalValueException("Duplicate task details are not allowed.");
             }
             modelTasks.add(modelTask);
