@@ -148,7 +148,7 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_invalidLeaveEntitlement_throwsParseException() {
-        for (String amount : List.of("-1", "366", "14.5", "abc", "014", "999999999999999999999")) {
+        for (String amount : List.of("-1", "366", "14.5", "abc", "999999999999999999999")) {
             for (String operator : List.of("", "<", ">")) {
                 assertParseFailure(parser, "le/" + operator + amount, LeaveEntitlement.MESSAGE_CONSTRAINTS);
             }
@@ -164,6 +164,15 @@ public class FilterCommandParserTest {
         assertParseFailure(parser, "le/>10 le/<20",
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_LEAVE_ENTITLEMENT));
     }
+
+    @Test
+public void parse_leaveEntitlementLeadingZeros_returnsNormalizedCommand() throws Exception {
+    for (String operator : List.of("", "<", ">")) {
+        assertEquals(
+                parser.parse("le/" + operator + "14"),
+                parser.parse("le/" + operator + "014"));
+    }
+}
 
     private void assertInvalidFormat(String input) {
         assertParseFailure(parser, input, String.format(MESSAGE_INVALID_COMMAND_FORMAT, FilterCommand.MESSAGE_USAGE));
