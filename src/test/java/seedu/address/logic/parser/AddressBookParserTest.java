@@ -145,6 +145,15 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_summaryIndexAliases() throws Exception {
+        SummaryCommandParser summaryParser = new SummaryCommandParser();
+        for (String command : new String[] {"summary", "/summary"}) {
+            assertEquals(summaryParser.parse("i/1 3 e/3"), parser.parseCommand(command + " i/1 3 e/3"));
+            assertEquals(summaryParser.parse("scope/all e/2"), parser.parseCommand(command + " scope/all e/2"));
+        }
+    }
+
+    @Test
     public void parseCommand_summaryWithArguments_throwsUsageMessage() {
         for (String command : new String[] {"summary", "/summary"}) {
             for (String args : new String[] {" 1", " t/engineering", " all", "\tunexpected"}) {

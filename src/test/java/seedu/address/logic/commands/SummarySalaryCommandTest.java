@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.employee.Employee;
@@ -16,7 +17,7 @@ import seedu.address.testutil.EmployeeBuilder;
 
 public class SummarySalaryCommandTest {
     @Test
-    public void execute_noTagsAndFilteredList_showsSalaryStatisticsForAllEmployees() {
+    public void execute_noTagsAndFilteredList_showsSalaryStatisticsForAllEmployees() throws CommandException {
         Model model = new ModelManager();
         Employee alice = new EmployeeBuilder().withName("Alice").withSalary("3000").build();
         Employee bob = new EmployeeBuilder().withName("Bob").withSalary("5000").build();

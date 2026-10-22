@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.employee.Employee;
@@ -20,7 +21,7 @@ public class SummaryTaskCommandTest {
     private static final Employee CAROL = new EmployeeBuilder().withName("Carol").withEmployeeId(3).build();
 
     @Test
-    public void execute_noTagsAndFilteredView_countsAllTasksWithoutChangingModel() {
+    public void execute_noTagsAndFilteredView_countsAllTasksWithoutChangingModel() throws CommandException {
         Model model = new ModelManager();
         Employee alice = ALICE.addTask(new Task("Report"));
         Employee bob = BOB;
@@ -38,7 +39,7 @@ public class SummaryTaskCommandTest {
     }
 
     @Test
-    public void execute_afterTaskAndEmployeeChanges_recomputesCounts() {
+    public void execute_afterTaskAndEmployeeChanges_recomputesCounts() throws CommandException {
         Model model = new ModelManager();
         Employee alice = ALICE;
         model.addEmployee(alice);

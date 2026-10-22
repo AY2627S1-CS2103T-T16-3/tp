@@ -184,14 +184,21 @@ The `summary` command (alias `/summary`) produces a read-only overview of employ
 headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks,
 and total/average recorded salary.
 
-`AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts no argument,
-`scope/all`, or `scope/filtered`, rejecting every other argument string with `SummaryCommand.MESSAGE_USAGE`.
-It stores only a `SummaryCommand.Scope` enum, not a list or snapshot. At execution time the command reads
+`AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts an optional
+`scope/all` or `scope/filtered` followed by optional `i/` and `e/` whitespace-separated index lists.
+`ArgumentTokenizer` separates the two prefixes, and `ParserUtil.parseIndex` validates positive integers.
+Each prefix may occur once; repeated indexes are deduplicated. Malformed inputs report usage errors,
+while repeated prefixes use the shared duplicate-prefix error.
+The command stores a `SummaryCommand.Scope` enum and immutable inclusion/exclusion index sets, not employee snapshots.
+At execution time the command reads
 `model.getFilteredEmployeeList()` for the default/filtered scope, or
-`model.getAddressBook().getEmployeeList()` for explicit `scope/all`. That single selected collection is
-passed to `EmployeeSummary.fromEmployees`, so all statistics share the same scope. The command labels
+`model.getAddressBook().getEmployeeList()` for explicit `scope/all`. Indexes refer to positions in this collection.
+Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
+An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
+passed to `EmployeeSummary.fromEmployees`, so all statistics share the same selection. The command labels
 the multiline result `Scope: All employees` or
-`Scope: Filtered employees`. Empty filtered lists remain empty; no fallback or filter mutation occurs.
+`Scope: Filtered employees`, followed by any inclusion/exclusion lists in ascending order.
+Empty selections remain empty; no fallback or filter mutation occurs.
 `SummaryFormatter` renders the essential figures as ASCII tables with dynamically sized columns and
 right-aligned values. The tag table is omitted when there are no tags. Explanatory notes remain in the User Guide.
 `CommandResult.DisplayFormat.TABLE` carries the presentation choice to `ResultDisplay`, which applies
@@ -216,7 +223,9 @@ Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, loc
 snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
 of the filter predicate, and fresh results after add/edit/delete. Parser tests cover both spellings,
 surrounding whitespace, and rejection of unexpected arguments. `SummaryScopeCommandTest` covers scope
-selection, empty matches, execution-time reads, and preservation of the filter predicate. Logic tests
+selection, empty matches, execution-time reads, and preservation of the filter predicate.
+`SummaryIndexCommandTest` covers index selection in both scopes, overlap, empty selections, invalid indexes,
+execution-time resolution, and preservation of employee records and filters. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
 `SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
 `CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,

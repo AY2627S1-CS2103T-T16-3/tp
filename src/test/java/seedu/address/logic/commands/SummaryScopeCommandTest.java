@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.SummaryCommandParser;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
@@ -24,7 +25,7 @@ public class SummaryScopeCommandTest {
     }
 
     @Test
-    public void execute_filteredSubset_countsOnlyVisibleEmployeesAndPreservesPredicate() {
+    public void execute_filteredSubset_countsOnlyVisibleEmployeesAndPreservesPredicate() throws CommandException {
         Model model = new ModelManager();
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("engineering").build();
         Employee bob = new EmployeeBuilder().withName("Bob").withTags("remote").build();
@@ -48,7 +49,7 @@ public class SummaryScopeCommandTest {
     }
 
     @Test
-    public void execute_noMatches_doesNotFallBackToAllEmployees() {
+    public void execute_noMatches_doesNotFallBackToAllEmployees() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(new EmployeeBuilder().build());
         model.updateFilteredEmployeeList(employee -> false);
@@ -59,7 +60,7 @@ public class SummaryScopeCommandTest {
     }
 
     @Test
-    public void execute_noRestriction_allScopesHaveSameCountsButDifferentLabels() {
+    public void execute_noRestriction_allScopesHaveSameCountsButDifferentLabels() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(new EmployeeBuilder().build());
         String all = new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser();
