@@ -141,7 +141,8 @@ The `Model` component,
 <img src="images/StorageClassDiagram.png" width="550" />
 
 The `Storage` component,
-* can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
+* saves employee data, leave data, the next employee ID, the next leave ID, and user preferences in JSON format, and
+  reads them back into corresponding model objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
@@ -226,7 +227,7 @@ No new window, storage fields, or model API is needed.
 Aggregation is recomputed on each invocation, without stored counters, new JSON fields, or changes to
 employees, tags, user preferences, or the current filter. The existing application-wide automatic
 save after command execution remains unchanged. This feature does not infer attendance, active
-employment, or departments, and does not depend on employee IDs or the planned leave feature.
+employment, or departments. It remains independent of the leave records stored in the model.
 
 Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, locale independence, and
 snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
@@ -261,6 +262,80 @@ there are no tags. It displays `$0.00` for an empty total and `N/A` for absent a
 No currency period, benefits, or payroll assumptions are added. Tests cover empty/single inputs,
 zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
 and recomputation after a salary command.
+
+### Leave management
+
+The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
+`AddressBookParser` passes the remaining input to `LeaveCommandParser`, which selects the matching subcommand parser.
+
+#### Recording leave
+
+`leave add INDEX from/START_DATE to/END_DATE` follows this flow:
+
+1. `AddLeaveCommandParser` parses a displayed employee index and two `DD-MM-YYYY` dates into an `Index` and immutable
+   `LeavePeriod`.
+2. `AddLeaveCommand` resolves the index against `Model#getFilteredEmployeeList`. This lets a user run `find` or
+   `filter` before selecting an employee without exposing the employee's internal ID.
+3. `AddressBook#addLeave` finds the employee through its internal `EmployeeId`, rejects an overlapping period, and
+   checks the requested weekdays against the employee's remaining entitlement for that year.
+4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the ID counter.
+5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
+
+`LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
+at least one such day. Public holidays are deliberately not modelled for the MVP, so a public holiday on a weekday is
+charged as a working leave day. Overlap detection uses every calendar date in the inclusive range, not only charged
+weekdays.
+
+Remaining leave is derived as:
+
+`max(0, annual entitlement - recorded working leave days in that calendar year)`
+
+This avoids a second mutable balance that could drift out of sync. An employee's annual entitlement is compulsory when
+the employee is added, is editable, and accepts whole numbers from 0 to 365. `ParserUtil#parseLeaveEntitlement`
+accepts digit-only input with leading zeros and removes that padding before constructing `LeaveEntitlement`; an
+all-zero input is normalized to 0. Validation of the normalized value still rejects entitlements outside 0 to 365.
+For backward compatibility, employees in older data files with no entitlement load with an entitlement of 0.
+
+#### Listing and deleting leave
+
+`leave list` reads the currently filtered employee list from `Model`, collects those employees' internal IDs, and
+retains only matching records from the central leave list. It then sorts the records by `LeaveId`, resolves each
+internal employee ID to the employee's current name, and returns a multiline result. Consequently, `find` and `filter`
+also scope the following `leave list`, while running `list` first restores an all-employee scope. The status is derived
+using `LocalDate.now(clock)` on every invocation. Production commands use the system-default clock, while tests inject
+a fixed clock for deterministic status checks:
+
+* `Upcoming` when today is before the start date.
+* `Past` when today is after the end date.
+* `Ongoing` otherwise, including a weekend contained within the recorded period.
+
+The status is presentation data and is not persisted.
+
+`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so a deleted ID is never
+reused. No balance mutation is required; the next balance calculation automatically excludes the deleted record.
+
+Employee deletion cascades through `AddressBook#removeEmployee`, which removes the employee and all records with the
+same internal `EmployeeId`. During bulk replacement, `removeOrphanedLeaves` provides the equivalent safeguard. Storage
+loading rejects leave records that refer to an unknown employee, overlap another record for the same employee, or use
+invalid identifiers or periods.
+
+#### Design considerations
+
+**Aspect: Where leave records are stored**
+
+* **Alternative 1 (current choice):** Store leave records in one central `UniqueLeaveList`, linked by `EmployeeId`.
+  * Pros: IDs, overlap checks, chronological status, persistence, and listing all leave have one source of truth.
+  * Cons: Employee names must be resolved when displaying leave and referential integrity must be enforced explicitly.
+* **Alternative 2:** Store a leave list inside each `Employee`.
+  * Pros: An employee and their leave are naturally grouped.
+  * Cons: Listing and identifying leave across the workforce becomes more complex, and editing an employee risks
+    replacing or duplicating nested leave state.
+
+**Aspect: How users identify records**
+
+* Employees use the displayed list index because users already rely on that workflow for edit and delete operations.
+* Leave records use a stable, public `LeaveId` because their position in a workforce-wide list must not change the
+  target of a later delete command.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -382,24 +457,25 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 | Priority | As a …​                    | I want to …​                                                                   | So that I can…​                                                                          |
 |----------|----------------------------|--------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and to learn the app capabilities |
-| `* * *`  | HR Officer                 | edit employees contact                                                         | make any relevant updates to employee contact fields                                     |
-| `* * *`  | HR Officer                 | add a new employee profile                                                     | add newly hired employee profiles with their respective details                          |
-| `* * *`  | HR Officer                 | keep track of tasks for an employee                                            | remember the tasks which needs to be completed for that employee                         |
-| `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                 |
+| `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and learn its capabilities        |
+| `* * *`  | HR Officer                 | edit employee contact details and annual leave entitlement                     | keep employee records up to date                                                         |
+| `* * *`  | HR Officer                 | add a new employee profile with an annual leave entitlement                    | record a new hire and enforce their leave allowance                                      |
+| `* * *`  | HR Officer                 | keep track of tasks for an employee                                            | remember the work that needs to be completed for that employee                           |
+| `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                  |
 | `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
-| `* * *`  | HR Officer                 | manage employee’s leaves and off                                               | can keep track of manpower in the company on a daily basis                               |
-| `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find those that match specific criteria(s)                                        |
-| `* * *`  | HR Officer                 | delete an employee profile                                                     | remove employees no longer with the company                                              |
-| `* * *`  | HR Officer                 | shift employees between different departments                                  | keep check of changing roles within the startup                                          |
-| `* * *`  | HR Officer                 | view employee's department, role, employment status, or other relevant details | keep track of information relevant to HR administration                                  |
+| `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
+| `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
+| `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
+| `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
+| `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
-| `* *`    | HR Officer                 | filter and find a specific employee based on a specific detail                 | save time by not having to go through the entire contact book                            |
-| `* *`    | Experienced HR Officer     | sort employee by department                                                    | locate a personnel within a department of the company easily                             |
+| `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
+| `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
+| `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
 | `* *`    | HR Officer                 | have local storage for employee contact and details                            | have a persistent and secure database for all relevant information                       |
-| `* *`    | HR Officer                 | have automatic local backup for employee contact and details                   | backup the employee information locally                                                  |
+| `* *`    | HR Officer                 | have automatic local backups for employee contact and details                  | back up employee information locally                                                     |
 | `*`      | Experienced HR Officer     | tag employees together                                                         | easily group employees based on similar tags                                             |
-| `*`      | Experienced HR Officer     | generate a list of administrative actions                                      | to show logs in the event of audits or reviews                                           |
+| `*`      | Experienced HR Officer     | generate a list of administrative actions                                      | show logs during audits or reviews                                                       |
 
 ### Use cases
 
@@ -409,9 +485,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to add an employee and provides the employee's details.
-2. System adds the employee.
-3. System displays the newly added employee and confirms that the employee was added.
+1. HR manager requests to add an employee, providing the employee's details and annual leave entitlement.
+2. System adds the employee and saves the employee information.
+3. System displays the added employee and confirms that the employee was added.
 
     Use case ends.
 
@@ -466,7 +542,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1.  HR manager requests to list employees.
 2.  System displays the list of employees.
 3.  HR manager requests to delete a specific employee using the employee's displayed index.
-4.  System deletes the selected employee.
+4.  System deletes the selected employee and all leave records belonging to that employee.
 5.  System confirms that the employee has been deleted.
 
     Use case ends.
@@ -682,7 +758,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1.  HR manager requests to record a leave period for a specified employee, providing the start and end dates.
+1.  HR manager requests to record a leave period for an employee selected by their displayed index, providing the
+    start and end dates.
 2.  System records the leave period and assigns it a unique leave ID.
 3.  System displays the recorded leave and the employee’s remaining leave for the relevant calendar year.
 
@@ -697,59 +774,52 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 1b. The provided employee ID is invalid.
+* 1b. The provided employee index is invalid.
 
-    * 1b1. System informs the HR manager that the employee ID is invalid.
+    * 1b1. System informs the HR manager that the displayed index is invalid.
     * 1b2. System does not record the leave.
 
       Use case ends.
 
-* 1c. No employee with the provided employee ID exists.
+* 1c. Either provided date is not a valid calendar date.
 
-    * 1c1. System informs the HR manager that the employee does not exist.
+    * 1c1. System informs the HR manager that the provided date is invalid.
     * 1c2. System does not record the leave.
 
       Use case ends.
 
-* 1d. Either provided date is not a valid calendar date.
+* 1d. The start date is later than the end date.
 
-    * 1d1. System informs the HR manager that the provided date is invalid.
+    * 1d1. System informs the HR manager that the date range is invalid.
     * 1d2. System does not record the leave.
 
       Use case ends.
 
-* 1e. The start date is later than the end date.
+* 1e. The start and end dates are in different calendar years.
 
-    * 1e1. System informs the HR manager that the date range is invalid.
+    * 1e1. System informs the HR manager that the leave period must fall within one calendar year.
     * 1e2. System does not record the leave.
 
       Use case ends.
 
-* 1f. The start and end dates are in different calendar years.
+* 1f. The leave period does not contain any working day.
 
-    * 1f1. System informs the HR manager that the leave period must fall within one calendar year.
+    * 1f1. System informs the HR manager that the leave period must contain at least one working day.
     * 1f2. System does not record the leave.
 
       Use case ends.
 
-* 1g. The leave period does not contain any working day.
+* 1g. The specified leave period overlaps an existing leave period belonging to the employee.
 
-    * 1g1. System informs the HR manager that the leave period must contain at least one working day.
+    * 1g1. System informs the HR manager about the overlapping leave period.
     * 1g2. System does not record the leave.
 
       Use case ends.
 
-* 1h. The specified leave period overlaps an existing leave period belonging to the employee.
+* 1h. The employee does not have sufficient remaining leave for the specified period.
 
-    * 1h1. System informs the HR manager about the overlapping leave period.
+    * 1h1. System informs the HR manager of the employee’s remaining leave and the number of leave days required.
     * 1h2. System does not record the leave.
-
-      Use case ends.
-
-* 1i. The employee does not have sufficient remaining leave for the specified period.
-
-    * 1i1. System informs the HR manager of the employee’s remaining leave and the number of leave days required.
-    * 1i2. System does not record the leave.
 
       Use case ends.
 
@@ -760,8 +830,44 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+**Use case: UC9 - List employee leave**
 
-**Use case: UC9 - Show Employee Details**
+**MSS**
+
+1. HR manager requests to list leave records for the currently displayed employees.
+2. System displays matching leave records in leave ID order, including the employee name, dates, charged working days,
+   and status relative to today's date.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. None of the currently displayed employees has a leave record.
+
+    * 2a1. System informs the HR manager that no leave records were found.
+
+      Use case ends.
+
+**Use case: UC10 - Delete employee leave**
+
+**MSS**
+
+1. HR manager lists leave records to obtain a leave ID.
+2. HR manager requests to delete the record using its leave ID.
+3. System deletes the leave record and displays the employee's recalculated remaining leave for that year.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The leave ID is invalid or no matching record exists.
+
+    * 2a1. System informs the HR manager that the leave record cannot be found.
+    * 2a2. System leaves all employee and leave information unchanged.
+
+      Use case ends.
+
+**Use case: UC11 - Show Employee Details**
 
 **MSS**
 
@@ -815,7 +921,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
       Use case ends.
 
 
-**Use case: UC10 - Change an employee's salary**
+**Use case: UC12 - Change an employee's salary**
 
 **MSS**
 
@@ -878,15 +984,20 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 ### Glossary
 
 * **Employee**: A staff member whose employment, contact, and leave information is managed in HR Book
-* **Employee attribute**: A field containing information about an employee, such as their name, contact number, email,
-  employee ID, boss ID, leave entitlement, leave date, or tag
-* **Employee ID**: A unique identifier assigned to an employee in HR Book
+* **Displayed index**: A temporary number shown beside an employee in the current list, used to select that employee in
+  commands; it can change after `find`, `filter`, or `list`
+* **Employee attribute**: A stored field such as an employee's name, phone, email, address, salary, annual leave
+  entitlement, or tag
+* **Employee ID**: A private, stable identifier used internally to associate leave with an employee; users do not enter
+  it in commands
 * **HR Book**: The application used by HR managers to manage employee records and routine administrative work
 * **HR manager**: The primary user of HR Book who manages employee records and leave information
 * **Leave**: A period of absence recorded for an employee and counted against their leave entitlement
+* **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
+  `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Working day**: A day counted when calculating leave duration, excluding non-working days such as weekends and
-  public holidays
+* **Working day**: For the MVP, a Monday through Friday counted against annual leave entitlement; public holidays are
+  not excluded
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -924,7 +1035,8 @@ testers are expected to do more *exploratory* testing.
    1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
 
    1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+      Expected: The first contact and all their leave records are deleted from the list. The status message shows the
+      deleted contact's details.
 
    1. Test case: `delete 0`<br>
       Expected: No person is deleted. The status message shows error details.
@@ -932,7 +1044,40 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
 
-1. _{ more test cases …​ }_
+### Managing leave
+
+1. Recording valid leave
+
+   1. Prerequisites: Add an employee with at least 5 days of leave entitlement, then run `list` and note their index.
+
+   1. Test case: `leave add 1 from/19-10-2026 to/23-10-2026`<br>
+      Expected: Five working days are recorded. The result shows a leave ID and the remaining entitlement.
+
+   1. Test case: Run the same command again.<br>
+      Expected: No leave is recorded because it overlaps the first record.
+
+   1. Test case: `leave add 1 from/24-10-2026 to/25-10-2026`<br>
+      Expected: No leave is recorded because the period contains only weekend days.
+
+2. Listing and deleting leave
+
+   1. Prerequisites: Record leave periods for at least two employees and note the IDs returned by `leave add`.
+
+   1. Test case: Run `list`, followed by `leave list`.<br>
+      Expected: All leave records appear in leave ID order with employee name, period, working days, and a status of
+      `Upcoming`, `Ongoing`, or `Past` based on today's date.
+
+   1. Test case: Use `find` or `filter` to display one of the employees, followed by `leave list`.<br>
+      Expected: Only leave records belonging to the displayed employee appear.
+
+   1. Test case: Use `find` or `filter` so that no displayed employee has a leave record, followed by `leave list`.<br>
+      Expected: The result reports that no leave records were found.
+
+   1. Test case: `leave delete 1` (replace `1` with the recorded ID)<br>
+      Expected: That record is deleted and the result shows the employee's restored remaining leave.
+
+   1. Test case: Repeat the same `leave delete` command.<br>
+      Expected: No record is deleted because that leave ID no longer exists.
 
 ### Sorting employees
 

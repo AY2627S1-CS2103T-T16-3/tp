@@ -29,9 +29,9 @@ public class AddLeaveCommand extends Command {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + " " + SUBCOMMAND_WORD
             + ": Records leave for the employee at the displayed index.\n"
-            + "Parameters: INDEX " + PREFIX_START_DATE + "START_DATE " + PREFIX_END_DATE + "END_DATE\n"
-            + "Dates must use DD-MM-YYYY format.\n"
-            + "Example: " + COMMAND_WORD + " " + SUBCOMMAND_WORD + " 1 "
+            + "  Parameters: INDEX " + PREFIX_START_DATE + "START_DATE " + PREFIX_END_DATE + "END_DATE\n"
+            + "  Date format: DD-MM-YYYY\n"
+            + "  Example: " + COMMAND_WORD + " " + SUBCOMMAND_WORD + " 1 "
             + PREFIX_START_DATE + "05-10-2026 " + PREFIX_END_DATE + "07-10-2026";
 
     public static final String MESSAGE_SUCCESS =
