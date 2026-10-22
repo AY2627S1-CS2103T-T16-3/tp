@@ -86,6 +86,14 @@ public class EmployeeTest {
     }
 
     @Test
+    public void addTask_duplicateCompletedTask_throwsIllegalArgumentException() {
+        Employee employeeWithTask = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report").markDone());
+
+        assertThrows(IllegalArgumentException.class, () -> employeeWithTask.addTask(new Task("prepare report")));
+    }
+
+    @Test
     public void deleteTask_validIndex_returnsEmployeeWithoutTask() {
         Employee employee = new EmployeeBuilder().build()
                 .addTask(new Task("Prepare report"))
