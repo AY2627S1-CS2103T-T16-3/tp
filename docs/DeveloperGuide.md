@@ -193,6 +193,12 @@ and over copying the visible list to keep subsequent edits and filter changes ob
 all supported fields, numeric ordering, long and padded phone numbers, ties, filtered/empty lists,
 shared view references, unchanged stored order, and index-based salary changes and deletion after sorting.
 
+The following sequence diagram illustrates a successful `sort s/asc` command. It shows parsing,
+command execution, and the comparator update on the existing sorted view. The usual storage save
+is omitted from the diagram for clarity.
+
+![Sequence diagram for sorting displayed employees by ascending salary](images/SortSequenceDiagram.png)
+
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
