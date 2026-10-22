@@ -3,6 +3,7 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_LEAVE_ENTITLEMENT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SALARY;
@@ -28,7 +29,8 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     private static final Map<Prefix, Field> FIELDS = Map.of(
             PREFIX_NAME, Field.NAME, PREFIX_PHONE, Field.PHONE, PREFIX_EMAIL, Field.EMAIL,
             PREFIX_ADDRESS, Field.ADDRESS, PREFIX_TAG, Field.TAG,
-            PREFIX_TASK, Field.TASK, PREFIX_SALARY, Field.SALARY);
+            PREFIX_TASK, Field.TASK, PREFIX_SALARY, Field.SALARY,
+            PREFIX_LEAVE_ENTITLEMENT, Field.LEAVE_ENTITLEMENT);
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<!\\S)[A-Za-z]+/");
 
     @Override
@@ -43,11 +45,13 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         }
 
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(normalizedArgs,
-                PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG, PREFIX_TASK, PREFIX_SALARY);
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG, PREFIX_TASK, PREFIX_SALARY,
+                PREFIX_LEAVE_ENTITLEMENT);
         if (!arguments.getPreamble().isEmpty()) {
             throw invalidFormat();
         }
-        arguments.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_SALARY);
+        arguments.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_SALARY,
+                PREFIX_LEAVE_ENTITLEMENT);
 
         Map<Field, List<String>> criteria = new EnumMap<>(Field.class);
         for (Map.Entry<Prefix, Field> entry : FIELDS.entrySet()) {
@@ -57,7 +61,9 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             }
             if (!values.isEmpty()) {
                 if (entry.getValue() == Field.SALARY) {
-                    values = List.of(ParserUtil.parseSalary(values.get(0)).salary);
+                    values = List.of(parseSalaryCriterion(values.get(0)));
+                } else if (entry.getValue() == Field.LEAVE_ENTITLEMENT) {
+                    values = List.of(parseLeaveCriterion(values.get(0)));
                 }
                 criteria.put(entry.getValue(), values);
             }
@@ -66,6 +72,26 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             throw invalidFormat();
         }
         return new FilterCommand(new EmployeeMatchesCriteriaPredicate(criteria));
+    }
+
+    /**
+     * Normalizes an exact salary or a strict comparison, validating the amount using salary constraints.
+     */
+    private String parseSalaryCriterion(String value) throws ParseException {
+        if (value.startsWith("<") || value.startsWith(">")) {
+            return value.substring(0, 1) + ParserUtil.parseSalary(value.substring(1)).salary;
+        }
+        return ParserUtil.parseSalary(value).salary;
+    }
+
+    /**
+     * Normalizes an exact annual entitlement or a strict comparison using leave entitlement constraints.
+     */
+    private String parseLeaveCriterion(String value) throws ParseException {
+        if (value.startsWith("<") || value.startsWith(">")) {
+            return value.substring(0, 1) + ParserUtil.parseLeaveEntitlement(value.substring(1)).value;
+        }
+        return Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
     }
 
     private ParseException invalidFormat() {

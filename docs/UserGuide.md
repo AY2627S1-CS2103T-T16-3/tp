@@ -230,15 +230,16 @@ Examples:
 
 Lists employees who match all supplied criteria.
 
-Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`
 
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* Salary matches an exact amount from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000.
+* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Comparisons exclude the specified amount itself. Amounts must be whole numbers from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000. Operators such as `<=`, `>=`, and `=` are not supported.
+* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Days must be whole numbers from 0 to 365 with no leading zeros, as with `add` and `edit`. Operators such as `<=`, `>=`, and `=` are not supported.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
 * All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
-* Each of `n/`, `p/`, `e/`, `a/`, and `s/` may appear only once. Unsupported prefixes are rejected.
+* Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -249,6 +250,12 @@ Examples:
 * `filter t/friends t/owesMoney` lists employees with both tags.
 * `filter task/report task/review` lists employees with tasks matching both descriptions.
 * `filter task/report s/3000` lists employees with a matching task and salary 3000.
+* `filter le/14` lists employees with an annual leave entitlement of exactly 14 days.
+* `filter le/<14` lists employees with an annual leave entitlement below 14 days.
+* `filter n/Alice s/<4000 le/>10` lists employees whose name contains `Alice`, salary is below 4000, and annual leave entitlement is above 10 days.
+* `filter s/<4000` lists employees earning less than 4000.
+* `filter s/>4000` lists employees earning more than 4000.
+* `filter n/Alice p/912 s/<4000` lists employees whose name contains `Alice`, whose phone number contains `912`, and whose salary is less than 4000.
 
 ### Deleting an employee: `delete`
 
