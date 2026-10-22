@@ -33,7 +33,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
    * `leave add 1 from/20-10-2026 to/22-10-2026` : Records leave for the first employee currently shown.
 
-   * `leave list` : Lists all leave records and their current status.
+   * `leave list` : Lists leave records for the employees currently displayed and shows each record's current status.
 
    * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
 
@@ -90,7 +90,8 @@ Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
 Employee cards display salary with a `$` prefix, for example `$5000`.
 
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
-employee who is not entitled to annual leave.
+employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
+stored as `14`. The value after removing leading zeros must still be within the allowed range.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -129,48 +130,45 @@ Example output:
 ```text
 Employee summary
 Scope: Filtered employees
-Total employees: 5
-Employees without tags: 1
 
-Employees by tag:
-  engineering: 3
-  intern: 1
-  remote: 2
++----------------------+-----------+
+| Metric               |     Value |
++----------------------+-----------+
+| Employees            |         5 |
+| Without tags         |         1 |
+| Assigned tasks       |         6 |
+| Employees with tasks |         3 |
+| Total salary         | $15000.00 |
+| Average salary       |  $3000.00 |
++----------------------+-----------+
 
-Employees may have multiple tags; tag counts can overlap.
-
-Task overview
-Total assigned tasks: 6
-Employees with tasks: 3
-Employees without tasks: 2
-Most tasks assigned to one employee: 3
-
-Salary overview
-Total recorded salary: $15000.00
-Average salary: $3000.00
-Lowest salary: $0.00
-Highest salary: $5000.00
++-------------+-----------+
+| Tag         | Employees |
++-------------+-----------+
+| engineering |         2 |
+| intern      |         1 |
+| remote      |         2 |
++-------------+-----------+
 ```
 
+![Summary result panel](images/summary-table.png)
+
+* The first table shows headcount, employees without tags, assigned tasks, employees with tasks,
+  and total/average recorded salary. The tag table appears only when there are tags.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
-* Employees with several different tags count in each group, so tag counts can exceed the total headcount.
-* Having no tags is allowed; the untagged count is a categorization aid, not an error.
-* If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
-* These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
-  not interpreted as structured departments. Leave balances and reminders are not included.
-* Salary statistics include every salary in the selected scope, including zero. For no employees, the total is `$0.00`
-  and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
-* These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
-  Salary statistics still appear when there are no tags and refresh after a salary change.
+  Employees with several tags count in each group, so tag counts can overlap.
+* Identical task descriptions assigned to different employees count as separate assignments.
+  Task counts do not indicate completion, deadlines, effort, or productivity.
+* Salary figures include zero salaries. An empty selection shows zero counts, a total salary of `$0.00`,
+  and an average of `N/A`. Amounts use two decimal places; averages round half up.
+  These are recorded amounts, not payroll, tax, benefits, or payments.
+* These figures describe stored records, not attendance or active employment. Tags are not interpreted
+  as structured departments; leave balances and reminders are not included.
 
-The result appears in the existing command-result area; scroll within it to read a long summary.
-
-Task counts use the selected scope, like headcount and salary statistics. The same description assigned to two employees
-counts as two assignments. An empty book shows zero for every task statistic; if employees have no
-tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
-Run the summary again after task changes or employee deletion to refresh it. These counts do not
-indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
+The tables use a monospaced font with right-aligned values. Columns expand to fit long tags and large amounts.
+Scroll within the result area or drag the divider below it to see more rows; wide tables can be scrolled horizontally.
+Run the command again after employee, task, or salary changes to refresh the figures.
 
 ### Changing an employee's salary: `salary`
 
@@ -200,6 +198,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
+  Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
   enough leave is deleted or the entitlement is increased, no further leave can be added for that year.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
@@ -208,7 +207,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st employee to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd employee to be `Betsy Crower` and clears all existing tags.
-*  `edit 3 le/21` Changes the 3rd employee's annual leave entitlement to 21 days.
+*  `edit 3 le/00021` Changes the 3rd employee's annual leave entitlement to 21 days.
 
 ### Locating employees by name: `find`
 
@@ -273,7 +272,9 @@ Leave records are stored separately from employee records and linked internally 
 employee using the index currently displayed in the employee list. Internal employee IDs are not shown and are not
 accepted by leave commands.
 
-Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record.
+Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record. As
+`leave list` follows the currently displayed employee list, run `list` first if you need to find a leave record for any
+employee.
 
 #### Recording leave: `leave add`
 
@@ -302,9 +303,14 @@ Examples:
 
 #### Listing leave: `leave list`
 
-Lists every leave record, ordered by leave ID.
+Lists leave records belonging to employees in the currently displayed employee list, ordered by leave ID.
 
 Format: `leave list`
+
+The command uses whichever employees are currently displayed. For example, after `find Betsy` or a `filter` command,
+only leave records belonging to the matching employees are listed. Run `list` before `leave list` to display leave
+records for all employees. If none of the displayed employees has a leave record, the command reports that no leave
+records were found.
 
 Each line shows the leave ID, employee name, inclusive date range, charged working days, and one of these statuses:
 

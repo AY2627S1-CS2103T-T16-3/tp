@@ -125,6 +125,15 @@ public class EmployeeTest {
     }
 
     @Test
+    public void updateTask_duplicateTask_throwsIllegalArgumentException() {
+        Employee employee = new EmployeeBuilder().build()
+                .addTask(new Task("Prepare report"))
+                .addTask(new Task("Submit report"));
+
+        assertThrows(IllegalArgumentException.class, () -> employee.updateTask(0, new Task("submit REPORT")));
+    }
+
+    @Test
     public void updateTask_invalidIndex_throwsIndexOutOfBoundsException() {
         Employee employee = new EmployeeBuilder().build()
                 .addTask(new Task("Prepare report"));

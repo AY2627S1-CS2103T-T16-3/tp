@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.tag.Tag;
@@ -158,6 +159,12 @@ public class Employee {
         requireNonNull(task);
         if (index < 0 || index >= tasks.size()) {
             throw new IndexOutOfBoundsException("Task index is out of bounds.");
+        }
+        boolean duplicatesExistingTask = IntStream.range(0, tasks.size())
+                .anyMatch(taskIndex -> taskIndex != index
+                        && tasks.get(taskIndex).hasSameDetails(task));
+        if (duplicatesExistingTask) {
+            throw new IllegalArgumentException("Task already exists for this employee.");
         }
         List<Task> updatedTasks = new ArrayList<>(tasks);
         updatedTasks.set(index, task);
