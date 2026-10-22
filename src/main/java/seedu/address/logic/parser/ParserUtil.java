@@ -51,7 +51,10 @@ public class ParserUtil {
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
     }
 
-    /** Parses an annual leave entitlement in whole days, normalizing leading zeros. */
+    /**
+     * Parses an annual leave entitlement in whole days. Leading and trailing whitespace is trimmed, and leading
+     * zeros are accepted.
+     */
     public static LeaveEntitlement parseLeaveEntitlement(String leaveEntitlement) throws ParseException {
         requireNonNull(leaveEntitlement);
         String trimmedEntitlement = leaveEntitlement.trim();
