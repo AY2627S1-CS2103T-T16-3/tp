@@ -1,7 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
 
 import java.util.List;
 
@@ -30,12 +30,10 @@ public class SummaryTaskCommandTest {
         model.addEmployee(bob);
         model.addEmployee(carol);
         model.updateFilteredEmployeeList(employee -> employee.equals(alice));
-        String expected = "Employee summary\nScope: All employees\nTotal employees: 3\nEmployees without tags: 3\n\n"
-                + "No tags to summarize.\n\nTask overview\nTotal assigned tasks: 3\n"
-                + "Employees with tasks: 2\nEmployees without tasks: 1\nMost tasks assigned to one employee: 2\n\n"
-                + "Salary overview\nTotal recorded salary: $0.00\nAverage salary: $0.00\n"
-                + "Lowest salary: $0.00\nHighest salary: $0.00";
-        assertEquals(expected, new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser());
+        String result = new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Employees", "3");
+        assertSummaryValue(result, "Assigned tasks", "3");
+        assertSummaryValue(result, "Employees with tasks", "2");
         assertEquals(List.of(alice, bob, carol), model.getAddressBook().getEmployeeList());
         assertEquals(List.of(alice), model.getFilteredEmployeeList());
     }
@@ -46,16 +44,18 @@ public class SummaryTaskCommandTest {
         Employee alice = ALICE;
         model.addEmployee(alice);
         SummaryCommand summary = new SummaryCommand();
-        assertTrue(summary.execute(model).getFeedbackToUser().contains("Total assigned tasks: 0"));
+        assertSummaryValue(summary.execute(model).getFeedbackToUser(), "Assigned tasks", "0");
         Employee assigned = alice.addTask(new Task("Report"));
         model.setEmployee(alice, assigned);
-        assertTrue(summary.execute(model).getFeedbackToUser().contains("Total assigned tasks: 1\n"
-                + "Employees with tasks: 1\nEmployees without tasks: 0\nMost tasks assigned to one employee: 1"));
+        String result = summary.execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Assigned tasks", "1");
+        assertSummaryValue(result, "Employees with tasks", "1");
         Employee cleared = assigned.deleteTask(0);
         model.setEmployee(assigned, cleared);
-        assertTrue(summary.execute(model).getFeedbackToUser().contains("Employees without tasks: 1"));
+        assertSummaryValue(summary.execute(model).getFeedbackToUser(), "Employees with tasks", "0");
         model.deleteEmployee(cleared);
-        assertTrue(summary.execute(model).getFeedbackToUser().contains("Total assigned tasks: 0\n"
-                + "Employees with tasks: 0\nEmployees without tasks: 0\nMost tasks assigned to one employee: 0"));
+        result = summary.execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Employees", "0");
+        assertSummaryValue(result, "Assigned tasks", "0");
     }
 }

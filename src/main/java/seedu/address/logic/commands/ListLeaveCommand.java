@@ -5,7 +5,9 @@ import static java.util.Objects.requireNonNull;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import seedu.address.model.Model;
@@ -16,14 +18,14 @@ import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.LeavePeriod;
 
 /**
- * Lists all centrally stored leave records.
+ * Lists leave records belonging to employees in the currently displayed employee list.
  */
 public class ListLeaveCommand extends Command {
 
     public static final String SUBCOMMAND_WORD = "list";
     public static final String MESSAGE_USAGE = "leave " + SUBCOMMAND_WORD
-            + ": Lists all leave records.\n"
-            + "Example: leave " + SUBCOMMAND_WORD;
+            + ": Lists leave records for the currently displayed employees.\n"
+            + "  Example: leave " + SUBCOMMAND_WORD;
     public static final String MESSAGE_NO_LEAVE = "No leave records found.";
     public static final String MESSAGE_SUCCESS = "Leave records:\n%1$s";
 
@@ -42,15 +44,23 @@ public class ListLeaveCommand extends Command {
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
-        if (model.getAddressBook().getLeaveList().isEmpty()) {
-            return new CommandResult(MESSAGE_NO_LEAVE);
-        }
 
         Map<EmployeeId, Name> employeeNames = model.getAddressBook().getEmployeeList().stream()
                 .collect(Collectors.toMap(employee -> employee.getEmployeeId().orElseThrow(), Employee::getName));
         LocalDate today = LocalDate.now(clock);
-        String records = model.getAddressBook().getLeaveList().stream()
+        Set<EmployeeId> displayedEmployeeIds = model.getFilteredEmployeeList().stream()
+                .map(employee -> employee.getEmployeeId().orElseThrow())
+                .collect(Collectors.toSet());
+        List<Leave> matchingLeaves = model.getAddressBook().getLeaveList().stream()
+                .filter(leave -> displayedEmployeeIds.contains(leave.getEmployeeId()))
                 .sorted(Comparator.comparingInt(leave -> leave.getLeaveId().value))
+                .toList();
+
+        if (matchingLeaves.isEmpty()) {
+            return new CommandResult(MESSAGE_NO_LEAVE);
+        }
+
+        String records = matchingLeaves.stream()
                 .map(leave -> formatLeave(leave, employeeNames, today))
                 .collect(Collectors.joining("\n"));
         return new CommandResult(String.format(MESSAGE_SUCCESS, records));

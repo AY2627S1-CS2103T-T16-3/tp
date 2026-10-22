@@ -2,7 +2,6 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -70,7 +69,7 @@ public class SummaryCommand extends Command {
         List<Employee> employees = scope == Scope.ALL
                 ? model.getAddressBook().getEmployeeList() : model.getFilteredEmployeeList();
         EmployeeSummary summary = EmployeeSummary.fromEmployees(selectEmployees(employees));
-        return new CommandResult(formatSummary(summary) + formatTaskSummary(summary) + formatSalarySummary(summary));
+        return new CommandResult(formatSummary(summary), CommandResult.DisplayFormat.TABLE);
     }
 
     /** Validates every supplied index before applying inclusion and exclusion to the same list. */
@@ -92,29 +91,6 @@ public class SummaryCommand extends Command {
                 .toList();
     }
 
-    private String formatTaskSummary(EmployeeSummary summary) {
-        return "\n\nTask overview\nTotal assigned tasks: " + summary.getTotalTasks()
-                + "\nEmployees with tasks: " + summary.getEmployeesWithTasks()
-                + "\nEmployees without tasks: " + summary.getEmployeesWithoutTasks()
-                + "\nMost tasks assigned to one employee: " + summary.getHighestTaskCount();
-    }
-
-    private String formatSalarySummary(EmployeeSummary summary) {
-        String average = summary.getAverageSalary().map(value -> "$" + value.toPlainString()).orElse("N/A");
-        String lowest = summary.getLowestSalary().isPresent()
-                ? formatSalary(summary.getLowestSalary().getAsInt()) : "N/A";
-        String highest = summary.getHighestSalary().isPresent()
-                ? formatSalary(summary.getHighestSalary().getAsInt()) : "N/A";
-        return "\n\nSalary overview\nTotal recorded salary: " + formatSalary(summary.getTotalSalary())
-                + "\nAverage salary: " + average
-                + "\nLowest salary: " + lowest
-                + "\nHighest salary: " + highest;
-    }
-
-    private String formatSalary(long amount) {
-        return "$" + BigDecimal.valueOf(amount).setScale(2).toPlainString();
-    }
-
     private String formatSummary(EmployeeSummary summary) {
         StringBuilder result = new StringBuilder("Employee summary\nScope: ")
                 .append(scope.label);
@@ -124,17 +100,7 @@ public class SummaryCommand extends Command {
         if (!excludedIndexes.isEmpty()) {
             result.append("\nExcluded indexes: ").append(formatIndexes(excludedIndexes));
         }
-        result.append("\nTotal employees: ")
-                .append(summary.getTotalEmployees())
-                .append("\nEmployees without tags: ")
-                .append(summary.getEmployeesWithoutTags());
-        if (summary.getTagCounts().isEmpty()) {
-            return result.append("\n\nNo tags to summarize.").toString();
-        }
-        result.append("\n\nEmployees by tag:");
-        summary.getTagCounts().forEach((tag, count) -> result.append("\n  ")
-                .append(tag).append(": ").append(count));
-        return result.append("\n\nEmployees may have multiple tags; tag counts can overlap.").toString();
+        return result.append("\n\n").append(SummaryFormatter.format(summary)).toString();
     }
 
     private List<Integer> formatIndexes(Set<Index> indexes) {

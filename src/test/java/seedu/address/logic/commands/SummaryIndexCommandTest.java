@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,12 +33,14 @@ public class SummaryIndexCommandTest {
     @Test
     public void execute_includeIndexes_summarizesOnlySelectedEmployees() throws Exception {
         Model model = modelWithEmployees(ALICE, BOB, CAROL);
-        String result = new SummaryCommandParser().parse("i/3 1 3").execute(model).getFeedbackToUser();
+        CommandResult commandResult = new SummaryCommandParser().parse("i/3 1 3").execute(model);
+        assertEquals(CommandResult.DisplayFormat.TABLE, commandResult.getDisplayFormat());
+        String result = commandResult.getFeedbackToUser();
         assertTrue(result.contains("Included indexes: [1, 3]\n"));
-        assertTrue(result.contains("\nTotal employees: 2\n"));
-        assertTrue(result.contains("\nTotal assigned tasks: 3\n"));
-        assertTrue(result.contains("\nTotal recorded salary: $4000.00\n"));
-        assertTrue(result.contains("\nAverage salary: $2000.00\n"));
+        assertSummaryValue(result, "Employees", "2");
+        assertSummaryValue(result, "Assigned tasks", "3");
+        assertSummaryValue(result, "Total salary", "$4000.00");
+        assertSummaryValue(result, "Average salary", "$2000.00");
     }
 
     @Test
@@ -132,7 +135,7 @@ public class SummaryIndexCommandTest {
         Model model = modelWithEmployees(ALICE, BOB, CAROL);
         SummaryCommand command = new SummaryCommandParser().parse("i/2");
         model.deleteEmployee(ALICE);
-        assertTrue(command.execute(model).getFeedbackToUser().contains("Total recorded salary: $3000.00"));
+        assertSummaryValue(command.execute(model).getFeedbackToUser(), "Total salary", "$3000.00");
         model.deleteEmployee(BOB);
         assertThrows(CommandException.class,
                 "Index 2 is invalid. Filtered employees: 1. Valid indexes: 1-1.", () ->

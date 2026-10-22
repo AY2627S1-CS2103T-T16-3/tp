@@ -4,10 +4,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.Assert.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
 public class CommandResultTest {
+    @Test
+    public void constructor_displayFormat_preservesPresentationAndDefaultActions() {
+        CommandResult table = new CommandResult("feedback", CommandResult.DisplayFormat.TABLE);
+        assertEquals(CommandResult.DisplayFormat.TABLE, table.getDisplayFormat());
+        assertEquals(CommandResult.DisplayFormat.TEXT, new CommandResult("feedback").getDisplayFormat());
+        assertFalse(table.isShowHelp());
+        assertFalse(table.isExit());
+        assertEquals(table, new CommandResult("feedback", CommandResult.DisplayFormat.TABLE));
+        assertNotEquals(table, new CommandResult("feedback"));
+        assertNotEquals(table.hashCode(), new CommandResult("feedback").hashCode());
+        assertThrows(NullPointerException.class, () -> new CommandResult("feedback", null));
+        assertThrows(NullPointerException.class, () -> new CommandResult(null, CommandResult.DisplayFormat.TABLE));
+    }
+
     @Test
     public void equals() {
         CommandResult commandResult = new CommandResult("feedback");
@@ -56,7 +71,8 @@ public class CommandResultTest {
     public void toStringMethod() {
         CommandResult commandResult = new CommandResult("feedback");
         String expected = CommandResult.class.getCanonicalName() + "{feedbackToUser="
-                + commandResult.getFeedbackToUser() + ", showHelp=" + commandResult.isShowHelp()
+                + commandResult.getFeedbackToUser() + ", displayFormat=" + commandResult.getDisplayFormat()
+                + ", showHelp=" + commandResult.isShowHelp()
                 + ", exit=" + commandResult.isExit() + "}";
         assertEquals(expected, commandResult.toString());
     }
