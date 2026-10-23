@@ -13,13 +13,19 @@ Class ModelManager
 Class UserPrefs
 
 Class UniqueEmployeeList
+Class UniqueLeaveList
 Class Employee
+Class EmployeeId
 Class Address
 Class Email
 Class Name
 Class Phone
 Class Tag
 Class Salary
+Class LeaveEntitlement
+Class Leave
+Class LeaveId
+Class LeavePeriod
 
 Class I #FFFFFF
 }
@@ -37,20 +43,29 @@ ModelManager -right-> "1" UserPrefs
 UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniqueEmployeeList
+AddressBook *--> "1" UniqueLeaveList
 UniqueEmployeeList --> "~* all" Employee
+UniqueLeaveList --> "~* all" Leave
+
+Employee --> "0..1" EmployeeId : identity
 Employee *--> Name
 Employee *--> Phone
 Employee *--> Email
 Employee *--> Address
 Employee *--> "*" Tag
 Employee *--> Salary
+Employee *--> LeaveEntitlement
+
+Leave *--> "1" LeaveId
+Leave --> "1" EmployeeId : references
+Leave *--> "1" LeavePeriod
 
 Employee -[hidden]up--> I
 UniqueEmployeeList -[hidden]right-> I
+UniqueLeaveList -[hidden]left-> I
 
 Name -[hidden]right-> Phone
 Phone -[hidden]right-> Address
 Address -[hidden]right-> Email
-
 ModelManager --> "~* filtered" Employee
 @enduml
