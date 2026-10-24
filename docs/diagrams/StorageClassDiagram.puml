@@ -18,6 +18,7 @@ Class JsonAddressBookStorage
 Class JsonSerializableAddressBook
 Class JsonAdaptedEmployee
 Class JsonAdaptedTag
+Class JsonAdaptedTask
 Class JsonAdaptedLeave
 }
 
@@ -34,5 +35,6 @@ JsonAddressBookStorage ..> JsonSerializableAddressBook
 JsonSerializableAddressBook --> "*" JsonAdaptedEmployee
 JsonSerializableAddressBook --> "*" JsonAdaptedLeave
 JsonAdaptedEmployee --> "*" JsonAdaptedTag
+JsonAdaptedEmployee --> "*" JsonAdaptedTask
 
 @enduml
