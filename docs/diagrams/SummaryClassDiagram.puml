@@ -1,0 +1,46 @@
+@startuml
+!include style.puml
+!pragma layout smetana
+
+show members
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam classAttributeFontColor #FFFFFF
+skinparam ArrowFontStyle plain
+skinparam arrowColor LOGIC_COLOR_T4
+skinparam nodesep 35
+skinparam ranksep 35
+
+class SummaryCommand LOGIC_COLOR {
+    -scope: Scope
+    -includedIndexes: Set<Index>
+    -excludedIndexes: Set<Index>
+    +execute(model): CommandResult
+}
+
+interface Model <<interface>> MODEL_COLOR {
+    +getFilteredEmployeeList()
+    +getAddressBook()
+}
+
+class EmployeeSummary MODEL_COLOR {
+    {static} +fromEmployees(...)
+}
+
+class SummaryFormatter LOGIC_COLOR {
+    {static} ~format(summary): String
+}
+
+class CommandResult LOGIC_COLOR {
+    -feedbackToUser: String
+    -displayFormat: DisplayFormat
+}
+
+SummaryCommand .right.> Model : reads scope
+SummaryCommand .down.> SummaryFormatter : formats
+SummaryCommand .down.> EmployeeSummary : aggregates
+SummaryFormatter .left.> EmployeeSummary : reads snapshot
+SummaryCommand .down.> CommandResult : <<create>>
+EmployeeSummary -[hidden]down-> CommandResult
+Model -[hidden]down-> SummaryFormatter
+@enduml

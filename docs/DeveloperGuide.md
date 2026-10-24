@@ -221,6 +221,11 @@ The `summary` command (alias `/summary`) produces a read-only overview of employ
 headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks,
 and total/average recorded salary.
 
+The partial class diagram below shows how scope selection, aggregation, and table formatting are separated.
+Dashed arrows indicate dependencies; only members relevant to the summary are shown.
+
+<img src="images/SummaryClassDiagram.png" alt="Summary command class dependencies" width="680" />
+
 `AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts an optional
 `scope/all` or `scope/filtered` followed by optional `i/` and `e/` whitespace-separated index lists.
 `ArgumentTokenizer` separates the two prefixes, and `ParserUtil.parseIndex` validates positive integers.
