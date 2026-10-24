@@ -21,6 +21,7 @@ Class Email
 Class Name
 Class Phone
 Class Tag
+Class Task
 Class Salary
 Class LeaveEntitlement
 Class Leave
@@ -53,6 +54,7 @@ Employee *--> Phone
 Employee *--> Email
 Employee *--> Address
 Employee *--> "*" Tag
+Employee *--> "*" Task
 Employee *--> Salary
 Employee *--> LeaveEntitlement
 
