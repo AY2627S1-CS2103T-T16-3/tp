@@ -36,10 +36,10 @@ class CommandResult LOGIC_COLOR {
     -displayFormat: DisplayFormat
 }
 
-SummaryCommand .right.> Model : reads scope
-SummaryCommand .down.> SummaryFormatter : formats
-SummaryCommand .down.> EmployeeSummary : aggregates
-SummaryFormatter .left.> EmployeeSummary : reads snapshot
+SummaryCommand .right.> Model : <<use>>
+SummaryCommand .down.> SummaryFormatter : <<use>>
+SummaryCommand .down.> EmployeeSummary : <<use>>
+SummaryFormatter .left.> EmployeeSummary : <<use>>
 SummaryCommand .down.> CommandResult : <<create>>
 EmployeeSummary -[hidden]down-> CommandResult
 Model -[hidden]down-> SummaryFormatter

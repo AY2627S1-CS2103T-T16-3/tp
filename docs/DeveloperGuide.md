@@ -222,7 +222,7 @@ headcount, employees without tags, employee counts by tag, assigned tasks, emplo
 and total/average recorded salary.
 
 The partial class diagram below shows how scope selection, aggregation, and table formatting are separated.
-Dashed arrows indicate dependencies; only members relevant to the summary are shown.
+Dashed arrows indicate usage (`use`) or creation (`create`) dependencies; only members relevant to the summary are shown.
 
 <img src="images/SummaryClassDiagram.png" alt="Summary command class dependencies" width="680" />
 
