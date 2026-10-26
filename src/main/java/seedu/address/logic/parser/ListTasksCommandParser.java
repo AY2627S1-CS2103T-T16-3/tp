@@ -11,10 +11,10 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class ListTasksCommandParser implements Parser<ListTasksCommand> {
 
     /**
-     * Parses the employee index for a list-tasks command.
+     * Parses the employee index for a task list command.
      *
      * @param args Arguments containing the employee index.
-     * @return The parsed list-tasks command.
+     * @return The parsed task list command.
      * @throws ParseException If the arguments are invalid.
      */
     @Override

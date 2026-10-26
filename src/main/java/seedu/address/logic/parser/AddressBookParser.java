@@ -10,23 +10,18 @@ import java.util.regex.Pattern;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddLeaveCommand;
-import seedu.address.logic.commands.AddTaskCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.DeleteCommand;
-import seedu.address.logic.commands.DeleteTaskCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FilterCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
-import seedu.address.logic.commands.ListTasksCommand;
-import seedu.address.logic.commands.MarkTaskCommand;
 import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SortCommand;
 import seedu.address.logic.commands.SummaryCommand;
-import seedu.address.logic.commands.UnmarkTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
@@ -64,18 +59,14 @@ public class AddressBookParser {
         return switch (commandWord) {
             case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
             case AddLeaveCommand.COMMAND_WORD -> new LeaveCommandParser().parse(arguments);
-            case AddTaskCommand.COMMAND_WORD -> new AddTaskCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
-            case DeleteTaskCommand.COMMAND_WORD -> new DeleteTaskCommandParser().parse(arguments);
-            case MarkTaskCommand.COMMAND_WORD -> new MarkTaskCommandParser().parse(arguments);
-            case UnmarkTaskCommand.COMMAND_WORD -> new UnmarkTaskCommandParser().parse(arguments);
+            case "task" -> new TaskCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
             case FilterCommand.COMMAND_WORD -> new FilterCommandParser().parse(arguments);
             case SortCommand.COMMAND_WORD -> new SortCommandParser().parse(arguments);
             case ListCommand.COMMAND_WORD -> new ListCommand();
-            case ListTasksCommand.COMMAND_WORD -> new ListTasksCommandParser().parse(arguments);
             case SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS ->
                 new SummaryCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
