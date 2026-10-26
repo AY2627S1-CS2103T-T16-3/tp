@@ -18,7 +18,7 @@ import seedu.address.model.employee.Task;
 public class AddTaskCommand extends Command {
 
     public static final String SUBCOMMAND_WORD = "add";
-    public static final String COMMAND_WORD = "task " + SUBCOMMAND_WORD;
+    public static final String COMMAND_WORD = TaskCommand.COMMAND_WORD + " " + SUBCOMMAND_WORD;
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Adds a task to the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer) d/DETAILS\n"

@@ -18,7 +18,7 @@ import seedu.address.model.employee.Task;
 public class UnmarkTaskCommand extends Command {
 
     public static final String SUBCOMMAND_WORD = "unmark";
-    public static final String COMMAND_WORD = "task " + SUBCOMMAND_WORD;
+    public static final String COMMAND_WORD = TaskCommand.COMMAND_WORD + " " + SUBCOMMAND_WORD;
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Marks a task as not done for the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer) "

@@ -18,7 +18,7 @@ import seedu.address.model.employee.Task;
 public class DeleteTaskCommand extends Command {
 
     public static final String SUBCOMMAND_WORD = "delete";
-    public static final String COMMAND_WORD = "task " + SUBCOMMAND_WORD;
+    public static final String COMMAND_WORD = TaskCommand.COMMAND_WORD + " " + SUBCOMMAND_WORD;
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Deletes a task from the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer) i/TASK_INDEX (must be a positive integer)\n"

@@ -11,12 +11,18 @@ import seedu.address.logic.commands.AddTaskCommand;
 import seedu.address.logic.commands.DeleteTaskCommand;
 import seedu.address.logic.commands.ListTasksCommand;
 import seedu.address.logic.commands.MarkTaskCommand;
+import seedu.address.logic.commands.TaskCommand;
 import seedu.address.logic.commands.UnmarkTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 public class TaskCommandParserTest {
 
     private final TaskCommandParser parser = new TaskCommandParser();
+
+    @Test
+    public void commandWord_isTask() {
+        assertEquals("task", TaskCommand.COMMAND_WORD);
+    }
 
     @Test
     public void messageUsage_containsAllTaskCommands() {
