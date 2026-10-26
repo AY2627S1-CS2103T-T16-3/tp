@@ -171,6 +171,43 @@ At execution, the command follows these steps:
 
 This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The updated salary is saved with the rest of the employee data after the command runs.
 
+### Task management
+
+Users can keep track of tasks for each employee. The `Task` class stores the description and completion status.
+The constructor rejects blank descriptions and descriptions longer than 120 characters. In the command syntax, `INDEX`
+and `TASK_INDEX` are one-based indexes chosen by the user. The task commands use an employee's position in
+`Model#getFilteredEmployeeList` and a task's position in `Employee#getTasks` to identify the records being changed.
+
+`Employee#getTasks` returns a read-only view of the tasks for each `Employee`. `Task` is immutable: methods such as
+`Task#markDone` and `Task#markUndone` return a new `Task` instead of changing the existing object. Similarly,
+`Employee#addTask`, `Employee#deleteTask`, and `Employee#updateTask` return a new `Employee`. The replacement preserves
+the original employee's other details, including salary, leave entitlement, tags, and unrelated tasks.
+
+`AddressBookParser` passes commands beginning with task to `TaskCommandParser`. The available subcommands are:
+
+* `task list INDEX` displays the selected employee's tasks without changing the model.
+* `task add INDEX d/DETAILS` adds a new incomplete task to the selected employee.
+* `task delete INDEX i/TASK_INDEX` deletes a task.
+* `task mark INDEX i/TASK_INDEX` marks a task as complete.
+* `task unmark INDEX i/TASK_INDEX` marks a task as incomplete.
+
+Each mutating task command reads `Model#getFilteredEmployeeList` when its `execute` method runs. This ensures that
+`AddTaskCommand`, `DeleteTaskCommand`, `MarkTaskCommand`, and `UnmarkTaskCommand` use the same employee ordering shown
+after `find`, `filter`, or `sort`. The commands validate the employee index and the task index, if applicable, before
+calling `Model#setEmployee` with the replacement employee.
+
+`Employee#addTask` rejects duplicate tasks by calling `Task#hasSameDetails`. That method compares normalized details:
+it trims the description, combines repeated spaces, and ignores letter case. The original description remains available
+through `Task#getDetails` for display.
+
+Tasks are saved as part of the employee record. `JsonAdaptedEmployee` converts each `Task` to `JsonAdaptedTask`, which
+stores the task's `details` and `isDone` fields. Since tasks belong to `Employee`, deleting an employee also deletes
+its tasks.
+
+When loading data, `JsonAdaptedTask#toModelType` reconstructs each `Task` and applies the constructor's validation.
+`JsonAdaptedEmployee#toModelType` then checks the reconstructed tasks with `Task#hasSameDetails` and rejects duplicates.
+Invalid task data therefore cannot be used to create an invalid `Employee`.
+
 ### Sorting displayed employees
 
 `sort FIELD/ORDER` orders the current displayed list without changing its filter or the stored employee order.
