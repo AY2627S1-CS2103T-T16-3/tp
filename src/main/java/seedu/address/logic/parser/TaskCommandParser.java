@@ -31,12 +31,12 @@ public class TaskCommandParser implements Parser<Command> {
         String subcommandWord = subcommandParts[0];
         String arguments = subcommandParts.length > 1 ? subcommandParts[1] : "";
         return switch (subcommandWord) {
-        case AddTaskCommand.SUBCOMMAND_WORD -> new AddTaskCommandParser().parse(arguments);
-        case DeleteTaskCommand.SUBCOMMAND_WORD -> new DeleteTaskCommandParser().parse(arguments);
-        case ListTasksCommand.SUBCOMMAND_WORD -> new ListTasksCommandParser().parse(arguments);
-        case MarkTaskCommand.SUBCOMMAND_WORD -> new MarkTaskCommandParser().parse(arguments);
-        case UnmarkTaskCommand.SUBCOMMAND_WORD -> new UnmarkTaskCommandParser().parse(arguments);
-        default -> throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
+            case AddTaskCommand.SUBCOMMAND_WORD -> new AddTaskCommandParser().parse(arguments);
+            case DeleteTaskCommand.SUBCOMMAND_WORD -> new DeleteTaskCommandParser().parse(arguments);
+            case ListTasksCommand.SUBCOMMAND_WORD -> new ListTasksCommandParser().parse(arguments);
+            case MarkTaskCommand.SUBCOMMAND_WORD -> new MarkTaskCommandParser().parse(arguments);
+            case UnmarkTaskCommand.SUBCOMMAND_WORD -> new UnmarkTaskCommandParser().parse(arguments);
+            default -> throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));
         };
     }
 }
