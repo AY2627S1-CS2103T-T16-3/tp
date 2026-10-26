@@ -56,4 +56,11 @@ public class TaskCommandParserTest {
         assertInstanceOf(MarkTaskCommand.class, parser.parse("mark 1 i/1"));
         assertInstanceOf(UnmarkTaskCommand.class, parser.parse("unmark 1 i/1"));
     }
+
+    @Test
+    public void parse_subcommandWithoutArguments_delegatesEmptyArguments() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddTaskCommand.MESSAGE_USAGE), () ->
+                    parser.parse("add"));
+    }
 }
