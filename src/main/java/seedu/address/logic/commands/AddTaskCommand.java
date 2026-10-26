@@ -23,7 +23,7 @@ public class AddTaskCommand extends Command {
             + ": Adds a task to the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer) d/DETAILS\n"
             + "Example: " + COMMAND_WORD + " 1 d/Prepare report";
-    public static final String MESSAGE_SUCCESS = "Added task to %1$s: %2$s";
+    public static final String MESSAGE_SUCCESS = "Added task for %1$s:\n%2$d. %3$s";
     public static final String MESSAGE_DUPLICATE_TASK = "This task already exists for the employee.";
 
     private final Index employeeIndex;
@@ -57,7 +57,7 @@ public class AddTaskCommand extends Command {
         }
         model.setEmployee(employee, updatedEmployee);
         return new CommandResult(String.format(MESSAGE_SUCCESS,
-                employee.getName().fullName, task.getDetails()));
+                employee.getName().fullName, updatedEmployee.getTasks().size(), task));
     }
 
     @Override
