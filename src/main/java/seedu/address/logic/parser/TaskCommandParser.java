@@ -27,6 +27,10 @@ public class TaskCommandParser implements Parser<Command> {
 
     @Override
     public Command parse(String args) throws ParseException {
+        if (args.trim().isEmpty()) {
+            throw new ParseException(MESSAGE_USAGE);
+        }
+
         Matcher matcher = SUBCOMMAND_FORMAT.matcher(args.trim());
         if (!matcher.matches()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MESSAGE_USAGE));

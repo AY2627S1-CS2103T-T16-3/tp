@@ -37,7 +37,7 @@ public class TaskCommandParserTest {
     @Test
     public void parse_missingSubcommand_throwsUsageMessage() {
         assertThrows(ParseException.class,
-                String.format(MESSAGE_INVALID_COMMAND_FORMAT, TaskCommandParser.MESSAGE_USAGE), () ->
+                TaskCommandParser.MESSAGE_USAGE, () ->
                     parser.parse(""));
     }
 
