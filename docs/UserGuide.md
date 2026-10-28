@@ -203,7 +203,7 @@ Examples:
 
 Edits an existing employee in the address book.
 
-Salary is preserved when editing other details. The `edit` command rejects `s/`;
+Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
