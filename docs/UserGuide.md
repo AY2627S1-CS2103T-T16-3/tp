@@ -85,9 +85,9 @@ Adds an employee to the address book.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
-Salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
+Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
-Employee cards display salary with a `$` prefix, for example `$5000`.
+Employee cards display salary with a monthly label, for example `Monthly salary: $5000`.
 
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
@@ -186,7 +186,7 @@ Run the command again after employee, task, or salary changes to refresh the fig
 
 ### Changing an employee's salary: `salary`
 
-Changes the salary of an existing employee in the address book.
+Changes the monthly salary of an existing employee in the address book.
 
 Format: `salary INDEX s/SALARY`
 
