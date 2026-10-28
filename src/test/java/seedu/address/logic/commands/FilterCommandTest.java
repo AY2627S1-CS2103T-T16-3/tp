@@ -126,6 +126,10 @@ public class FilterCommandTest {
         assertFilter("s/<004000", List.of(alice));
         assertFilter("s/>004000", List.of(daniel));
         assertFilter("s/4000", List.of(benson));
+        assertFilter("s/<=4000", List.of(alice, benson));
+        assertFilter("s/>=4000", List.of(benson, daniel));
+        assertFilter("s/<=004000", List.of(alice, benson));
+        assertFilter("s/>=004000", List.of(benson, daniel));
         assertFilter("s/<0", List.of());
         assertFilter("s/>50000", List.of());
         assertFilter("s/>0", List.of(alice, benson, daniel));
@@ -151,6 +155,16 @@ public class FilterCommandTest {
         assertFilter("s/1", List.of(benson));
         assertFilter("s/49999", List.of(carl));
         assertFilter("s/50000", List.of(daniel));
+
+        // Inclusive comparisons must include salaries equal to the threshold, including the limits.
+        assertFilter("s/<=0", List.of(alice));
+        assertFilter("s/>=0", List.of(alice, benson, carl, daniel));
+        assertFilter("s/<=1", List.of(alice, benson));
+        assertFilter("s/>=1", List.of(benson, carl, daniel));
+        assertFilter("s/<=49999", List.of(alice, benson, carl));
+        assertFilter("s/>=49999", List.of(carl, daniel));
+        assertFilter("s/<=50000", List.of(alice, benson, carl, daniel));
+        assertFilter("s/>=50000", List.of(daniel));
 
         // Strict comparisons must exclude salaries equal to the threshold.
         assertFilter("s/<0", List.of());
@@ -196,6 +210,14 @@ public class FilterCommandTest {
 
         assertFilter("le/14", List.of(benson));
         assertFilter("le/<14", List.of(alice));
+        assertFilter("le/<=14", List.of(alice, benson));
+        assertFilter("le/>=14", List.of(benson, daniel));
+        assertFilter("le/<=014", List.of(alice, benson));
+        assertFilter("le/>=014", List.of(benson, daniel));
+        assertFilter("le/<=0", List.of(alice));
+        assertFilter("le/>=0", List.of(alice, benson, daniel));
+        assertFilter("le/<=365", List.of(alice, benson, daniel));
+        assertFilter("le/>=365", List.of(daniel));
         assertFilter("le/>14", List.of(daniel));
         assertFilter("le/>9", List.of(benson, daniel));
         assertFilter("le/0", List.of(alice));
@@ -220,6 +242,10 @@ public class FilterCommandTest {
         model.setAddressBook(addressBook);
 
         assertFilter("n/Alice p/943 s/<4000 le/>10", List.of(alice));
+        assertFilter("n/Alice task/report s/<=3000 le/>=14", List.of(alice));
+        assertFilter("n/Alice s/>=3000 le/<=14", List.of(alice));
+        assertFilter("n/Alice s/<=2999 le/>=14", List.of());
+        assertFilter("n/Alice s/<=3000 le/>=15", List.of());
         assertFilter("n/Alice p/943 s/>4000 le/>10", List.of());
         assertFilter("n/Alice p/943 s/<4000 le/<10", List.of());
         assertFilter("n/Alice p/987 le/>10", List.of());

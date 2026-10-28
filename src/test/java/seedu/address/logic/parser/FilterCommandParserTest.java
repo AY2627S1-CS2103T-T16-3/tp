@@ -96,7 +96,7 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_salaryComparators_normalizesAmountAndAcceptsBounds() {
-        for (String comparator : List.of("<", ">")) {
+        for (String comparator : List.of("<", "<=", ">", ">=")) {
             for (String amount : List.of("0", "1", "49999", "50000", "004000")) {
                 assertParseSuccess(parser, "s/" + comparator + amount,
                         new FilterCommand(new EmployeeMatchesCriteriaPredicate(
@@ -108,7 +108,7 @@ public class FilterCommandParserTest {
     @Test
     public void parse_salaryOutsideBounds_throwsParseException() {
         for (String amount : List.of("-1", "50001")) {
-            for (String operator : List.of("", "<", ">")) {
+            for (String operator : List.of("", "<", "<=", ">", ">=")) {
                 assertParseFailure(parser, "s/" + operator + amount, Salary.MESSAGE_CONSTRAINTS);
             }
         }
@@ -116,8 +116,9 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_invalidSalaryComparison_throwsParseException() {
-        for (String input : List.of("<", ">", "<=4000", ">=4000", "<<4000", "><4000", "=4000",
-                "<-1", ">50001", "<3000.50", ">abc", ">9999999999999999999999")) {
+        for (String input : List.of("<", ">", "<=", ">=", "<==4000", ">==4000", "=>4000", "=<4000",
+                "<<4000", "><4000", "=4000", "<-1", ">50001", "<=-1", ">=50001", "<=3000.50", ">=abc",
+                "<3000.50", ">abc", ">9999999999999999999999")) {
             assertParseFailure(parser, "s/" + input, Salary.MESSAGE_CONSTRAINTS);
         }
     }
@@ -137,7 +138,7 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_leaveEntitlement_acceptsExactAmountsAndComparators() {
-        for (String operator : List.of("", "<", ">")) {
+        for (String operator : List.of("", "<", "<=", ">", ">=")) {
             for (String amount : List.of("0", "14", "365")) {
                 assertParseSuccess(parser, "le/" + operator + amount,
                         new FilterCommand(new EmployeeMatchesCriteriaPredicate(
@@ -148,7 +149,7 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_leaveEntitlementLeadingZeros_returnsNormalizedCommand() throws Exception {
-        for (String operator : List.of("", "<", ">")) {
+        for (String operator : List.of("", "<", "<=", ">", ">=")) {
             assertEquals(parser.parse("le/" + operator + "14"), parser.parse("le/" + operator + "014"));
         }
     }
@@ -156,11 +157,11 @@ public class FilterCommandParserTest {
     @Test
     public void parse_invalidLeaveEntitlement_throwsParseException() {
         for (String amount : List.of("-1", "366", "14.5", "abc", "999999999999999999999")) {
-            for (String operator : List.of("", "<", ">")) {
+            for (String operator : List.of("", "<", "<=", ">", ">=")) {
                 assertParseFailure(parser, "le/" + operator + amount, LeaveEntitlement.MESSAGE_CONSTRAINTS);
             }
         }
-        for (String input : List.of("<", ">", "<=14", ">=14", "<<14", "><14", "=14")) {
+        for (String input : List.of("<", ">", "<=", ">=", "<==14", ">==14", "=>14", "=<14", "<<14", "><14", "=14")) {
             assertParseFailure(parser, "le/" + input, LeaveEntitlement.MESSAGE_CONSTRAINTS);
         }
     }

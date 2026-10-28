@@ -75,21 +75,25 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     }
 
     /**
-     * Normalizes an exact salary or a strict comparison, validating the amount using salary constraints.
+     * Normalizes an exact salary or a numeric comparison, validating the amount using salary constraints.
      */
     private String parseSalaryCriterion(String value) throws ParseException {
         if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseSalary(value.substring(1)).salary;
+            int operatorLength = value.startsWith("<=") || value.startsWith(">=") ? 2 : 1;
+            return value.substring(0, operatorLength)
+                    + ParserUtil.parseSalary(value.substring(operatorLength)).salary;
         }
         return ParserUtil.parseSalary(value).salary;
     }
 
     /**
-     * Normalizes an exact annual entitlement or a strict comparison using leave entitlement constraints.
+     * Normalizes an exact annual entitlement or a numeric comparison using leave entitlement constraints.
      */
     private String parseLeaveCriterion(String value) throws ParseException {
         if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseLeaveEntitlement(value.substring(1)).value;
+            int operatorLength = value.startsWith("<=") || value.startsWith(">=") ? 2 : 1;
+            return value.substring(0, operatorLength)
+                    + ParserUtil.parseLeaveEntitlement(value.substring(operatorLength)).value;
         }
         return Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
     }

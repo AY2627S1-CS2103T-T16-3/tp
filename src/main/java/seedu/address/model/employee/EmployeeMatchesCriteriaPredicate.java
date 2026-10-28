@@ -14,7 +14,7 @@ import seedu.address.commons.util.ToStringBuilder;
 /**
  * Matches employees against all supplied field criteria. Text matches are case-insensitive substrings;
  * task matches are case-insensitive substrings, tag matches are case-insensitive whole tag names,
- * and salary and annual leave entitlement matches are exact amounts or strict numeric comparisons.
+ * and salary and annual leave entitlement matches are exact amounts or numeric comparisons.
  */
 public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
 
@@ -69,6 +69,10 @@ public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
     }
 
     private boolean matchesAmount(int amount, String criterion) {
+        if (criterion.startsWith("<=") || criterion.startsWith(">=")) {
+            int threshold = Integer.parseInt(criterion.substring(2));
+            return criterion.startsWith("<=") ? amount <= threshold : amount >= threshold;
+        }
         if (criterion.startsWith("<") || criterion.startsWith(">")) {
             int threshold = Integer.parseInt(criterion.substring(1));
             return criterion.startsWith("<") ? amount < threshold : amount > threshold;
