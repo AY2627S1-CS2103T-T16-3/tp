@@ -538,9 +538,11 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and learn its capabilities        |
 | `* * *`  | HR Officer                 | edit employee contact details and annual leave entitlement                     | keep employee records up to date                                                         |
 | `* * *`  | HR Officer                 | add a new employee profile with an annual leave entitlement                    | record a new hire and enforce their leave allowance                                      |
-| `* * *`  | HR Officer                 | keep track of tasks for an employee                                            | remember the work that needs to be completed for that employee                           |
-| `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                  |
-| `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
+| `* * *`  | HR Officer                 | add a task for an employee                                                     | record work that needs to be completed                                                   |
+| `* * *`  | HR Officer                 | list the tasks for an employee                                                 | review the work related to that employee                                                  |
+| `* * *`  | HR Officer                 | delete a task for an employee                                                  | remove completed or obsolete work                                                        |
+| `* * *`  | HR Officer                 | mark a task as done                                                            | keep track of completed work                                                             |
+| `* * *`  | HR Officer                 | mark a task as pending                                                         | keep track of work that still needs to be completed                                       |
 | `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
 | `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
 | `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
@@ -1121,6 +1123,100 @@ testers are expected to do more *exploratory* testing.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
+
+### Managing tasks
+
+1. Listing an employee's tasks
+
+   1. Prerequisites: Use `list` and choose an employee with at least two tasks,
+      including one pending and one completed task. Note the employee's displayed
+      index.
+
+   1. Test case: `task list 1`<br>
+      Expected: The selected employee's tasks are displayed in the order they
+      were added. Pending tasks show `[ ]` and completed tasks show `[x]`.
+
+   1. Test case: `task list 0`<br>
+      Expected: No task list is shown. The status message shows invalid command format.
+
+2. Adding a task
+
+   1. Prerequisites: Use `list` and note the index of an employee. Ensure the
+      employee does not already have the task used below.
+
+   1. Test case: `task add 1 d/Prepare monthly report`<br>
+      Expected: The task is added as pending. The status message confirms the
+      task was added, and `task list 1` shows it.
+
+   1. Test case: `task add 1 d/  prepare   MONTHLY report  `<br>
+      Expected: The task is rejected as a duplicate because task comparison
+      ignores surrounding whitespace, repeated whitespace, and capitalization.
+
+   1. Other incorrect add commands to try: `task add`, `task add 0 d/Test`,
+      `task add 1`, and a task description longer than 120 characters.<br>
+      Expected: No task is added. The status message shows invalid command format.
+
+3. Deleting a task
+
+   1. Prerequisites: Use `task list 1` for an employee with at least two tasks.
+
+   1. Test case: `task delete 1 i/1`<br>
+      Expected: The first task is deleted. The remaining tasks keep their
+      relative order and the status message confirms the deleted task.
+
+   1. Test case: `task delete 1 i/0`<br>
+      Expected: No task is deleted. The status message shows invalid command format.
+
+   1. Other incorrect delete commands to try: `task delete`,
+      `task delete 1`, and `task delete 1 i/x`.<br>
+      Expected: No task is deleted. The status message shows invalid command format.
+
+4. Marking and unmarking a task
+
+   1. Prerequisites: Use `task list 1` for an employee with a pending task and
+      note its task index.
+
+   1. Test case: `task mark 1 i/1`<br>
+      Expected: The task becomes completed. `task list 1` displays it with
+      `[x]`.
+
+   1. Test case: Run `task mark 1 i/1` again.<br>
+      Expected: The command succeeds without changing the task's completed
+      state.
+
+   1. Test case: `task unmark 1 i/1`<br>
+      Expected: The task becomes pending. `task list 1` displays it with
+      `[ ]`.
+
+   1. Test case: Run `task unmark 1 i/1` again.<br>
+      Expected: The command succeeds without changing the task's pending state.
+
+   1. Other incorrect mark/unmark commands to try: `task mark 0 i/1`,
+      `task unmark 1 i/0`, and `task mark 1 1`.<br>
+      Expected: No task state changes. The status message shows invalid command format.
+
+5. Operating on tasks after filtering
+
+   1. Prerequisites: Ensure at least two employees exist, and one employee has
+      a distinctive name such as `Alex`.
+
+   1. Test case: `find Alex`, followed by `task add 1 d/Submit access request`<br>
+      Expected: The task is added to the first employee in the filtered list,
+      and the filtered employee list remains displayed.
+
+   1. Test case: Run `task mark 1 i/1`, `task unmark 1 i/1`, or
+      `task delete 1 i/1` after a `find` or `filter` command.<br>
+      Expected: The command operates on the employee and task shown in the
+      current filtered view, which remains in place.
+
+6. Saving task changes
+
+   1. Prerequisites: Add or modify a task, then close the application normally.
+
+   1. Test case: Relaunch the app and run `list`, followed by `task list 1` for
+      the affected employee.<br>
+      Expected: The task, its order, and its completed/pending state are
+      preserved.
 
 ### Managing leave
 
