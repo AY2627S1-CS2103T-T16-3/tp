@@ -194,6 +194,8 @@ Format: `salary INDEX s/SALARY`
 * The salary is required and must contain only digits, representing a whole number from `0` to `50000` inclusive. Do not include a `$` sign, commas, or decimal points.
 * Supply `s/` exactly once. The new salary replaces the employee's existing salary; other employee details are preserved.
 * Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
+* When the salary changes, the feedback shows the employee's name and both amounts, for example: `Updated Betsy's salary from $5000 to $6000.`
+* If the employee already has the requested salary, the feedback reports that no changes were made, for example: `Betsy's salary is already $6000. No changes made.` The currently displayed employee list is preserved.
 
 Examples:
 * `salary 1 s/5000` changes the 1st employee's salary in the displayed list to `$5000`.
