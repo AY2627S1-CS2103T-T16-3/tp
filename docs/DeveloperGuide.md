@@ -156,6 +156,13 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Employee identifier allocation
+
+`AddressBook` assigns each employee an internal positive integer ID from 1 to `Integer.MAX_VALUE`. The next-ID counter
+is stored as a `long`, allowing `Integer.MAX_VALUE + 1` to represent an exhausted ID sequence without numeric overflow.
+If an `add` command reaches this state, `AddressBook` throws `EmployeeIdExhaustedException`, which `AddCommand` converts
+into a user-facing command error instead of allowing the exception to terminate command execution.
+
 ### Employee salary management
 
 The `salary INDEX s/SALARY` command replaces the salary of the employee identified by their displayed index. For example, `salary 1 s/5000` sets the first employee's salary in the current list to 5000.
