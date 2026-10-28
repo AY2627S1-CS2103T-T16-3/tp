@@ -1058,7 +1058,7 @@ testers are expected to do more *exploratory* testing.
    1. Download the JAR file and copy it into an empty folder.
 
    1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+      Expected: The GUI opens with a set of sample employees. The window size may not be optimal.
 
 1. Saving window preferences
 
@@ -1069,18 +1069,18 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases …​ }_
 
-### Deleting a person
+### Deleting an employee
 
-1. Deleting a person while all persons are being shown
+1. Deleting an employee while all employees are being shown
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+   1. Prerequisites: List all employees using the `list` command, with multiple employees in the list.
 
    1. Test case: `delete 1`<br>
-      Expected: The first contact and all their leave records are deleted from the list. The status message shows the
-      deleted contact's details.
+      Expected: The first employee and all their leave records are deleted from the list. The status message shows the
+      deleted employee's details.
 
    1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
+      Expected: No employee is deleted. The status message shows error details.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
