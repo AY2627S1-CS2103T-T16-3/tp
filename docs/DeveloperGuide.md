@@ -308,6 +308,8 @@ and recomputation after a salary command.
 
 The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
 `AddressBookParser` passes the remaining input to `LeaveCommandParser`, which selects the matching subcommand parser.
+The `list` subcommand must be spelled exactly, while any arguments after it are ignored like those of other commands
+that take no parameters.
 
 #### Recording leave
 

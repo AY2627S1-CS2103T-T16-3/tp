@@ -63,7 +63,8 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `leave list`, `exit`, and
+  `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
   Exception: `/summary` and `summary` accept an optional scope followed by index selections using `i/` and `e/`.
 

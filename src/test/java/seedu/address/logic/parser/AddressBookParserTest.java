@@ -64,6 +64,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_listLeave() throws Exception {
         assertTrue(parser.parseCommand("leave list") instanceof ListLeaveCommand);
+        assertTrue(parser.parseCommand("leave list extra") instanceof ListLeaveCommand);
     }
 
     @Test
