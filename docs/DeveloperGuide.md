@@ -227,6 +227,16 @@ No currency period, benefits, or payroll assumptions are added. Tests cover empt
 zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
 and recomputation after a salary command.
 
+### Salary management
+
+`salary INDEX s/SALARY` follows this flow:
+
+1. `SalaryCommandParser` parses the displayed employee index and requires exactly one salary field. `Salary` validates the amount and normalises leading zeros.
+2. `SalaryCommand` resolves the index against `Model#getFilteredEmployeeList` and rejects an index outside the displayed list.
+3. The command creates an updated employee using `Employee#withSalary` and replaces the original through `Model#setEmployee`, preserving the employee's other details.
+4. The command resets the filter to display all employees and returns a success message.
+5. `LogicManager` saves the updated address book after command execution.
+
 ### Leave management
 
 The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
@@ -1002,6 +1012,62 @@ testers are expected to do more *exploratory* testing.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
+
+### Managing employee salaries
+
+1. Updating a salary
+
+   1. Prerequisites: Use a separate copy of the app with test data. Run `list` and ensure at least two employees
+      are displayed. Note the first employee's details.
+
+   2. Test case: `salary 1 s/5000`<br>
+      Expected: The first employee's salary becomes `$5000`. Their other details and all other employees remain
+      unchanged. The status message identifies the updated employee and salary.
+
+   3. Test case: `salary 1 s/0`, followed by `salary 1 s/50000`.<br>
+      Expected: Both commands succeed. The employee's salary becomes `$0`, then `$50000`.
+
+   4. Test case: `salary 1 s/005000`<br>
+      Expected: The employee's salary is displayed as `$5000`.
+
+2. Rejecting invalid salary changes
+
+   1. Prerequisites: Run `list` with at least one employee displayed. Note the employees' salaries.
+
+   2. Test case: `salary 1 s/50001`<br>
+      Expected: No salary is changed. The status message explains the salary constraints.
+
+   3. Other invalid amounts to try: `salary 1 s/-1`, `salary 1 s/abc`, `salary 1 s/1.5`.<br>
+      Expected: No salary is changed. The status message explains the salary constraints.
+
+   4. Test case: `salary 0 s/5000`<br>
+      Expected: No salary is changed. The status message reports an invalid command format.
+
+   5. Test case: `salary INDEX s/5000`, replacing `INDEX` with a positive integer larger than the displayed list size.<br>
+      Expected: No salary is changed. The status message reports an invalid employee index.
+
+   6. Test case: `salary 1`<br>
+      Expected: No salary is changed. The status message shows the required command format.
+
+   7. Test case: `salary 1 s/5000 s/6000`<br>
+      Expected: No salary is changed. The status message reports the repeated salary field.
+
+3. Updating an employee from search results
+
+   1. Prerequisites: Have at least two employees with different names. Note their salaries and choose an employee
+      who is not first in the full list. Run `find NAME`, replacing `NAME` with a name that matches only that employee.
+
+   2. Test case: `salary 1 s/6000`<br>
+      Expected: The employee in the search results receives the updated salary. All employees are displayed
+      afterward, and other employees remain unchanged.
+
+4. Retaining a salary after restarting
+
+   1. Prerequisites: Run `list`, then successfully update the first employee using `salary 1 s/5000`.
+      Note the employee's name.
+
+   2. Test case: Exit and relaunch the app using the same data file.<br>
+      Expected: The same employee still has a salary of `$5000`.
 
 ### Managing leave
 
