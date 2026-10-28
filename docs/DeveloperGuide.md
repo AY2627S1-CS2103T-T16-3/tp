@@ -352,8 +352,13 @@ a fixed clock for deterministic status checks:
 
 The status is presentation data and is not persisted.
 
-`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so a deleted ID is never
-reused. No balance mutation is required; the next balance calculation automatically excludes the deleted record.
+`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so an ID removed using
+`leave delete` is not reused while the current address book remains in use. No balance mutation is required; the next
+balance calculation automatically excludes the deleted record.
+
+`ClearCommand` has broader semantics than deleting records individually. It replaces the model data with a new
+`AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
+IDs used before `clear` may therefore be assigned again in the fresh address book.
 
 Employee deletion cascades through `AddressBook#removeEmployee`, which removes the employee and all records with the
 same internal `EmployeeId`. During bulk replacement, `removeOrphanedLeaves` provides the equivalent safeguard. Storage

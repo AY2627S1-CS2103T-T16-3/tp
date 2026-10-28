@@ -37,7 +37,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
    * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
 
-   * `clear` : Deletes all employee and leave records.
+   * `clear` : Deletes all employee and leave records and resets their identifier sequences.
 
    * `exit` : Exits the app.
 
@@ -378,7 +378,8 @@ Format: `leave delete LEAVE_ID`
 * `LEAVE_ID` must be a positive integer displayed by `leave list`; it is not an employee list index.
 * Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
   balance is recalculated from the records that remain.
-* Deleted leave IDs are not reused.
+* Leave IDs removed using `leave delete` are not reused while the current address book remains in use. The `clear`
+  command starts a fresh address book and resets the ID sequence.
 
 Example:
 * `leave list` followed by `leave delete 2` deletes the leave record whose ID is `2`.
@@ -487,7 +488,8 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all employee and leave records from HR Book.
+Clears all employee and leave records from HR Book and starts a fresh address book. This also resets HR Book's
+identifier sequences, so leave IDs used before `clear` may be assigned again.
 
 Format: `clear`
 
