@@ -428,6 +428,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
+| `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
 | `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
@@ -445,7 +446,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **MSS**
 
 1. HR manager requests to add an employee, providing the employee's details and annual leave entitlement.
-2. System adds the employee and saves the employee information.
+2. System adds the employee.
 3. System displays the added employee and confirms that the employee was added.
 
     Use case ends.
@@ -487,7 +488,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 2a. An error occurs while saving employee information into storage.
+* 2a. System cannot complete the addition of the employee.
 
     * 2a1. System informs the HR manager that the employee could not be added.
     * 2a2. System does not add the employee.
@@ -884,17 +885,16 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to change an employee's salary, and provides the employee's details.
-2. System changes the employee's salary.
-3. System displays the employee with the new salary.
+1. HR manager identifies an employee and requests to change their salary to a specified amount.
+2. System updates the employee's salary and confirms the change by displaying the updated employee information.
 
    Use case ends.
 
 **Extensions**
 
-* 1a. The HR manager does not provide one or more required fields.
+* 1a. The HR manager omits information required for the salary change.
 
-    * 1a1. System informs the HR manager to provide all required fields.
+    * 1a1. System informs the HR manager that required information is missing.
     * 1a2. System does not change the employee's salary.
 
     Use case ends.
@@ -906,21 +906,21 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     Use case ends.
 
-* 1c. The HR manager provides more fields than required.
+* 1c. The HR manager provides unsupported information or specifies the salary more than once.
 
-    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c1. System informs the HR manager that the request is invalid.
     * 1c2. System does not change the employee's salary.
 
     Use case ends.
 
-* 1d. The HR manager provides an invalid index.
+* 1d. The HR manager provides an invalid employee selection.
 
-    * 1d1. System informs the HR manager that the index is invalid.
+    * 1d1. System informs the HR manager that the employee selection is invalid.
     * 1d2. System does not change the employee's salary.
 
     Use case ends.
 
-* 2a. An error occurs while saving new salary of employee into storage.
+* 2a. System cannot complete the salary change.
 
     * 2a1. System informs the HR manager that the salary could not be changed.
     * 2a2. System does not change the employee's salary.

@@ -182,6 +182,7 @@ Format: `salary INDEX s/SALARY`
 * The salary is required and must contain only digits, representing a whole number from `0` to `50000` inclusive. Do not include a `$` sign, commas, or decimal points.
 * Supply `s/` exactly once. The new salary replaces the employee's existing salary; other employee details are preserved.
 * Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
+* After a successful salary update, all employees are displayed, clearing any active search/filter results. Recheck displayed indexes before issuing another index-based command.
 
 Examples:
 * `salary 1 s/5000` changes the 1st employee's salary in the displayed list to `$5000`.
