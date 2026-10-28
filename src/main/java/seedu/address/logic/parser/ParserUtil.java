@@ -37,6 +37,7 @@ public class ParserUtil {
 
     private static final DateTimeFormatter LEAVE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-uuuu",
             Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT);
+    private static final String LEAVE_DATE_PATTERN = "[0-9]{2}-[0-9]{2}-[0-9]{4}";
 
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
@@ -95,8 +96,12 @@ public class ParserUtil {
 
     private static LocalDate parseLeaveDate(String date, String errorMessage) throws ParseException {
         requireNonNull(date);
+        String trimmedDate = date.trim();
+        if (!trimmedDate.matches(LEAVE_DATE_PATTERN)) {
+            throw new ParseException(errorMessage);
+        }
         try {
-            return LocalDate.parse(date.trim(), LEAVE_DATE_FORMATTER);
+            return LocalDate.parse(trimmedDate, LEAVE_DATE_FORMATTER);
         } catch (DateTimeParseException e) {
             throw new ParseException(errorMessage);
         }

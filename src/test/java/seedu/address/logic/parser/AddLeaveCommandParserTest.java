@@ -55,6 +55,12 @@ public class AddLeaveCommandParserTest {
     public void parse_invalidDate_failure() {
         assertParseFailure(parser, "1 from/31-02-2026 to/07-10-2026", ParserUtil.MESSAGE_INVALID_START_DATE);
         assertParseFailure(parser, "1 from/05-10-2026 to/31-02-2026", ParserUtil.MESSAGE_INVALID_END_DATE);
+        assertParseFailure(parser, "1 from/01-01-+10000 to/03-01-+10000",
+                ParserUtil.MESSAGE_INVALID_START_DATE);
+        assertParseFailure(parser, "1 from/01-01--0001 to/03-01--0001",
+                ParserUtil.MESSAGE_INVALID_START_DATE);
+        assertParseFailure(parser, "1 from/01-01-2026 to/03-01-+10000", ParserUtil.MESSAGE_INVALID_END_DATE);
+        assertParseFailure(parser, "1 from/01-01-2026 to/03-01--0001", ParserUtil.MESSAGE_INVALID_END_DATE);
     }
 
     @Test

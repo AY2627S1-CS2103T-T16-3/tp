@@ -119,10 +119,12 @@ public class ParserUtilTest {
 
     @Test
     public void parseLeaveDate_invalidDate_throwsParseException() {
-        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_START_DATE, () ->
-                ParserUtil.parseStartDate("31-02-2026"));
-        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_END_DATE, () ->
-                ParserUtil.parseEndDate("2026-10-05"));
+        for (String invalidDate : List.of("31-02-2026", "2026-10-05", "01-01-+10000", "01-01--0001")) {
+            assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_START_DATE, () ->
+                    ParserUtil.parseStartDate(invalidDate));
+            assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_END_DATE, () ->
+                    ParserUtil.parseEndDate(invalidDate));
+        }
     }
 
     @Test
