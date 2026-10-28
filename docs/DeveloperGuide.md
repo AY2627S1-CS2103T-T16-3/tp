@@ -9,13 +9,27 @@ title: Developer Guide
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
+* HR Book adapts the architecture, code, documentation, and tests of
+  [AddressBook-Level3](https://github.com/se-edu/addressbook-level3) from the [SE-EDU initiative](https://se-education.org).
+* The desktop UI uses [JavaFX](https://openjfx.io/), and JSON storage uses
+  [Jackson](https://github.com/FasterXML/jackson).
+* Tests use [JUnit 5](https://junit.org/junit5/), and the class and sequence diagrams are rendered with
+  [PlantUML](https://plantuml.com/).
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
 
-Refer to the guide [_Setting up and getting started_](SettingUp.md).
+Refer to the guide [_Setting up and getting started_](SettingUp.md). Use JDK 25 for building and running the app.
+
+Run `./gradlew check coverage` (`gradlew.bat check coverage` on Windows) for tests, Checkstyle, and coverage.
+Build a runnable JAR with `./gradlew shadowJar`; the output is `build/libs/addressbook.jar`. Test it from a separate
+writable folder using `java -jar "addressbook.jar"` so test data does not replace your development data.
+
+`MainApp` resolves `data/addressbook.json` and `preferences.json` against the launch folder, rather than the JAR
+location. `LogicManager` saves the address book after successful command execution. Window preferences are saved
+during startup and shutdown. Missing employee data loads sample employees; unreadable or invalid data starts an
+empty book and logs the error. The next successful command can overwrite the invalid data file.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -1053,21 +1067,26 @@ testers are expected to do more *exploratory* testing.
 
 ### Launch and shutdown
 
+Use a separate writable folder for these tests. Check `java -version` and confirm Java 25 before each test session.
+Use the actual downloaded JAR name in place of `hr-book-v1.4.jar` if needed.
+
 1. Initial launch
 
    1. Download the JAR file and copy it into an empty folder.
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+   1. Open a terminal in that folder and run `java -jar "hr-book-v1.4.jar"`.<br>
+      Expected: The GUI opens with sample employees. The app can create `preferences.json` and save
+      `data/addressbook.json` after a successful command. The window size may not be optimal.
 
 1. Saving window preferences
 
    1. Resize the window to an optimal size. Move the window to a different location. Close the window.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
+   1. Relaunch from the same folder using `java -jar "hr-book-v1.4.jar"`.<br>
        Expected: The most recent window size and location are retained.
 
-1. _{ more test cases …​ }_
+1. Open `help`, check the User Guide link, close the Help window, and run `exit`.
+   Expected: both application windows close. On macOS, keep the Help window in windowed mode.
 
 ### Deleting a person
 
@@ -1136,10 +1155,44 @@ testers are expected to do more *exploratory* testing.
 6. Close and reopen the app after sorting.
    Expected: the stored employee order returns; sorting has not changed employee details or saved order.
 
+### Workforce summary
+
+Use a separate test folder. Start with these fictional records:
+
+```text
+clear
+add n/Summary Alpha p/90000001 e/alpha@example.com a/One le/14 s/1000 t/engineering
+add n/Summary Beta p/90000002 e/beta@example.com a/Two le/21 s/3000 t/remote
+add-task 1 d/Prepare report
+```
+
+1. Run `summary`, then `/summary`.
+   Expected: both show two employees, one assigned task, total salary `$4000.00`, average salary `$2000.00`,
+   and one employee in each tag group. Employee records and the displayed list stay unchanged.
+2. Run `summary i/1`, `summary e/1`, and `summary i/1 2 e/2`.
+   Expected: total salaries are `$1000.00`, `$3000.00`, and `$1000.00` respectively. Exclusions win over inclusions.
+3. Run `filter t/remote`, then `summary`, then `summary scope/all`.
+   Expected: the default summary shows one employee and `$3000.00`; the all-employee summary shows two employees
+   and `$4000.00`. The displayed list still contains only Summary Beta.
+4. Run `filter n/NoSuchEmployee`, then `summary`.
+   Expected: zero employees, zero tasks, total salary `$0.00`, and average salary `N/A`.
+5. Try `summary i/0`, `summary i/`, `summary scope/unknown`, and `summary scope/all i/3`.
+   Expected: an error explaining the invalid format or index. No employee data or filter is changed.
+6. Run `list`, then `salary 1 s/2000`, then `summary`.
+   Expected: the summary is recalculated and shows total salary `$5000.00` and average salary `$2500.00`.
+7. Run `mark-task 1 i/1`, then `summary`.
+   Expected: the assigned-task count remains one. `list-tasks 1` shows the task as completed.
+
+For the v1.4 sorting/index limitation, see the summary section of the [User Guide](UserGuide.md#viewing-the-workforce-summary-summary).
+
 ### Saving data
 
-1. Dealing with missing/corrupted data files
+Run these tests in a disposable folder and close the app before changing any files.
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
-
-1. _{ more test cases …​ }_
+1. Add an employee, assign a task, mark it done, and record leave. Exit and relaunch from the same folder.
+   Expected: the employee, task completion status, and leave record are restored.
+2. Back up `data/addressbook.json`, then move the original out of the `data` folder and relaunch.
+   Expected: sample employees appear. Run `list` to create a new data file, then close the app.
+3. Replace the test data file with invalid JSON such as `{`, then relaunch.
+   Expected: an empty employee list appears and a loading error is logged. The invalid file is left in place until
+   a successful command saves new data over it. Close the app and restore the backup after testing.
