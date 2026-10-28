@@ -16,10 +16,12 @@ public class FilterCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Lists employees matching all supplied criteria. Text fields use case-insensitive partial matches; "
             + "tasks use case-insensitive partial matches; tags use case-insensitive whole tag matches; "
-            + "salary uses an exact amount from 0 to 50000.\n"
-            + "Parameters: [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]\n"
+            + "salary uses an exact amount or < or > followed by an amount from 0 to 50000; "
+            + "annual leave entitlement uses an exact number or < or > followed by days from 0 to 365.\n"
+            + "Parameters: [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... "
+            + "[s/SALARY] [le/DAYS]\n"
             + "At least one non-empty criterion is required. Only t/ and task/ may be repeated.\n"
-            + "Example: " + COMMAND_WORD + " p/91235321";
+            + "Example: " + COMMAND_WORD + " n/Alice p/912 s/<4000 le/>10";
 
     private final EmployeeMatchesCriteriaPredicate predicate;
 

@@ -9,7 +9,9 @@ import seedu.address.logic.commands.AddTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Task;
 
-/** Parses arguments for {@link AddTaskCommand}. */
+/**
+ * Parses arguments for {@link AddTaskCommand}.
+ */
 public class AddTaskCommandParser implements Parser<AddTaskCommand> {
 
     /**

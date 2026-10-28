@@ -11,6 +11,7 @@ import static seedu.address.logic.commands.CommandTestUtil.LEAVE_ENTITLEMENT_DES
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
 import static seedu.address.testutil.TypicalEmployees.AMY;
 
 import java.io.IOException;
@@ -114,19 +115,18 @@ public class LogicManagerTest {
         model.addEmployee(bob);
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
         AddressBook before = new AddressBook(model.getAddressBook());
-        CommandResult expected = new CommandResult("Employee summary\nScope: All employees\nTotal employees: 2\n"
-                + "Employees without tags: 1\n\nEmployees by tag:\n  engineering: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap.\n\nTask overview\n"
-                + "Total assigned tasks: 3\nEmployees with tasks: 2\nEmployees without tasks: 0\n"
-                + "Most tasks assigned to one employee: 2\n\nSalary overview\n"
-                + "Total recorded salary: $0.00\nAverage salary: $0.00\nLowest salary: $0.00\nHighest salary: $0.00");
-
         for (String selection : new String[] {"find Alice", "filter t/engineering"}) {
             logic.execute(selection);
             Path dataFile = temporaryFolder.resolve("addressBook.json");
             String savedData = Files.readString(dataFile);
             for (String command : new String[] {SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS}) {
-                assertEquals(expected, logic.execute(command + " scope/all"));
+                CommandResult result = logic.execute(command + " scope/all");
+                assertEquals(CommandResult.DisplayFormat.TABLE, result.getDisplayFormat());
+                assertSummaryValue(result.getFeedbackToUser(), "Employees", "2");
+                assertSummaryValue(result.getFeedbackToUser(), "Without tags", "1");
+                assertSummaryValue(result.getFeedbackToUser(), "Assigned tasks", "3");
+                assertSummaryValue(result.getFeedbackToUser(), "Employees with tasks", "2");
+                assertSummaryValue(result.getFeedbackToUser(), "engineering", "1");
                 assertEquals(List.of(storedAlice), logic.getFilteredEmployeeList());
                 assertEquals(before, model.getAddressBook());
                 assertEquals(savedData, Files.readString(dataFile));
@@ -165,16 +165,18 @@ public class LogicManagerTest {
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
 
-        assertTrue(logic.execute("summary scope/all").getFeedbackToUser().contains("Total assigned tasks: 2\n"
-                + "Employees with tasks: 2\nEmployees without tasks: 0\nMost tasks assigned to one employee: 1"));
+        String result = logic.execute("summary scope/all").getFeedbackToUser();
+        assertSummaryValue(result, "Assigned tasks", "2");
+        assertSummaryValue(result, "Employees with tasks", "2");
         assertEquals(before, model.getAddressBook());
         assertEquals(savedData, Files.readString(dataFile));
 
         logic.execute("delete-task 1 i/1");
         before = new AddressBook(model.getAddressBook());
         savedData = Files.readString(dataFile);
-        assertTrue(logic.execute("summary scope/all").getFeedbackToUser().contains("Total assigned tasks: 1\n"
-                + "Employees with tasks: 1\nEmployees without tasks: 1\nMost tasks assigned to one employee: 1"));
+        result = logic.execute("summary scope/all").getFeedbackToUser();
+        assertSummaryValue(result, "Assigned tasks", "1");
+        assertSummaryValue(result, "Employees with tasks", "1");
         assertEquals(before, model.getAddressBook());
         assertEquals(savedData, Files.readString(dataFile));
         JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
@@ -192,12 +194,12 @@ public class LogicManagerTest {
         logic.execute("find Alice");
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
-        CommandResult expected = new CommandResult("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
-                + "Employees without tags: 0\n\nEmployees by tag:\n  engineering: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap." + zeroOverview(1));
-
         for (String command : new String[] {SummaryCommand.COMMAND_WORD, SummaryCommand.COMMAND_ALIAS}) {
-            assertEquals(expected, logic.execute(command));
+            CommandResult result = logic.execute(command);
+            assertEquals(CommandResult.DisplayFormat.TABLE, result.getDisplayFormat());
+            assertTrue(result.getFeedbackToUser().startsWith("Employee summary\nScope: Filtered employees\n\n"));
+            assertSummaryValue(result.getFeedbackToUser(), "Employees", "1");
+            assertSummaryValue(result.getFeedbackToUser(), "engineering", "1");
             assertEquals(List.of(storedAlice), logic.getFilteredEmployeeList());
             assertEquals(List.of(storedAlice, storedBob), model.getAddressBook().getEmployeeList());
             assertEquals(savedData, Files.readString(dataFile));
@@ -219,23 +221,22 @@ public class LogicManagerTest {
             Path dataFile = temporaryFolder.resolve("addressBook.json");
             String savedData = Files.readString(dataFile);
             for (String alias : new String[] {"summary", "/summary"}) {
-                String expected = "Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
-                        + "Employees without tags: 0\n\nEmployees by tag:\n  remote: 1\n\n"
-                        + "Employees may have multiple tags; tag counts can overlap.\n\nTask overview\n"
-                        + "Total assigned tasks: 1\nEmployees with tasks: 1\nEmployees without tasks: 0\n"
-                        + "Most tasks assigned to one employee: 1\n\nSalary overview\n"
-                        + "Total recorded salary: $3000.00\nAverage salary: $3000.00\n"
-                        + "Lowest salary: $3000.00\nHighest salary: $3000.00";
-                assertEquals(expected, logic.execute(alias + " scope/filtered").getFeedbackToUser());
-                assertEquals(expected, logic.execute(alias).getFeedbackToUser());
-                String allExpected = "Employee summary\nScope: All employees\nTotal employees: 2\n"
-                        + "Employees without tags: 0\n\nEmployees by tag:\n  engineering: 1\n  remote: 1\n\n"
-                        + "Employees may have multiple tags; tag counts can overlap.\n\nTask overview\n"
-                        + "Total assigned tasks: 3\nEmployees with tasks: 2\nEmployees without tasks: 0\n"
-                        + "Most tasks assigned to one employee: 2\n\nSalary overview\n"
-                        + "Total recorded salary: $4000.00\nAverage salary: $2000.00\n"
-                        + "Lowest salary: $1000.00\nHighest salary: $3000.00";
-                assertEquals(allExpected, logic.execute(alias + " scope/all").getFeedbackToUser());
+                String filtered = logic.execute(alias + " scope/filtered").getFeedbackToUser();
+                assertEquals(filtered, logic.execute(alias).getFeedbackToUser());
+                assertTrue(filtered.startsWith("Employee summary\nScope: Filtered employees\n\n"));
+                assertSummaryValue(filtered, "Employees", "1");
+                assertSummaryValue(filtered, "remote", "1");
+                assertSummaryValue(filtered, "Assigned tasks", "1");
+                assertSummaryValue(filtered, "Total salary", "$3000.00");
+                assertSummaryValue(filtered, "Average salary", "$3000.00");
+                String all = logic.execute(alias + " scope/all").getFeedbackToUser();
+                assertTrue(all.startsWith("Employee summary\nScope: All employees\n\n"));
+                assertSummaryValue(all, "Employees", "2");
+                assertSummaryValue(all, "engineering", "1");
+                assertSummaryValue(all, "remote", "1");
+                assertSummaryValue(all, "Assigned tasks", "3");
+                assertSummaryValue(all, "Total salary", "$4000.00");
+                assertSummaryValue(all, "Average salary", "$2000.00");
                 assertEquals(before, model.getAddressBook());
                 assertEquals(List.of(storedBob), model.getFilteredEmployeeList());
                 assertEquals(savedData, Files.readString(dataFile));
@@ -400,10 +401,4 @@ public class LogicManagerTest {
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 
-    private static String zeroOverview(int employees) {
-        return "\n\nTask overview\nTotal assigned tasks: 0\nEmployees with tasks: 0\n"
-                + "Employees without tasks: " + employees + "\nMost tasks assigned to one employee: 0"
-                + "\n\nSalary overview\nTotal recorded salary: $0.00\nAverage salary: $0.00\n"
-                + "Lowest salary: $0.00\nHighest salary: $0.00";
-    }
 }

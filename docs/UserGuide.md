@@ -33,7 +33,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
    * `leave add 1 from/20-10-2026 to/22-10-2026` : Records leave for the first employee currently shown.
 
-   * `leave list` : Lists all leave records and their current status.
+   * `leave list` : Lists leave records for the employees currently displayed and shows each record's current status.
 
    * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
 
@@ -65,7 +65,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
-  Exception: `/summary` and `summary` accept only an optional `scope/all` or `scope/filtered` parameter.
+  Exception: `/summary` and `summary` accept an optional scope followed by index selections using `i/` and `e/`.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </div>
@@ -90,7 +90,8 @@ Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
 Employee cards display salary with a `$` prefix, for example `$5000`.
 
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
-employee who is not entitled to annual leave.
+employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
+stored as `14`. The value after removing leading zeros must still be within the allowed range.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -110,13 +111,27 @@ Format: `list`
 
 Shows employee counts by tag, task-assignment counts, and recorded salary statistics in the selected scope.
 
-Format: `summary [scope/all|scope/filtered]` (alias: `/summary`)
+Format: `summary [scope/all|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`)
 
-Omit the parameter or use `scope/filtered` to summarize the currently displayed employees after `find`
+Omit the scope or use `scope/filtered` to summarize the currently displayed employees after `find`
 or `filter`. For example, run `filter t/engineering` then `summary`. Use `summary scope/all` to summarize
 all stored employees while keeping the current filter active.
 Values are case-sensitive and must immediately follow `scope/`; surrounding whitespace is allowed.
-Empty, unknown, repeated parameters and extra text report a usage error, e.g. `summary t/engineering`.
+Empty, unknown, repeated parameters and extra text are rejected, e.g. `summary t/engineering`.
+
+To select particular employees for the summary:
+
+* Use `i/` to include only the listed indexes, e.g. `summary i/1 3` summarizes employees 1 and 3.
+* Use `e/` to exclude the listed indexes, e.g. `summary e/2 4` summarizes everyone except employees 2 and 4.
+* You can combine them: `summary i/1 2 3 e/2` summarizes employees 1 and 3. Exclusions take precedence.
+* Indexes must be positive integers separated by whitespace. Repeated indexes count only once.
+  Supply each prefix at most once; an empty list or any index outside the selected scope is rejected.
+  For an out-of-range index, the error shows that index, the selected scope, and its valid index range.
+* Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
+  displayed list. With `scope/all`, they refer to the full employee list; run `list` first to view that numbering.
+  Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
+* Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
+  Excluding everyone produces an empty summary. Selections apply only to this invocation.
 
 Without a parameter the summary includes **only the currently displayed employees**. Run `list` first
 to display and summarize everyone, or use `summary scope/all` without changing the displayed list.
@@ -129,48 +144,45 @@ Example output:
 ```text
 Employee summary
 Scope: Filtered employees
-Total employees: 5
-Employees without tags: 1
 
-Employees by tag:
-  engineering: 3
-  intern: 1
-  remote: 2
++----------------------+-----------+
+| Metric               |     Value |
++----------------------+-----------+
+| Employees            |         5 |
+| Without tags         |         1 |
+| Assigned tasks       |         6 |
+| Employees with tasks |         3 |
+| Total salary         | $15000.00 |
+| Average salary       |  $3000.00 |
++----------------------+-----------+
 
-Employees may have multiple tags; tag counts can overlap.
-
-Task overview
-Total assigned tasks: 6
-Employees with tasks: 3
-Employees without tasks: 2
-Most tasks assigned to one employee: 3
-
-Salary overview
-Total recorded salary: $15000.00
-Average salary: $3000.00
-Lowest salary: $0.00
-Highest salary: $5000.00
++-------------+-----------+
+| Tag         | Employees |
++-------------+-----------+
+| engineering |         2 |
+| intern      |         1 |
+| remote      |         2 |
++-------------+-----------+
 ```
 
+![Summary result panel](images/summary-table.png)
+
+* The first table shows headcount, employees without tags, assigned tasks, employees with tasks,
+  and total/average recorded salary. The tag table appears only when there are tags.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
-* Employees with several different tags count in each group, so tag counts can exceed the total headcount.
-* Having no tags is allowed; the untagged count is a categorization aid, not an error.
-* If there are no tags, the output says `No tags to summarize.` An empty book shows both counts as `0`.
-* These are counts of stored records, not attendance or active-employment figures. Arbitrary tags are
-  not interpreted as structured departments. Leave balances and reminders are not included.
-* Salary statistics include every salary in the selected scope, including zero. For no employees, the total is `$0.00`
-  and average/lowest/highest are `N/A`. Amounts display two decimal places; averages round half up.
-* These are recorded amounts, not a calculation of monthly/annual payroll, tax, benefits, or payments.
-  Salary statistics still appear when there are no tags and refresh after a salary change.
+  Employees with several tags count in each group, so tag counts can overlap.
+* Identical task descriptions assigned to different employees count as separate assignments.
+  Task counts do not indicate completion, deadlines, effort, or productivity.
+* Salary figures include zero salaries. An empty selection shows zero counts, a total salary of `$0.00`,
+  and an average of `N/A`. Amounts use two decimal places; averages round half up.
+  These are recorded amounts, not payroll, tax, benefits, or payments.
+* These figures describe stored records, not attendance or active employment. Tags are not interpreted
+  as structured departments; leave balances and reminders are not included.
 
-The result appears in the existing command-result area; scroll within it to read a long summary.
-
-Task counts use the selected scope, like headcount and salary statistics. The same description assigned to two employees
-counts as two assignments. An empty book shows zero for every task statistic; if employees have no
-tasks, the employees-without-tasks count equals headcount. Task statistics appear even without tags.
-Run the summary again after task changes or employee deletion to refresh it. These counts do not
-indicate completion, deadlines, effort, or productivity; those properties are not stored for tasks.
+The tables use a monospaced font with right-aligned values. Columns expand to fit long tags and large amounts.
+Scroll within the result area or drag the divider below it to see more rows; wide tables can be scrolled horizontally.
+Run the command again after employee, task, or salary changes to refresh the figures.
 
 ### Changing an employee's salary: `salary`
 
@@ -201,6 +213,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
+  Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
   enough leave is deleted or the entitlement is increased, no further leave can be added for that year.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
@@ -209,7 +222,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st employee to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd employee to be `Betsy Crower` and clears all existing tags.
-*  `edit 3 le/21` Changes the 3rd employee's annual leave entitlement to 21 days.
+*  `edit 3 le/00021` Changes the 3rd employee's annual leave entitlement to 21 days.
 
 ### Locating employees by name: `find`
 
@@ -232,15 +245,16 @@ Examples:
 
 Lists employees who match all supplied criteria.
 
-Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`
+Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`
 
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* Salary matches an exact amount from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000.
+* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Comparisons exclude the specified amount itself. Amounts must be whole numbers from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000. Operators such as `<=`, `>=`, and `=` are not supported.
+* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Days must be whole numbers from 0 to 365 with no leading zeros, as with `add` and `edit`. Operators such as `<=`, `>=`, and `=` are not supported.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
 * All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
-* Each of `n/`, `p/`, `e/`, `a/`, and `s/` may appear only once. Unsupported prefixes are rejected.
+* Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -251,6 +265,32 @@ Examples:
 * `filter t/friends t/owesMoney` lists employees with both tags.
 * `filter task/report task/review` lists employees with tasks matching both descriptions.
 * `filter task/report s/3000` lists employees with a matching task and salary 3000.
+* `filter le/14` lists employees with an annual leave entitlement of exactly 14 days.
+* `filter le/<14` lists employees with an annual leave entitlement below 14 days.
+* `filter n/Alice s/<4000 le/>10` lists employees whose name contains `Alice`, salary is below 4000, and annual leave entitlement is above 10 days.
+* `filter s/<4000` lists employees earning less than 4000.
+* `filter s/>4000` lists employees earning more than 4000.
+* `filter n/Alice p/912 s/<4000` lists employees whose name contains `Alice`, whose phone number contains `912`, and whose salary is less than 4000.
+
+### Sorting the displayed employees: `sort`
+
+Sorts the currently displayed list by exactly one field, keeping the active `find` or `filter` criteria.
+
+Format: `sort FIELD/ORDER`
+
+* Fields: `n/` (name), `p/` (phone), `e/` (email), `a/` (address), `s/` (salary), or `le/` (annual leave entitlement).
+* Order: `asc` for ascending or `des` for descending. Supply exactly one field and order.
+* Salary, phone numbers, and annual leave entitlement sort numerically. Text sorts alphabetically, ignoring case.
+* Employees with equal values retain their original address book order.
+* Sorting changes the display only; employee details and the stored address book order stay unchanged.
+* The chosen sort stays active when you filter, find, edit, or list employees. `list` shows all employees in that order. Another `sort` replaces it; restarting the app restores the stored order.
+* Index commands such as `edit`, `salary`, and `delete` use the positions in the sorted displayed list.
+* Sorting an empty list is allowed.
+
+Examples:
+* `sort s/asc` sorts the displayed employees from lowest to highest salary.
+* `sort p/des` sorts the displayed employees by phone number in descending order.
+* `filter t/friends`, followed by `sort le/des`, shows only employees tagged `friends`, ordered from highest to lowest annual leave entitlement.
 
 ### Deleting an employee: `delete`
 
@@ -274,7 +314,9 @@ Leave records are stored separately from employee records and linked internally 
 employee using the index currently displayed in the employee list. Internal employee IDs are not shown and are not
 accepted by leave commands.
 
-Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record.
+Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record. As
+`leave list` follows the currently displayed employee list, run `list` first if you need to find a leave record for any
+employee.
 
 #### Recording leave: `leave add`
 
@@ -303,9 +345,14 @@ Examples:
 
 #### Listing leave: `leave list`
 
-Lists every leave record, ordered by leave ID.
+Lists leave records belonging to employees in the currently displayed employee list, ordered by leave ID.
 
 Format: `leave list`
+
+The command uses whichever employees are currently displayed. For example, after `find Betsy` or a `filter` command,
+only leave records belonging to the matching employees are listed. Run `list` before `leave list` to display leave
+records for all employees. If none of the displayed employees has a leave record, the command reports that no leave
+records were found.
 
 Each line shows the leave ID, employee name, inclusive date range, charged working days, and one of these statuses:
 
@@ -346,11 +393,19 @@ Format: `list-tasks EMPLOYEE_INDEX`
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
 * Tasks are displayed in the order in which they were added.
+* Pending tasks are displayed with `[ ]`, while completed tasks are displayed with `[x]`.
+* `TASK_INDEX` refers to the number displayed next to the task.
 * The current filtered employee list is preserved after the command.
 
 Example:
 
-* `list-tasks 1` lists the tasks related to the first displayed employee.
+* `list-tasks 1` lists the tasks related to the first displayed employee, for example:
+
+  ```text
+  Tasks for Alice Pauline:
+  1. [ ] Prepare monthly report
+  2. [x] Submit access request
+  ```
 
 ### Adding tasks to an employee: `add-task`
 
@@ -392,6 +447,44 @@ Examples:
   employee.
 * `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
   first employee in the filtered results.
+
+### Marking a task as done: `mark-task`
+
+Marks a task as completed.
+
+Format: `mark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Marking an already completed task succeeds without changing its state.
+
+Examples:
+
+* `mark-task 1 i/1` marks the first task assigned to the first displayed employee as done.
+* `find Alex` followed by `mark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as done.
+
+### Marking a task as pending: `unmark-task`
+
+Marks a completed task as pending.
+
+Format: `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`
+
+* `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
+  employee list and must be a positive integer.
+* `TASK_INDEX` refers to the task's index in that employee's task list and
+  must be a positive integer.
+* The `i/` prefix is required for the task index.
+* The current filtered employee list is preserved after the command.
+* Unmarking an already pending task succeeds without changing its state.
+
+Examples:
+
+* `unmark-task 1 i/1` marks the first task assigned to the first displayed employee as pending.
+* `find Alex` followed by `unmark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as pending.
 
 ### Clearing all entries: `clear`
 
@@ -461,6 +554,7 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Edit employee**     | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`<br>e.g., `edit 2 n/James Lee le/21` |
 | **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br>e.g., `find James Jake` |
 | **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br>e.g., `filter task/report s/3000` |
+| **Sort**              | `sort FIELD/ORDER`<br> e.g., `sort s/asc` or `sort p/des` |
 | **List employees**    | `list` |
 | **Record leave**      | `leave add INDEX from/START_DATE to/END_DATE`<br>e.g., `leave add 1 from/20-10-2026 to/22-10-2026` |
 | **List leaves**       | `leave list` |
@@ -468,6 +562,8 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br>e.g., `list-tasks 1` |
 | **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br>e.g., `add-task 1 d/Prepare report` |
 | **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `delete-task 1 i/1` |
-| **Workforce summary** | `summary [scope/all\|scope/filtered]` (alias: `/summary`) |
+| **Mark task**         | `mark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `mark-task 1 i/1` |
+| **Unmark task**       | `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `unmark-task 1 i/1` |
+| **Workforce summary** | `summary [scope/all\|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |

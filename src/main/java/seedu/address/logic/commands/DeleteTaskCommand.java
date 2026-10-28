@@ -12,7 +12,9 @@ import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
 
-/** Deletes a task from an employee identified by the displayed employee index. */
+/**
+ * Deletes a task from an employee identified by the displayed employee index.
+ */
 public class DeleteTaskCommand extends Command {
 
     public static final String COMMAND_WORD = "delete-task";

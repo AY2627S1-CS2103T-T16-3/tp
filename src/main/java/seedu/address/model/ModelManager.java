@@ -3,11 +3,13 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Comparator;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.employee.Employee;
@@ -25,6 +27,7 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Employee> filteredEmployees;
+    private final SortedList<Employee> sortedEmployees;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -37,6 +40,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredEmployees = new FilteredList<>(this.addressBook.getEmployeeList());
+        sortedEmployees = new SortedList<>(filteredEmployees);
     }
 
     public ModelManager() {
@@ -120,13 +124,18 @@ public class ModelManager implements Model {
      */
     @Override
     public ObservableList<Employee> getFilteredEmployeeList() {
-        return filteredEmployees;
+        return sortedEmployees;
     }
 
     @Override
     public void updateFilteredEmployeeList(Predicate<Employee> predicate) {
         requireNonNull(predicate);
         filteredEmployees.setPredicate(predicate);
+    }
+
+    @Override
+    public void sortFilteredEmployeeList(Comparator<Employee> comparator) {
+        sortedEmployees.setComparator(requireNonNull(comparator));
     }
 
     @Override
@@ -142,7 +151,7 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredEmployees.equals(otherModelManager.filteredEmployees);
+                && sortedEmployees.equals(otherModelManager.sortedEmployees);
     }
 
 }

@@ -1,0 +1,69 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":SortCommandParser" as SortCommandParser LOGIC_COLOR
+participant "c:SortCommand" as SortCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager" as ModelManager MODEL_COLOR
+participant "sortedEmployees:SortedList" as SortedEmployees MODEL_COLOR
+end box
+
+[-> LogicManager : execute("sort s/asc")
+activate LogicManager
+LogicManager -> AddressBookParser : parseCommand("sort s/asc")
+activate AddressBookParser
+
+create SortCommandParser
+AddressBookParser -> SortCommandParser : new SortCommandParser()
+AddressBookParser -> SortCommandParser : parse(" s/asc")
+activate SortCommandParser
+
+note right of SortCommandParser
+  Validate exactly one supported field
+  and an asc/des direction.
+end note
+
+create SortCommand
+SortCommandParser -> SortCommand : new SortCommand(Field.SALARY, true)
+SortCommandParser --> AddressBookParser : c
+deactivate SortCommandParser
+AddressBookParser --> LogicManager : c
+deactivate AddressBookParser
+
+LogicManager -> SortCommand : execute(m)
+activate SortCommand
+note right of SortCommand
+  Build a numeric salary comparator
+  for ascending order.
+end note
+SortCommand -> ModelManager : sortFilteredEmployeeList(comparator)
+activate ModelManager
+ModelManager -> SortedEmployees : setComparator(comparator)
+activate SortedEmployees
+note right of SortedEmployees
+  Reorder the existing observable view.
+  The UI observes the updated order.
+  The filter and stored employee order
+  remain unchanged.
+end note
+SortedEmployees --> ModelManager
+deactivate SortedEmployees
+ModelManager --> SortCommand
+deactivate ModelManager
+
+SortCommand --> LogicManager : new CommandResult(successMessage)
+deactivate SortCommand
+note over LogicManager
+  The usual saveAddressBook(model.getAddressBook())
+  still runs; sorting does not change stored order.
+  Storage interactions are omitted.
+end note
+[<-- LogicManager : CommandResult
+deactivate LogicManager
+@enduml
