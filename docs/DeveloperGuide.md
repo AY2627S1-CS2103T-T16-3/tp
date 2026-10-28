@@ -323,7 +323,7 @@ The leave feature is implemented as a `leave` command group with the `add`, `lis
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
 
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
-at least one such day. Public holidays are deliberately not modelled for the MVP, so a public holiday on a weekday is
+at least one such day. Public holidays are not excluded, so a public holiday on a weekday is
 charged as a working leave day. Overlap detection uses every calendar date in the inclusive range, not only charged
 weekdays.
 
@@ -1037,8 +1037,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Working day**: For the MVP, a Monday through Friday counted against annual leave entitlement; public holidays are
-  not excluded
+* **Working day**: A Monday through Friday counted against annual leave entitlement; public holidays are not excluded
 
 --------------------------------------------------------------------------------------------------------------------
 

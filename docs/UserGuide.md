@@ -327,7 +327,7 @@ Format: `leave add INDEX from/START_DATE to/END_DATE`
 * Dates must use the `DD-MM-YYYY` format. Both dates are included in the leave period.
 * The start date must be on or before the end date, and both dates must be in the same calendar year.
 * Only Mondays to Fridays count against the employee's entitlement. Saturdays and Sundays are excluded.
-* Public holidays are not excluded in the MVP. A public holiday that falls from Monday to Friday counts as a working
+* Public holidays are not excluded. A public holiday that falls from Monday to Friday counts as a working
   leave day.
 * A period containing no weekday is rejected.
 * Leave periods for the same employee cannot overlap, including on a weekend or boundary date. Leave periods belonging
