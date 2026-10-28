@@ -234,7 +234,9 @@ while repeated prefixes use the shared duplicate-prefix error.
 The command stores a `SummaryCommand.Scope` enum and immutable inclusion/exclusion index sets, not employee snapshots.
 At execution time the command reads
 `model.getFilteredEmployeeList()` for the default/filtered scope, or
-`model.getAddressBook().getEmployeeList()` for explicit `scope/all`. Indexes refer to positions in this collection.
+`model.getAllEmployeesInDisplayOrder()` for explicit `scope/all`. The latter returns a snapshot of all employees
+using the active display comparator, with stored order preserved for ties or when no sort is active.
+The snapshot is sorted without changing stored records or the filter. Indexes refer to positions in this collection.
 Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
 An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
 passed to `EmployeeSummary.fromEmployees`, so all statistics share the same selection. The command labels
@@ -245,7 +247,7 @@ Empty selections remain empty; no fallback or filter mutation occurs.
 right-aligned values. The tag table is omitted when there are no tags. Explanatory notes remain in the User Guide.
 `CommandResult.DisplayFormat.TABLE` carries the presentation choice to `ResultDisplay`, which applies
 the `table` CSS pseudo-class for a monospaced font. Ordinary feedback and errors restore the normal font.
-No new window, storage fields, or model API is needed.
+No new window or storage fields are needed.
 
 `EmployeeSummary.fromEmployees` owns aggregation independently of presentation:
 
@@ -269,6 +271,8 @@ selection, empty matches, execution-time reads, and preservation of the filter p
 `SummaryIndexCommandTest` covers index selection in both scopes, overlap, empty selections, invalid indexes,
 execution-time resolution, and preservation of employee records and filters. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
+`SummarySortCommandTest` covers sorted inclusion/exclusion, hidden employees, ties, and sort/data changes
+after parsing. `ModelManagerTest` checks that the full sorted snapshot preserves the filter and stored order.
 `SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
 `CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,
 normal/error font restoration, caret reset, and null input handling on the JavaFX thread.

@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
@@ -77,6 +78,12 @@ public interface Model {
 
     /** Returns an unmodifiable view of the filtered employee list */
     ObservableList<Employee> getFilteredEmployeeList();
+
+    /**
+     * Returns an unmodifiable snapshot of all employees in the current display sort order, ignoring the filter.
+     * Without an active sort, employees follow their stored order. Equal sort values retain stored order.
+     */
+    List<Employee> getAllEmployeesInDisplayOrder();
 
     /**
      * Updates the filter of the filtered employee list to filter by the given {@code predicate}.

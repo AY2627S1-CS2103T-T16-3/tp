@@ -128,7 +128,8 @@ To select particular employees for the summary:
   Supply each prefix at most once; an empty list or any index outside the selected scope is rejected.
   For an out-of-range index, the error shows that index, the selected scope, and its valid index range.
 * Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
-  displayed list. With `scope/all`, they refer to the full employee list; run `list` first to view that numbering.
+  displayed list. With `scope/all`, they refer to the full employee list in the current sort order;
+  run `list` first to view that numbering. Without an active sort, the full list uses stored order.
   Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
 * Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
   Excluding everyone produces an empty summary. Selections apply only to this invocation.
