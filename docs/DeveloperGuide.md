@@ -901,10 +901,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 2a. The leave ID is invalid or no matching record exists.
+* 2a. The leave ID is malformed, zero, or negative.
 
-    * 2a1. System informs the HR manager that the leave record cannot be found.
+    * 2a1. System informs the HR manager that the command is invalid and displays the correct usage.
     * 2a2. System leaves all employee and leave information unchanged.
+
+      Use case ends.
+
+* 2b. The leave ID is a valid positive integer, but no matching record exists.
+
+    * 2b1. System informs the HR manager that no leave record was found with that ID.
+    * 2b2. System leaves all employee and leave information unchanged.
 
       Use case ends.
 
