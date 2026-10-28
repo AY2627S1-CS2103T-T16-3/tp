@@ -215,6 +215,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
   enough leave is deleted or the entitlement is increased, no further leave can be added for that year.
+  This is intentional: changing entitlement does not rewrite historical leave records. If a recorded leave was a
+  mistake, delete that leave record separately.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
 * To remove all of an employee's tags, enter `t/` without a tag after it.
 
