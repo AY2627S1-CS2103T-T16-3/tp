@@ -12,7 +12,9 @@ import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
 
-/** Adds a task to an employee identified by the displayed employee index. */
+/**
+ * Adds a task to an employee identified by the displayed employee index.
+ */
 public class AddTaskCommand extends Command {
 
     public static final String COMMAND_WORD = "add-task";

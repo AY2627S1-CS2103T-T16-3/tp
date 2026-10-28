@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.SummaryCommandParser;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
@@ -23,7 +25,7 @@ public class SummaryScopeCommandTest {
     }
 
     @Test
-    public void execute_filteredSubset_countsOnlyVisibleEmployeesAndPreservesPredicate() {
+    public void execute_filteredSubset_countsOnlyVisibleEmployeesAndPreservesPredicate() throws CommandException {
         Model model = new ModelManager();
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("engineering").build();
         Employee bob = new EmployeeBuilder().withName("Bob").withTags("remote").build();
@@ -34,33 +36,31 @@ public class SummaryScopeCommandTest {
         model.updateFilteredEmployeeList(employee -> employee.getName().fullName.startsWith("B"));
         AddressBook before = new AddressBook(model.getAddressBook());
         SummaryCommand command = new SummaryCommand(SummaryCommand.Scope.FILTERED);
-        assertEquals("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
-                + "Employees without tags: 0\n\nEmployees by tag:\n  remote: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap." + zeroOverview(1),
-                command.execute(model).getFeedbackToUser());
+        String result = command.execute(model).getFeedbackToUser();
+        assertTrue(result.startsWith("Employee summary\nScope: Filtered employees\n\n"));
+        assertSummaryValue(result, "Employees", "1");
+        assertSummaryValue(result, "remote", "1");
         assertEquals(before, model.getAddressBook());
         assertEquals(List.of(storedBob), model.getFilteredEmployeeList());
         Employee renamed = new EmployeeBuilder(storedAlice).withName("Bella").build();
         model.setEmployee(storedAlice, renamed);
         assertEquals(List.of(renamed, storedBob), model.getFilteredEmployeeList());
-        assertTrue(command.execute(model).getFeedbackToUser().contains("Total employees: 2"));
+        assertSummaryValue(command.execute(model).getFeedbackToUser(), "Employees", "2");
     }
 
     @Test
-    public void execute_noMatches_doesNotFallBackToAllEmployees() {
+    public void execute_noMatches_doesNotFallBackToAllEmployees() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(new EmployeeBuilder().build());
         model.updateFilteredEmployeeList(employee -> false);
-        assertEquals("Employee summary\nScope: Filtered employees\nTotal employees: 0\n"
-                + "Employees without tags: 0\n\nNo tags to summarize." + zeroOverview(0),
-                new SummaryCommand().execute(model).getFeedbackToUser());
+        assertEquals(new SummaryCommand().execute(new ModelManager()), new SummaryCommand().execute(model));
         assertEquals(List.of(), model.getFilteredEmployeeList());
-        assertTrue(new SummaryCommand(SummaryCommand.Scope.ALL).execute(model)
-                .getFeedbackToUser().contains("Total employees: 1"));
+        assertSummaryValue(new SummaryCommand(SummaryCommand.Scope.ALL).execute(model)
+                .getFeedbackToUser(), "Employees", "1");
     }
 
     @Test
-    public void execute_noRestriction_allScopesHaveSameCountsButDifferentLabels() {
+    public void execute_noRestriction_allScopesHaveSameCountsButDifferentLabels() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(new EmployeeBuilder().build());
         String all = new SummaryCommand(SummaryCommand.Scope.ALL).execute(model).getFeedbackToUser();
@@ -77,11 +77,11 @@ public class SummaryScopeCommandTest {
         Employee alice = new EmployeeBuilder().withName("Alice").build();
         model.addEmployee(alice);
         model.updateFilteredEmployeeList(employee -> false);
-        assertTrue(command.execute(model).getFeedbackToUser().contains("Total employees: 0"));
+        assertSummaryValue(command.execute(model).getFeedbackToUser(), "Employees", "0");
         model.updateFilteredEmployeeList(Model.PREDICATE_SHOW_ALL_EMPLOYEES);
-        assertTrue(command.execute(model).getFeedbackToUser().contains("Total employees: 1"));
+        assertSummaryValue(command.execute(model).getFeedbackToUser(), "Employees", "1");
         model.deleteEmployee(model.getAddressBook().getEmployeeList().get(0));
-        assertTrue(command.execute(model).getFeedbackToUser().contains("Total employees: 0"));
+        assertSummaryValue(command.execute(model).getFeedbackToUser(), "Employees", "0");
     }
 
     @Test
@@ -96,11 +96,4 @@ public class SummaryScopeCommandTest {
         assertNotEquals(all, "summary");
     }
 
-    private static String zeroOverview(int employees) {
-        String salary = employees == 0 ? "N/A" : "$0.00";
-        return "\n\nTask overview\nTotal assigned tasks: 0\nEmployees with tasks: 0\n"
-                + "Employees without tasks: " + employees + "\nMost tasks assigned to one employee: 0"
-                + "\n\nSalary overview\nTotal recorded salary: $0.00\nAverage salary: " + salary
-                + "\nLowest salary: " + salary + "\nHighest salary: " + salary;
-    }
 }

@@ -12,7 +12,9 @@ import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.Task;
 
-/** Lists the tasks assigned to an employee. */
+/**
+ * Lists the tasks assigned to an employee.
+ */
 public class ListTasksCommand extends Command {
 
     public static final String COMMAND_WORD = "list-tasks";
@@ -53,7 +55,7 @@ public class ListTasksCommand extends Command {
         IntStream.range(0, tasks.size())
                 .forEach(index -> result.append(index + 1)
                         .append(". ")
-                        .append(tasks.get(index).getDetails())
+                        .append(tasks.get(index))
                         .append("\n"));
         result.deleteCharAt(result.length() - 1);
         return new CommandResult(result.toString());

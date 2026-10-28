@@ -28,8 +28,10 @@ import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.ListLeaveCommand;
 import seedu.address.logic.commands.ListTasksCommand;
+import seedu.address.logic.commands.MarkTaskCommand;
 import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
+import seedu.address.logic.commands.UnmarkTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
@@ -87,6 +89,8 @@ public class AddressBookParserTest {
         assertTrue(parser.parseCommand("list-tasks 1") instanceof ListTasksCommand);
         assertTrue(parser.parseCommand("add-task 1 d/Prepare report") instanceof AddTaskCommand);
         assertTrue(parser.parseCommand("delete-task 1 i/1") instanceof DeleteTaskCommand);
+        assertTrue(parser.parseCommand("mark-task 1 i/1") instanceof MarkTaskCommand);
+        assertTrue(parser.parseCommand("unmark-task 1 i/1") instanceof UnmarkTaskCommand);
     }
 
     @Test
@@ -137,6 +141,15 @@ public class AddressBookParserTest {
             assertEquals(new SummaryCommand(SummaryCommand.Scope.ALL), parser.parseCommand(command + " scope/all"));
             assertEquals(new SummaryCommand(SummaryCommand.Scope.FILTERED),
                     parser.parseCommand(command + " scope/filtered"));
+        }
+    }
+
+    @Test
+    public void parseCommand_summaryIndexAliases() throws Exception {
+        SummaryCommandParser summaryParser = new SummaryCommandParser();
+        for (String command : new String[] {"summary", "/summary"}) {
+            assertEquals(summaryParser.parse("i/1 3 e/3"), parser.parseCommand(command + " i/1 3 e/3"));
+            assertEquals(summaryParser.parse("scope/all e/2"), parser.parseCommand(command + " scope/all e/2"));
         }
     }
 

@@ -1,7 +1,9 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -9,6 +11,7 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
@@ -16,12 +19,17 @@ import seedu.address.model.employee.Employee;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class SummaryCommandTest {
-    private static final String ZERO_SALARIES = "\n\nSalary overview\nTotal recorded salary: $0.00\n"
-            + "Average salary: $0.00\nLowest salary: $0.00\nHighest salary: $0.00";
-    private static final String EMPTY_SALARIES = "\n\nSalary overview\nTotal recorded salary: $0.00\n"
-            + "Average salary: N/A\nLowest salary: N/A\nHighest salary: N/A";
-    private static final String EMPTY_SUMMARY = "Employee summary\nScope: Filtered employees\nTotal employees: 0\n"
-            + "Employees without tags: 0\n\nNo tags to summarize." + noTasks(0) + EMPTY_SALARIES;
+    private static final String EMPTY_SUMMARY = "Employee summary\nScope: Filtered employees\n\n" + """
+            +----------------------+-------+
+            | Metric               | Value |
+            +----------------------+-------+
+            | Employees            |     0 |
+            | Without tags         |     0 |
+            | Assigned tasks       |     0 |
+            | Employees with tasks |     0 |
+            | Total salary         | $0.00 |
+            | Average salary       |   N/A |
+            +----------------------+-------+""";
 
     @Test
     public void execute_nullModel_throwsNullPointerException() {
@@ -29,36 +37,44 @@ public class SummaryCommandTest {
     }
 
     @Test
-    public void execute_emptyBook_returnsZeroCounts() {
-        assertEquals(new CommandResult(EMPTY_SUMMARY), new SummaryCommand().execute(new ModelManager()));
+    public void execute_emptyBook_returnsZeroCounts() throws CommandException {
+        assertEquals(new CommandResult(EMPTY_SUMMARY, CommandResult.DisplayFormat.TABLE),
+                new SummaryCommand().execute(new ModelManager()));
     }
 
     @Test
-    public void execute_noTags_returnsHeadcountAndNoTagsMessage() {
+    public void execute_noTags_returnsEssentialCountsWithoutTagTable() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice"));
-        assertEquals(new CommandResult("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
-                + "Employees without tags: 1\n\nNo tags to summarize." + noTasks(1) + ZERO_SALARIES),
-                new SummaryCommand().execute(model));
+        String result = new SummaryCommand().execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Employees", "1");
+        assertSummaryValue(result, "Without tags", "1");
+        assertSummaryValue(result, "Assigned tasks", "0");
+        assertSummaryValue(result, "Employees with tasks", "0");
+        assertSummaryValue(result, "Total salary", "$0.00");
+        assertSummaryValue(result, "Average salary", "$0.00");
+        assertFalse(result.contains("| Tag"));
     }
 
     @Test
-    public void execute_mixedTags_formatsSortedCountsWithoutChangingModel() {
+    public void execute_mixedTags_formatsSortedCountsWithoutChangingModel() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice", "Remote", "Engineering", "engineering"));
         model.addEmployee(employee("Bob", "engineering", "intern"));
         model.addEmployee(employee("Carol"));
         Model expectedModel = new ModelManager(model.getAddressBook(), model.getUserPrefs());
-        String expected = "Employee summary\nScope: Filtered employees\nTotal employees: 3\n"
-                + "Employees without tags: 1\n\n"
-                + "Employees by tag:\n  engineering: 2\n  intern: 1\n  remote: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap." + noTasks(3) + ZERO_SALARIES;
-        assertEquals(new CommandResult(expected), new SummaryCommand().execute(model));
+        String result = new SummaryCommand().execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Employees", "3");
+        assertSummaryValue(result, "Without tags", "1");
+        assertSummaryValue(result, "engineering", "2");
+        assertSummaryValue(result, "intern", "1");
+        assertSummaryValue(result, "remote", "1");
+        assertFalse(result.contains("Engineering"));
         assertEquals(expectedModel, model);
     }
 
     @Test
-    public void execute_explicitAllScope_summarizesWholeBookAndPreservesPredicate() {
+    public void execute_explicitAllScope_summarizesWholeBookAndPreservesPredicate() throws CommandException {
         Model model = new ModelManager();
         Employee alice = employee("Alice", "engineering");
         Employee bob = employee("Bob", "remote");
@@ -83,7 +99,7 @@ public class SummaryCommandTest {
     }
 
     @Test
-    public void execute_explicitAllWithNoMatches_stillCountsStoredEmployees() {
+    public void execute_explicitAllWithNoMatches_stillCountsStoredEmployees() throws CommandException {
         Model model = new ModelManager();
         model.addEmployee(employee("Alice"));
         CommandResult expected = new SummaryCommand(SummaryCommand.Scope.ALL).execute(model);
@@ -97,29 +113,23 @@ public class SummaryCommandTest {
         Model model = new ModelManager();
         SummaryCommand command = new SummaryCommand();
         new AddCommand(employee("Alice")).execute(model);
-        assertEquals(new CommandResult("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
-                + "Employees without tags: 1\n\nNo tags to summarize." + noTasks(1) + ZERO_SALARIES),
-                command.execute(model));
+        String result = command.execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Employees", "1");
+        assertSummaryValue(result, "Without tags", "1");
 
         EditCommand.EditEmployeeDescriptor edit = new EditCommand.EditEmployeeDescriptor();
         edit.setTags(employee("Alice", "remote").getTags());
         new EditCommand(Index.fromOneBased(1), edit).execute(model);
-        assertEquals(new CommandResult("Employee summary\nScope: Filtered employees\nTotal employees: 1\n"
-                + "Employees without tags: 0\n\n"
-                + "Employees by tag:\n  remote: 1\n\n"
-                + "Employees may have multiple tags; tag counts can overlap." + noTasks(1) + ZERO_SALARIES),
-                command.execute(model));
+        result = command.execute(model).getFeedbackToUser();
+        assertSummaryValue(result, "Without tags", "0");
+        assertSummaryValue(result, "remote", "1");
 
         new DeleteCommand(Index.fromOneBased(1)).execute(model);
-        assertEquals(new CommandResult(EMPTY_SUMMARY), command.execute(model));
+        assertEquals(new CommandResult(EMPTY_SUMMARY, CommandResult.DisplayFormat.TABLE), command.execute(model));
     }
 
     private Employee employee(String name, String... tags) {
         return new EmployeeBuilder().withName(name).withTags(tags).build();
     }
 
-    private static String noTasks(int employees) {
-        return "\n\nTask overview\nTotal assigned tasks: 0\nEmployees with tasks: 0\n"
-                + "Employees without tasks: " + employees + "\nMost tasks assigned to one employee: 0";
-    }
 }
