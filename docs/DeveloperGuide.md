@@ -208,19 +208,29 @@ into a user-facing command error instead of allowing the exception to terminate 
 
 ### Employee salary management
 
-The `salary INDEX s/SALARY` command replaces the salary of the employee identified by their displayed index. For example, `salary 1 s/5000` sets the first employee's salary in the current list to 5000.
+The `salary INDEX s/SALARY` command changes the monthly salary of the employee at the specified index in the
+currently displayed list.
 
-`AddressBookParser` routes the command to `SalaryCommandParser`, which parses the index and the compulsory `s/` prefix. It rejects invalid indices, missing or repeated salary prefixes, and salary values that are not whole numbers from 0 to 50000. Valid input produces a `SalaryCommand` containing an `Index` and a validated `Salary` value object.
+`AddressBookParser` routes the command to `SalaryCommandParser`. The parser rejects unsupported field prefixes
+before validating the index and salary. It requires a positive index and exactly one `s/` field. `Salary` accepts
+only digits representing an amount from 0 to 50000 inclusive and removes leading zeros.
 
 At execution, the command follows these steps:
 
-1. Retrieves the currently filtered employee list through `Model#getFilteredEmployeeList` and checks that the index is within its bounds.
-2. Compares the selected employee's salary with the requested `Salary`. If they are equal, returns feedback stating that the salary is already set and no changes were made, without replacing the employee or changing the displayed view. Leading zeros do not affect equality.
-3. If the salary differs, calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
+1. Retrieves the currently displayed employee list through `Model#getFilteredEmployeeList` and rejects an index
+   outside its bounds.
+2. Compares the employee's current salary with the requested salary. If they are equal, returns feedback that no
+   changes were made, preserving the employee and displayed view. Leading zeros do not affect this comparison.
+3. Otherwise, calls `Employee#withSalary` to create a replacement employee, preserving their internal ID, contact
+   details, tags, tasks, and annual leave entitlement.
 4. Replaces the original employee through `Model#setEmployee`.
-5. Resets the employee filter to show all employees, retaining the active sort, and returns feedback containing the employee's name and the old and new salaries.
+5. Resets the filter to show all employees while retaining the active sort, and returns feedback identifying the
+   employee and their old and new salaries.
 
-This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The usual application-wide save still runs after command execution, including when the salary is unchanged.
+`LogicManager` attempts to save after command execution, including when the salary is unchanged. If saving throws
+`IOException`, it restores the model snapshot taken before execution, including the previous salary, filter, and
+sort, and reports a save error. This restores the running application's state; it does not guarantee recovery of
+the data file. See **Save failures and model rollback** for details.
 
 ### Filtering employees
 
@@ -1008,46 +1018,58 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to change an employee's salary, and provides the employee's details.
-2. System changes the employee's salary.
-3. System displays the employee with the new salary.
+1. HR manager identifies an employee and requests to change their salary to a specified amount.
+2. System changes the employee's salary and confirms the change.
 
    Use case ends.
 
 **Extensions**
 
-* 1a. The HR manager does not provide one or more required fields.
+* 1a. The HR manager omits required information.
 
-    * 1a1. System informs the HR manager to provide all required fields.
-    * 1a2. System does not change the employee's salary.
-
-    Use case ends.
-
-* 1b. The HR manager provides an invalid salary value.
-
-    * 1b1. System informs the HR manager that the salary value is invalid.
-    * 1b2. System does not change the employee's salary.
+    * 1a1. System informs the HR manager of the required command format.
+    * 1a2. System leaves the employee's salary unchanged.
 
     Use case ends.
 
-* 1c. The HR manager provides more fields than required.
+* 1b. The HR manager provides an invalid salary.
 
-    * 1c1. System informs the HR manager that there are too many fields.
-    * 1c2. System does not change the employee's salary.
-
-    Use case ends.
-
-* 1d. The HR manager provides an invalid index.
-
-    * 1d1. System informs the HR manager that the index is invalid.
-    * 1d2. System does not change the employee's salary.
+    * 1b1. System informs the HR manager that salary must contain only digits and represent an amount from 0 to 50000.
+    * 1b2. System leaves the employee's salary unchanged.
 
     Use case ends.
 
-* 2a. An error occurs while saving new salary of employee into storage.
+* 1c. The HR manager provides unsupported information.
 
-    * 2a1. System informs the HR manager that the salary could not be changed.
-    * 2a2. System does not change the employee's salary.
+    * 1c1. System informs the HR manager that only the salary field is accepted.
+    * 1c2. System leaves the employee's salary unchanged.
+
+    Use case ends.
+
+* 1d. The HR manager specifies the salary more than once.
+
+    * 1d1. System informs the HR manager that the salary field cannot be repeated.
+    * 1d2. System leaves the employee's salary unchanged.
+
+    Use case ends.
+
+* 1e. The HR manager provides an invalid employee selection.
+
+    * 1e1. System informs the HR manager that the command format or employee selection is invalid.
+    * 1e2. System leaves all employee salaries unchanged.
+
+    Use case ends.
+
+* 2a. The employee already has the requested salary.
+
+    * 2a1. System informs the HR manager that no change is needed.
+
+    Use case ends.
+
+* 2b. System cannot save the salary change.
+
+    * 2b1. System leaves the employee's salary unchanged.
+    * 2b2. System informs the HR manager that the change could not be saved.
 
     Use case ends.
 
