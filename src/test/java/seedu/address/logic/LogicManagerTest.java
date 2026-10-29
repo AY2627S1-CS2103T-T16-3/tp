@@ -160,7 +160,7 @@ public class LogicManagerTest {
         model.addEmployee(new EmployeeBuilder().withName("Bob").withTags()
                 .withTasks(new Task("Review")).build());
         logic.execute("find Alice");
-        logic.execute("add-task 1 d/Report");
+        logic.execute("task add 1 d/Report");
         AddressBook before = new AddressBook(model.getAddressBook());
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
@@ -171,7 +171,7 @@ public class LogicManagerTest {
         assertEquals(before, model.getAddressBook());
         assertEquals(savedData, Files.readString(dataFile));
 
-        logic.execute("delete-task 1 i/1");
+        logic.execute("task delete 1 i/1");
         before = new AddressBook(model.getAddressBook());
         savedData = Files.readString(dataFile);
         result = logic.execute("summary scope/all").getFeedbackToUser();
