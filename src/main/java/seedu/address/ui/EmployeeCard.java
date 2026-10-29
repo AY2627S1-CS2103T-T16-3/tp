@@ -60,6 +60,6 @@ public class EmployeeCard extends UiPart<Region> {
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
         salary.setText("Monthly salary: $" + employee.getSalary().salary);
-        leaveEntitlement.setText("Annual leave: " + employee.getLeaveEntitlement().value + " day(s)");
+        leaveEntitlement.setText("Total annual leave: " + employee.getLeaveEntitlement().value + " day(s)");
     }
 }
