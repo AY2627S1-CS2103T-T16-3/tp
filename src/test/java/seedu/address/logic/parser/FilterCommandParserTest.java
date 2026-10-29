@@ -18,10 +18,15 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FilterCommand;
+import seedu.address.model.employee.Email;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate.Field;
 import seedu.address.model.employee.LeaveEntitlement;
+import seedu.address.model.employee.Name;
+import seedu.address.model.employee.Phone;
 import seedu.address.model.employee.Salary;
+import seedu.address.model.employee.Task;
+import seedu.address.model.tag.Tag;
 
 /**
  * Tests validation of filter criteria and conversion to a filter command.
@@ -65,20 +70,48 @@ public class FilterCommandParserTest {
     public void parse_allFields_returnsFilterCommand() {
         FilterCommand expected = new FilterCommand(new EmployeeMatchesCriteriaPredicate(Map.of(
                 Field.NAME, List.of("Alice Pauline"), Field.PHONE, List.of("91235321"),
-                Field.EMAIL, List.of("example.com"), Field.ADDRESS, List.of("Jurong West"),
+                Field.EMAIL, List.of("alice@example.com"), Field.ADDRESS, List.of("Jurong West"),
                 Field.TAG, List.of("friends", "colleagues"), Field.TASK, List.of("report", "review"),
                 Field.SALARY, List.of("3000"), Field.LEAVE_ENTITLEMENT, List.of(">10"))));
         assertParseSuccess(parser,
-                "n/Alice Pauline p/91235321 e/example.com a/Jurong West t/friends t/colleagues "
+                "n/Alice Pauline p/91235321 e/alice@example.com a/Jurong West t/friends t/colleagues "
                         + "task/report task/review s/3000 le/>10", expected);
     }
 
     @Test
-    public void parse_partialValues_doesNotRequireCompletePersonFields() {
-        assertParseSuccess(parser, "p/9", new FilterCommand(
-                new EmployeeMatchesCriteriaPredicate(Map.of(Field.PHONE, List.of("9")))));
-        assertParseSuccess(parser, "e/@example", new FilterCommand(
-                new EmployeeMatchesCriteriaPredicate(Map.of(Field.EMAIL, List.of("@example")))));
+    public void parse_validPartialValues_returnsFilterCommand() {
+        assertParseSuccess(parser, "n/Ali p/912 a/Jurong", new FilterCommand(
+                new EmployeeMatchesCriteriaPredicate(Map.of(Field.NAME, List.of("Ali"),
+                        Field.PHONE, List.of("912"), Field.ADDRESS, List.of("Jurong")))));
+    }
+
+    @Test
+    public void parse_invalidTextFields_throwsFieldConstraintMessage() {
+        for (String value : List.of("Alice!", "John-Doe", "Alice@Example", "Alice > Bob", "A_B")) {
+            assertParseFailure(parser, "n/" + value, Name.MESSAGE_CONSTRAINTS);
+        }
+        for (String value : List.of("9", "91", "abc", "912a", "912 345", "+6591234567", "912-345")) {
+            assertParseFailure(parser, "p/" + value, Phone.MESSAGE_CONSTRAINTS);
+        }
+        for (String value : List.of("@example.com", "example.com", "alice@", "alice@@example.com",
+                "alice!@example.com")) {
+            assertParseFailure(parser, "e/" + value, Email.MESSAGE_CONSTRAINTS);
+        }
+        for (String value : List.of("friends!", "close friends", "co-workers", "a_b")) {
+            assertParseFailure(parser, "t/" + value, Tag.MESSAGE_CONSTRAINTS);
+        }
+        assertParseFailure(parser, "task/" + "a".repeat(Task.MAX_DETAILS_LENGTH + 1), Task.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "t/friends t/invalid!", Tag.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "task/report task/" + "a".repeat(Task.MAX_DETAILS_LENGTH + 1),
+                Task.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_validFieldBoundaries_returnsFilterCommand() {
+        assertParseSuccess(parser, "n/A1 p/000 t/Team1 task/" + "a".repeat(Task.MAX_DETAILS_LENGTH),
+                new FilterCommand(new EmployeeMatchesCriteriaPredicate(Map.of(Field.NAME, List.of("A1"),
+                        Field.PHONE, List.of("000"), Field.TAG, List.of("Team1"),
+                        Field.TASK, List.of("a".repeat(Task.MAX_DETAILS_LENGTH))))));
     }
 
     @Test
@@ -87,17 +120,17 @@ public class FilterCommandParserTest {
     }
 
     @Test
-    public void parse_salary_normalizesLeadingZerosAndAcceptsBounds() {
-        for (String input : List.of("0", "1", "49999", "50000", "003000")) {
+    public void parse_salary_acceptsBounds() {
+        for (String input : List.of("0", "1", "49999", "50000")) {
             assertParseSuccess(parser, "s/" + input, new FilterCommand(new EmployeeMatchesCriteriaPredicate(
                     Map.of(Field.SALARY, List.of(new Salary(input).salary)))));
         }
     }
 
     @Test
-    public void parse_salaryComparators_normalizesAmountAndAcceptsBounds() {
+    public void parse_salaryComparators_acceptsBounds() {
         for (String comparator : List.of("<", ">")) {
-            for (String amount : List.of("0", "1", "49999", "50000", "004000")) {
+            for (String amount : List.of("0", "1", "49999", "50000")) {
                 assertParseSuccess(parser, "s/" + comparator + amount,
                         new FilterCommand(new EmployeeMatchesCriteriaPredicate(
                                 Map.of(Field.SALARY, List.of(comparator + new Salary(amount).salary)))));
@@ -147,10 +180,22 @@ public class FilterCommandParserTest {
     }
 
     @Test
-    public void parse_leaveEntitlementLeadingZeros_returnsNormalizedCommand() throws Exception {
-        for (String operator : List.of("", "<", ">")) {
-            assertEquals(parser.parse("le/" + operator + "14"), parser.parse("le/" + operator + "014"));
+    public void parse_numericLeadingZeros_throwsSpecificParseException() {
+        for (String prefix : List.of("s/", "le/")) {
+            for (String operator : List.of("", "<", ">")) {
+                for (String amount : List.of("00", "000", "014", "003000", "050001", "000000000000000000001")) {
+                    assertParseFailure(parser, prefix + operator + amount, FilterCommand.MESSAGE_LEADING_ZEROS);
+                    assertParseFailure(parser, prefix + operator + " " + amount,
+                            FilterCommand.MESSAGE_LEADING_ZEROS);
+                }
+            }
         }
+    }
+
+    @Test
+    public void parse_phoneLeadingZeros_remainsPartialMatch() {
+        assertParseSuccess(parser, "p/014", new FilterCommand(new EmployeeMatchesCriteriaPredicate(
+                Map.of(Field.PHONE, List.of("014")))));
     }
 
     @Test
@@ -170,6 +215,26 @@ public class FilterCommandParserTest {
         assertEquals(parser.parse("n/Alice s/<4000 le/>10"), parser.parse("le/>10 s/<4000 n/Alice"));
         assertParseFailure(parser, "le/>10 le/<20",
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_LEAVE_ENTITLEMENT));
+    }
+
+    @Test
+    public void parse_textComparators_throwsSpecificParseException() {
+        for (String prefix : List.of("n/", "p/", "e/", "a/", "t/", "task/")) {
+            for (String operator : List.of("<", ">", "<=", ">=", "=", "==", "!=", "=>", "=<")) {
+                for (String value : List.of("Alice", " Alice", "")) {
+                    assertParseFailure(parser, prefix + operator + value, FilterCommand.MESSAGE_TEXT_COMPARATOR);
+                }
+            }
+        }
+        assertParseFailure(parser, "t/friends t/>colleagues", FilterCommand.MESSAGE_TEXT_COMPARATOR);
+        assertParseFailure(parser, "task/report task/<=review", FilterCommand.MESSAGE_TEXT_COMPARATOR);
+        assertParseFailure(parser, "s/3000 n/>Alice", FilterCommand.MESSAGE_TEXT_COMPARATOR);
+    }
+
+    @Test
+    public void parse_comparatorWithinText_remainsLiteralText() {
+        assertParseSuccess(parser, "task/Check salary > 3000", new FilterCommand(
+                new EmployeeMatchesCriteriaPredicate(Map.of(Field.TASK, List.of("Check salary > 3000")))));
     }
 
     private void assertInvalidFormat(String input) {

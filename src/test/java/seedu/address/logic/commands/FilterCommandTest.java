@@ -39,7 +39,7 @@ public class FilterCommandTest {
         assertFilter("n/ALICE", List.of(ALICE));
         assertFilter("p/94351253", List.of(ALICE));
         assertFilter("p/987", List.of(BENSON));
-        assertFilter("e/ALICE@", List.of(ALICE));
+        assertFilter("e/ALICE@EXAMPLE.COM", List.of(ALICE));
         assertFilter("a/JURONG WEST", List.of(ALICE));
         assertFilter("t/FRIENDS", List.of(ALICE, BENSON, DANIEL));
         assertFilter("t/friend", List.of());
@@ -50,7 +50,7 @@ public class FilterCommandTest {
         assertFilter("n/Meier t/friends", List.of(BENSON, DANIEL));
         assertFilter("n/Meier p/987", List.of(BENSON));
         assertFilter("n/Alice p/987", List.of());
-        assertFilter("n/Alice p/943 e/example.com a/Jurong t/friends", List.of(ALICE));
+        assertFilter("n/Alice p/943 e/alice@example.com a/Jurong t/friends", List.of(ALICE));
     }
 
     @Test
@@ -102,7 +102,6 @@ public class FilterCommandTest {
         assertFilter("task/report task/INVOICES", List.of(alice));
         assertFilter("task/missing", List.of());
         assertFilter("s/3000", List.of(alice, daniel));
-        assertFilter("s/003000", List.of(alice, daniel));
         assertFilter("s/300", List.of());
         assertFilter("task/report s/3000", List.of(alice));
         assertFilter("n/Alice t/friends task/invoices s/3000", List.of(alice));
@@ -123,8 +122,6 @@ public class FilterCommandTest {
 
         assertFilter("s/<4000", List.of(alice));
         assertFilter("s/>4000", List.of(daniel));
-        assertFilter("s/<004000", List.of(alice));
-        assertFilter("s/>004000", List.of(daniel));
         assertFilter("s/4000", List.of(benson));
         assertFilter("s/<0", List.of());
         assertFilter("s/>50000", List.of());
@@ -179,7 +176,7 @@ public class FilterCommandTest {
         assertFilter("n/Alice p/943 s/>4000", List.of());
         assertFilter("n/Meier p/987 s/>4000", List.of(benson));
         assertFilter("n/Meier p/987 s/<4000", List.of());
-        assertFilter("e/alice@ a/Jurong t/friends task/report s/<4000", List.of(alice));
+        assertFilter("e/alice@example.com a/Jurong t/friends task/report s/<4000", List.of(alice));
         assertFilter("task/missing s/<4000", List.of());
     }
 
@@ -225,7 +222,7 @@ public class FilterCommandTest {
         assertFilter("n/Alice p/987 le/>10", List.of());
         assertFilter("n/Benson le/>10", List.of());
         assertFilter("n/Meier le/<10", List.of(benson));
-        assertFilter("e/alice@ a/Jurong t/friends task/report le/14", List.of(alice));
+        assertFilter("e/alice@example.com a/Jurong t/friends task/report le/14", List.of(alice));
         assertFilter("task/missing le/14", List.of());
 
         model.addLeave(model.getAddressBook().getEmployeeList().get(0).getEmployeeId().orElseThrow(),

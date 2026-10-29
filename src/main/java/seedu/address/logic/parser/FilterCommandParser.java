@@ -64,6 +64,12 @@ public class FilterCommandParser implements Parser<FilterCommand> {
                     values = List.of(parseSalaryCriterion(values.get(0)));
                 } else if (entry.getValue() == Field.LEAVE_ENTITLEMENT) {
                     values = List.of(parseLeaveCriterion(values.get(0)));
+                } else if (values.stream().anyMatch(this::startsWithComparator)) {
+                    throw new ParseException(FilterCommand.MESSAGE_TEXT_COMPARATOR);
+                } else {
+                    for (String value : values) {
+                        validateTextCriterion(value, entry.getValue());
+                    }
                 }
                 criteria.put(entry.getValue(), values);
             }
@@ -75,23 +81,48 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     }
 
     /**
-     * Normalizes an exact salary or a strict comparison, validating the amount using salary constraints.
+     * Validates an exact salary or strict comparison without allowing leading zeros.
      */
     private String parseSalaryCriterion(String value) throws ParseException {
-        if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseSalary(value.substring(1)).salary;
-        }
-        return ParserUtil.parseSalary(value).salary;
+        int operatorLength = value.startsWith("<") || value.startsWith(">") ? 1 : 0;
+        String amount = value.substring(operatorLength).trim();
+        checkNoLeadingZeros(amount);
+        return value.substring(0, operatorLength) + ParserUtil.parseSalary(amount).salary;
     }
 
     /**
-     * Normalizes an exact annual entitlement or a strict comparison using leave entitlement constraints.
+     * Validates an exact annual entitlement or strict comparison without allowing leading zeros.
      */
     private String parseLeaveCriterion(String value) throws ParseException {
-        if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseLeaveEntitlement(value.substring(1)).value;
+        int operatorLength = value.startsWith("<") || value.startsWith(">") ? 1 : 0;
+        String amount = value.substring(operatorLength).trim();
+        checkNoLeadingZeros(amount);
+        return value.substring(0, operatorLength) + ParserUtil.parseLeaveEntitlement(amount).value;
+    }
+
+    /**
+     * Applies the same field constraints used when adding or editing employee details.
+     */
+    private void validateTextCriterion(String value, Field field) throws ParseException {
+        switch (field) {
+            case NAME -> ParserUtil.parseName(value);
+            case PHONE -> ParserUtil.parsePhone(value);
+            case EMAIL -> ParserUtil.parseEmail(value);
+            case ADDRESS -> ParserUtil.parseAddress(value);
+            case TAG -> ParserUtil.parseTag(value);
+            case TASK -> ParserUtil.parseTask(value);
+            default -> throw new IllegalArgumentException("Field is not a text field: " + field);
         }
-        return Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
+    }
+
+    private boolean startsWithComparator(String value) {
+        return value.startsWith("<") || value.startsWith(">") || value.startsWith("=") || value.startsWith("!=");
+    }
+
+    private void checkNoLeadingZeros(String amount) throws ParseException {
+        if (amount.matches("0[0-9]+")) {
+            throw new ParseException(FilterCommand.MESSAGE_LEADING_ZEROS);
+        }
     }
 
     private ParseException invalidFormat() {
