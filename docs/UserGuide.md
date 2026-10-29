@@ -527,8 +527,9 @@ employees, leave records, and the next internal identifiers. Editing it manually
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
-usual command results box. Manually inserted `null` leave records are treated as invalid data. The saved file remains
-unchanged until you run a successful command, which replaces it with the current data. To recover your saved data, close HR Book without
+usual command results box. Any explicit JSON `null` anywhere in the address-book file is invalid, including employee
+fields, leave fields, nested data, and array entries. The saved file remains unchanged until you run a successful
+command, which replaces it with the current data. To recover your saved data, close HR Book without
 running a command, correct the file or restore a valid backup, then reopen the app. We recommend backing up the file
 before editing it.<br>
 Furthermore, certain edits can cause HR Book to behave in unexpected ways (e.g., if a value entered is outside of the
