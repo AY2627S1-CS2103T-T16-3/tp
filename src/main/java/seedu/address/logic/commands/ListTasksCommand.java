@@ -17,7 +17,8 @@ import seedu.address.model.employee.Task;
  */
 public class ListTasksCommand extends Command {
 
-    public static final String COMMAND_WORD = "list-tasks";
+    public static final String SUBCOMMAND_WORD = "list";
+    public static final String COMMAND_WORD = TaskCommand.COMMAND_WORD + " " + SUBCOMMAND_WORD;
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Lists the tasks assigned to the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer)\n"
