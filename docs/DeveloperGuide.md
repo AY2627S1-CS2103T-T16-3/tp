@@ -874,59 +874,34 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC11 - Show Employee Details**
+**Use case: UC11 - Sort employees**
 
 **MSS**
 
-1.  HR officer request for a specific detail of an employee on HR Book.
-2.  System displays employee profile and the relevant detail highlighted to user.
+1. HR manager requests to sort the currently displayed employees by one supported field
+   (name, phone number, email, address, salary, or annual leave entitlement) in ascending or descending order.
+2. System displays the employees in the requested order and confirms the sort.
+   Name, email, and address are sorted alphabetically, ignoring case;
+   phone number, salary, and annual leave entitlement are sorted numerically.
+   Any active filter remains applied.
 
-    Use case ends
+    Use case ends.
 
 **Extensions**
 
-* 1a. The request contains an employee ID that does not exist in the system
+* 1a. The request omits the sort field or order, specifies an unsupported field or order,
+  or specifies more than one sort criterion.
 
-    * 1a1. System informs the HR manager that the request is invalid as employee ID does not exist in the system.
-    * 1a2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1b. The request uses an employee ID that does not follow the correct format (eg. includes letters/special characters)
-
-    * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
-    * 1b2. System does not display specified detail of requested employee.
+    * 1a1. System informs the HR manager that the command is invalid and displays the correct usage.
+    * 1a2. System leaves the displayed employee order and active filter unchanged.
 
       Use case ends.
 
-* 1c. The detail field for the specified employee is empty
+* 2a. The currently displayed employee list is empty.
 
-    * 1c1. System informs the HR manager that no such detail has been recorded for the employee.
-    * 1c2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1d. The request inputs an invalid detail field
-
-    * 1d1. System informs the HR manager that detail field does not exist for employees on HR Book.
-    * 1d2. System does not display specified detail of requested employee.
+    * 2a1. System confirms the sort and keeps the displayed list empty without restoring filtered-out employees.
 
       Use case ends.
-
-* 1e. The request specified multiple details in a single command
-
-    * 1e1. System informs the HR manager that only one detail can be shown at a time.
-    * 1e2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1f. The request included multiple employee IDs in a single command
-
-    * 1f1. System informs the HR manager that only one employee can be chosen at a time.
-    * 1f2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
 
 **Use case: UC12 - Change an employee's salary**
 
