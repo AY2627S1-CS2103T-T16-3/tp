@@ -86,9 +86,9 @@ Adds an employee to the address book.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
-Salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
+Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
-Employee cards display salary with a `$` prefix, for example `$5000`.
+Employee cards display salary with a monthly label, for example `Monthly salary: $5000`.
 
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
@@ -187,7 +187,7 @@ Run the command again after employee, task, or salary changes to refresh the fig
 
 ### Changing an employee's salary: `salary`
 
-Changes the salary of an existing employee in the address book.
+Changes the monthly salary of an existing employee in the address book.
 
 Format: `salary INDEX s/SALARY`
 
@@ -196,6 +196,8 @@ Format: `salary INDEX s/SALARY`
 * Supply `s/` exactly once. The new salary replaces the employee's existing salary; other employee details are preserved.
 * Other fields, such as `n/`, are rejected with "Unsupported field. The salary command only accepts s/." This check happens before salary validation, so only the unsupported-field error is shown when both the field and amount are invalid.
 * Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
+* When the salary changes, the feedback shows the employee's name and both amounts, for example: `Updated Betsy's salary from $5000 to $6000.`
+* If the employee already has the requested salary, the feedback reports that no changes were made, for example: `Betsy's salary is already $6000. No changes made.` The currently displayed employee list is preserved.
 
 Examples:
 * `salary 1 s/5000` changes the 1st employee's salary in the displayed list to `$5000`.
