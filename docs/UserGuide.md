@@ -15,7 +15,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest HR Book `.jar` file from the [team's releases page](https://github.com/AY2627S1-CS2103T-T16-3/tp/releases).
 
 1. Copy the file to the folder you want to use as the _home folder_ for your HR Book.
 
@@ -204,7 +204,7 @@ Examples:
 
 Edits an existing employee in the address book.
 
-Salary is preserved when editing other details. The `edit` command rejects `s/`;
+Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
