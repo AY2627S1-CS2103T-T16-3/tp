@@ -538,9 +538,11 @@ HR Book data is saved automatically as a JSON file `[JAR file location]/data/add
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, HR Book starts with empty data at the next run. The invalid file remains on
-disk until you run a command (HR Book saves after every command). Still, we recommend backing up the file before
-editing it.<br>
+If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
+usual command results box. Manually inserted `null` leave records are treated as invalid data. The saved file remains
+unchanged until you run a successful command, which replaces it with the current data. To recover your saved data, close HR Book without
+running a command, correct the file or restore a valid backup, then reopen the app. We recommend backing up the file
+before editing it.<br>
 Furthermore, certain edits can cause HR Book to behave in unexpected ways (e.g., if a value entered is outside of the
 acceptable range or a leave refers to a missing employee). Therefore, edit the data file only if you are confident that
 you can update it correctly.

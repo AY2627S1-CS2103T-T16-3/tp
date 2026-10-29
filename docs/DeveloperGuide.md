@@ -139,6 +139,17 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+Saved data is treated as untrusted input because files may be edited accidentally or modified maliciously. The
+defensive validation starts with `null` entries inside the saved leave list, preventing these
+entries from causing an uncaught exception during startup. This check specifically covers null leave records.
+On startup, such an entry is rejected with an `IllegalValueException`, which
+`JsonAddressBookStorage` wraps in a `DataLoadingException`. A missing or null leave-list field remains supported for
+legacy files. `MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
+`Ui#setFeedbackToUser`. `UiManager` forwards the message through `MainWindow` to the existing `ResultDisplay`,
+identifying the data file and explaining recovery.
+Neither loading nor closing the app rewrites the address-book file; the next successfully executed command saves the
+current model. A missing file instead starts with sample data and does not show a loading error.
+
 ### Common classes
 
 Classes used by multiple components are in the `seedu.address.commons` package.
@@ -1310,6 +1321,19 @@ Run the command again after a change to see updated counts; summaries are not re
 
 1. Dealing with missing/corrupted data files
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+   1. Prerequisites: Use a disposable copy of the application and back up `data/addressbook.json`. Close the app
+      before editing the file. Restore the backup between cases.
 
-1. _{ more test cases …​ }_
+   1. Test case: Simulate a maliciously modified data file by replacing its contents with
+      `{"persons":[],"leaves":[null]}`, then relaunch.<br>
+      Expected: The window opens with an empty address book and an error in the usual command results box. It identifies
+      the data file, explains that it could not be loaded, and advises closing the app to correct or restore it before
+      running a command. Closing the app without commands leaves the file unchanged.
+
+   1. Test case: In the previous case, execute `list`.<br>
+      Expected: The saved file is replaced with the empty address book, as explained in the message. The results box
+      displays the command result normally.
+
+   1. Test case: Repeat with malformed JSON, then with a valid data file and with a missing data file.<br>
+      Expected: Malformed JSON produces the same error message and recovery behaviour. Valid data loads normally. A missing
+      file starts with sample data. Neither a valid file nor a missing file produces a data-loading error message.
