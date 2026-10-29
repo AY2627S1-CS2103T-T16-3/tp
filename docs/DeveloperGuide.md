@@ -278,7 +278,7 @@ is omitted from the diagram for clarity.
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
-headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks,
+headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks, saved leave records,
 and total/average recorded salary.
 
 The partial class diagram below shows how scope selection, aggregation, and table formatting are separated.
@@ -297,7 +297,8 @@ At execution time the command reads
 `model.getAddressBook().getEmployeeList()` for explicit `scope/all`. Indexes refer to positions in this collection.
 Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
 An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
-passed to `EmployeeSummary.fromEmployees`, so all statistics share the same selection. The command labels
+passed to `EmployeeSummary.fromEmployees` together with `model.getAddressBook().getLeaveList()`, so all
+statistics share the same employee selection. The command labels
 the multiline result `Scope: All employees` or
 `Scope: Filtered employees`, followed by any inclusion/exclusion lists in ascending order.
 Empty selections remain empty; no fallback or filter mutation occurs.
@@ -319,7 +320,7 @@ No new window, storage fields, or model API is needed.
 Aggregation is recomputed on each invocation, without stored counters, new JSON fields, or changes to
 employees, tags, user preferences, or the current filter. The existing application-wide automatic
 save after command execution remains unchanged. This feature does not infer attendance, active
-employment, or departments. It remains independent of the leave records stored in the model.
+employment, or departments.
 
 Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, locale independence, and
 snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
@@ -335,6 +336,24 @@ normal/error font restoration, caret reset, and null input handling on the JavaF
 Linux CI runs these tests with Xvfb to provide a virtual display.
 The JavaFX result-panel preview was checked with synthetic data
 for aligned columns, empty results, and restoration of the normal feedback font.
+
+#### Leave-record counts
+
+`EmployeeSummary.fromEmployees(employees, leaves)` builds a set of the selected employees' stable IDs,
+then counts each leave record whose employee ID belongs to that set. Employee names and displayed indexes
+are not used to match records. Employees without an ID contribute no leave records.
+This takes O(E + L) time for E selected employees and L stored leave records.
+
+Each saved period counts once regardless of its duration, year, or whether it is in the past or future.
+The result is stored as a `long` in the immutable snapshot and displayed as `Leave records`.
+Empty selections and selections without matching records produce zero. The one-argument factory assumes
+no leave records. Neither factory retains or changes the input lists.
+
+`EmployeeSummaryLeaveTest` checks record counting across years, stable IDs after renaming, empty and
+unmatched inputs, null inputs, and snapshot independence. `SummaryLeaveCommandTest` checks both aliases,
+filtered/all scopes, inclusion/exclusion selections, displayed indexes after sorting, and fresh counts
+after leave or employee deletion. `LogicManagerTest` exercises real leave commands and verifies that
+summaries preserve the active filter and saved data, and that changes persist correctly.
 
 #### Task counts
 

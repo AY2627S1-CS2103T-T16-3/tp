@@ -110,7 +110,8 @@ Format: `list`
 
 ### Viewing the workforce summary: `summary`
 
-Shows employee counts by tag, task-assignment counts, and recorded salary statistics in the selected scope.
+Shows employee counts by tag, task-assignment counts, leave-record counts, and recorded salary statistics
+in the selected scope.
 
 Format: `summary [scope/all|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`)
 
@@ -153,6 +154,7 @@ Scope: Filtered employees
 | Without tags         |         1 |
 | Assigned tasks       |         6 |
 | Employees with tasks |         3 |
+| Leave records        |         3 |
 | Total salary         | $15000.00 |
 | Average salary       |  $3000.00 |
 +----------------------+-----------+
@@ -166,10 +168,11 @@ Scope: Filtered employees
 +-------------+-----------+
 ```
 
-![Summary result panel](images/summary-table.png)
-
 * The first table shows headcount, employees without tags, assigned tasks, employees with tasks,
-  and total/average recorded salary. The tag table appears only when there are tags.
+  saved leave records, and total/average recorded salary. The tag table appears only when there are tags.
+* `Leave records` counts saved leave periods belonging to the selected employees. Each period counts once,
+  regardless of its length or year. Past, current, and future records are included. This is a count of records,
+  not leave days or remaining entitlement. An empty selection or employees without leave records show `0`.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
   Employees with several tags count in each group, so tag counts can overlap.
@@ -183,7 +186,7 @@ Scope: Filtered employees
 
 The tables use a monospaced font with right-aligned values. Columns expand to fit long tags and large amounts.
 Scroll within the result area or drag the divider below it to see more rows; wide tables can be scrolled horizontally.
-Run the command again after employee, task, or salary changes to refresh the figures.
+Run the command again after employee, task, leave, or salary changes to refresh the figures.
 
 ### Changing an employee's salary: `salary`
 
