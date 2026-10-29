@@ -70,6 +70,19 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void unescapeTaskText_escapedSlashes_returnsLiteralSlashes() {
+        assertEquals("Coordinate w/Finance", ParserUtil.unescapeTaskText("Coordinate w\\/Finance"));
+        assertEquals("Review d/DETAILS and n/NAME",
+                ParserUtil.unescapeTaskText("Review d\\/DETAILS and n\\/NAME"));
+    }
+
+    @Test
+    public void unescapeTaskText_noEscapedSlash_returnsUnchangedText() {
+        assertEquals("Prepare report", ParserUtil.unescapeTaskText("Prepare report"));
+        assertEquals("https://example.com", ParserUtil.unescapeTaskText("https://example.com"));
+    }
+
+    @Test
     public void parseLeaveEntitlement_invalidValue_throwsParseException() {
         for (String value : List.of("", " ", "-1", "366", "000366", "1.5", "abc",
                 "999999999999999999999", "9".repeat(1000))) {

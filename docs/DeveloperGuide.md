@@ -147,6 +147,45 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 ## **Implementation**
 
+### Save failures and model rollback
+
+After parsing a command, `LogicManager` captures a `ModelSnapshot` before execution. The model snapshot copies
+the address book (including leave records and next-ID counters) and retains the employee filter and comparator.
+If saving throws `IOException` or `AccessDeniedException`, Logic restores the snapshot through `Model` and
+reports the existing save error. Restoration updates the existing observable collections, preserving UI bindings.
+Snapshots rely on employee and leave values being immutable and on display predicates/comparators remaining unchanged.
+
+`JsonAddressBookStorage` writes JSON directly to the destination using the original storage workflow.
+Rollback restores memory only: a failed write can leave the destination incomplete or containing rejected data.
+A later successful save in the same session writes the restored model, but restarting before that save does
+not guarantee recovery. There are no backups or power-loss guarantees. Existing startup behavior opens an empty
+address book after a data-loading error; a later save can overwrite the unreadable file.
+
+`AddressBookSnapshotTest` covers independent copies, exhausted ID counters, and retained observable lists.
+`ModelManagerTest` covers snapshot restoration and `LogicManagerTest` covers rollback after save errors.
+Storage tests inject failures before writing and after a partial direct write. They verify model restoration
+and that a later successful command saves only accepted changes.
+
+#### Limits of the current save structure
+
+* **Concurrency:** There is no cross-process lock or conflict detection. Multiple app instances or external edits
+  can overwrite one another. Commands are assumed to execute serially.
+* **Rollback scope:** The snapshot covers address-book data and employee display rules, not user preferences,
+  GUI selection/scroll state, or external side effects. Model listeners can observe changes before save succeeds
+  and notifications during restoration. This is not an isolated transaction across the UI and disk.
+* **Exception scope:** Rollback handles save-time `IOException` (including access-denied errors). Runtime errors,
+  memory exhaustion, partially mutating commands that throw before saving, or failure inside restoration are
+  outside this guarantee. Even a failed save may already have changed the disk file.
+* **Cost and snapshot assumptions:** Every parsed command takes a full snapshot, and successful commands still
+  save the entire JSON file, including read-only commands such as help/list. Snapshot creation and restoration
+  copy validated collections
+  without repeating duplicate or leave-overlap checks. Copying is linear in the number of records; loading
+  external data still performs full validation. Saving and observable-list updates remain synchronous.
+  Shared employee/leave values must remain immutable, and
+  stored predicate/comparator objects must not be mutated after snapshot capture.
+
+See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) for the tested cases and exclusions.
+
 This section describes some noteworthy details on how certain features are implemented.
 
 ### Employee identifier allocation
@@ -220,8 +259,8 @@ after `find`, `filter`, or `sort`. The commands validate the employee index and 
 calling `Model#setEmployee` with the replacement employee.
 
 `Employee#addTask` rejects duplicate tasks by calling `Task#hasSameDetails`. That method compares normalized details:
-it trims the description, combines repeated spaces, and ignores letter case. The original description remains available
-through `Task#getDetails` for display.
+it trims the description, combines repeated Unicode whitespace, and ignores letter case. The original
+description remains available through `Task#getDetails` for display.
 
 Tasks are saved as part of the employee record. `JsonAdaptedEmployee` converts each `Task` to `JsonAdaptedTask`, which
 stores the task's `details` and `isDone` fields. Since tasks belong to `Employee`, deleting an employee also deletes
@@ -922,59 +961,34 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC11 - Show Employee Details**
+**Use case: UC11 - Sort employees**
 
 **MSS**
 
-1.  HR officer request for a specific detail of an employee on HR Book.
-2.  System displays employee profile and the relevant detail highlighted to user.
+1. HR manager requests to sort the currently displayed employees by one supported field
+   (name, phone number, email, address, salary, or annual leave entitlement) in ascending or descending order.
+2. System displays the employees in the requested order and confirms the sort.
+   Name, email, and address are sorted alphabetically, ignoring case;
+   phone number, salary, and annual leave entitlement are sorted numerically.
+   Any active filter remains applied.
 
-    Use case ends
+    Use case ends.
 
 **Extensions**
 
-* 1a. The request contains an employee ID that does not exist in the system
+* 1a. The request omits the sort field or order, specifies an unsupported field or order,
+  or specifies more than one sort criterion.
 
-    * 1a1. System informs the HR manager that the request is invalid as employee ID does not exist in the system.
-    * 1a2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1b. The request uses an employee ID that does not follow the correct format (eg. includes letters/special characters)
-
-    * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
-    * 1b2. System does not display specified detail of requested employee.
+    * 1a1. System informs the HR manager that the command is invalid and displays the correct usage.
+    * 1a2. System leaves the displayed employee order and active filter unchanged.
 
       Use case ends.
 
-* 1c. The detail field for the specified employee is empty
+* 2a. The currently displayed employee list is empty.
 
-    * 1c1. System informs the HR manager that no such detail has been recorded for the employee.
-    * 1c2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1d. The request inputs an invalid detail field
-
-    * 1d1. System informs the HR manager that detail field does not exist for employees on HR Book.
-    * 1d2. System does not display specified detail of requested employee.
+    * 2a1. System confirms the sort and keeps the displayed list empty without restoring filtered-out employees.
 
       Use case ends.
-
-* 1e. The request specified multiple details in a single command
-
-    * 1e1. System informs the HR manager that only one detail can be shown at a time.
-    * 1e2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1f. The request included multiple employee IDs in a single command
-
-    * 1f1. System informs the HR manager that only one employee can be chosen at a time.
-    * 1f2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
 
 **Use case: UC12 - Change an employee's salary**
 
