@@ -156,6 +156,13 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Employee identifier allocation
+
+`AddressBook` assigns each employee an internal positive integer ID from 1 to `Integer.MAX_VALUE`. The next-ID counter
+is stored as a `long`, allowing `Integer.MAX_VALUE + 1` to represent an exhausted ID sequence without numeric overflow.
+If an `add` command reaches this state, `AddressBook` throws `EmployeeIdExhaustedException`, which `AddCommand` converts
+into a user-facing command error instead of allowing the exception to terminate command execution.
+
 ### Employee salary management
 
 The `salary INDEX s/SALARY` command replaces the salary of the employee identified by their displayed index. For example, `salary 1 s/5000` sets the first employee's salary in the current list to 5000.
@@ -170,6 +177,43 @@ At execution, the command follows these steps:
 4. Resets the employee filter to show all employees and returns a success message containing the updated employee's details.
 
 This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The updated salary is saved with the rest of the employee data after the command runs.
+
+### Task management
+
+Users can keep track of tasks for each employee. The `Task` class stores the description and completion status.
+The constructor rejects blank descriptions and descriptions longer than 120 characters. In the command syntax, `INDEX`
+and `TASK_INDEX` are one-based indexes chosen by the user. The task commands use an employee's position in
+`Model#getFilteredEmployeeList` and a task's position in `Employee#getTasks` to identify the records being changed.
+
+`Employee#getTasks` returns a read-only view of the tasks for each `Employee`. `Task` is immutable: methods such as
+`Task#markDone` and `Task#markUndone` return a new `Task` instead of changing the existing object. Similarly,
+`Employee#addTask`, `Employee#deleteTask`, and `Employee#updateTask` return a new `Employee`. The replacement preserves
+the original employee's other details, including salary, leave entitlement, tags, and unrelated tasks.
+
+`AddressBookParser` passes commands beginning with task to `TaskCommandParser`. The available subcommands are:
+
+* `task list INDEX` displays the selected employee's tasks without changing the model.
+* `task add INDEX d/DETAILS` adds a new incomplete task to the selected employee.
+* `task delete INDEX i/TASK_INDEX` deletes a task.
+* `task mark INDEX i/TASK_INDEX` marks a task as complete.
+* `task unmark INDEX i/TASK_INDEX` marks a task as incomplete.
+
+Each mutating task command reads `Model#getFilteredEmployeeList` when its `execute` method runs. This ensures that
+`AddTaskCommand`, `DeleteTaskCommand`, `MarkTaskCommand`, and `UnmarkTaskCommand` use the same employee ordering shown
+after `find`, `filter`, or `sort`. The commands validate the employee index and the task index, if applicable, before
+calling `Model#setEmployee` with the replacement employee.
+
+`Employee#addTask` rejects duplicate tasks by calling `Task#hasSameDetails`. That method compares normalized details:
+it trims the description, combines repeated spaces, and ignores letter case. The original description remains available
+through `Task#getDetails` for display.
+
+Tasks are saved as part of the employee record. `JsonAdaptedEmployee` converts each `Task` to `JsonAdaptedTask`, which
+stores the task's `details` and `isDone` fields. Since tasks belong to `Employee`, deleting an employee also deletes
+its tasks.
+
+When loading data, `JsonAdaptedTask#toModelType` reconstructs each `Task` and applies the constructor's validation.
+`JsonAdaptedEmployee#toModelType` then checks the reconstructed tasks with `Task#hasSameDetails` and rejects duplicates.
+Invalid task data therefore cannot be used to create an invalid `Employee`.
 
 ### Sorting displayed employees
 
@@ -308,6 +352,8 @@ and recomputation after a salary command.
 
 The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
 `AddressBookParser` passes the remaining input to `LeaveCommandParser`, which selects the matching subcommand parser.
+The `list` subcommand must be spelled exactly, while any arguments after it are ignored like those of other commands
+that take no parameters.
 
 #### Recording leave
 
@@ -352,8 +398,13 @@ a fixed clock for deterministic status checks:
 
 The status is presentation data and is not persisted.
 
-`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so a deleted ID is never
-reused. No balance mutation is required; the next balance calculation automatically excludes the deleted record.
+`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so an ID removed using
+`leave delete` is not reused while the current address book remains in use. No balance mutation is required; the next
+balance calculation automatically excludes the deleted record.
+
+`ClearCommand` has broader semantics than deleting records individually. It replaces the model data with a new
+`AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
+IDs used before `clear` may therefore be assigned again in the fresh address book.
 
 Employee deletion cascades through `AddressBook#removeEmployee`, which removes the employee and all records with the
 same internal `EmployeeId`. During bulk replacement, `removeOrphanedLeaves` provides the equivalent safeguard. Storage
@@ -501,9 +552,11 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and learn its capabilities        |
 | `* * *`  | HR Officer                 | edit employee contact details and annual leave entitlement                     | keep employee records up to date                                                         |
 | `* * *`  | HR Officer                 | add a new employee profile with an annual leave entitlement                    | record a new hire and enforce their leave allowance                                      |
-| `* * *`  | HR Officer                 | keep track of tasks for an employee                                            | remember the work that needs to be completed for that employee                           |
-| `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                  |
-| `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
+| `* * *`  | HR Officer                 | add a task for an employee                                                     | record work that needs to be completed                                                   |
+| `* * *`  | HR Officer                 | list the tasks for an employee                                                 | review the work related to that employee                                                  |
+| `* * *`  | HR Officer                 | delete a task for an employee                                                  | remove completed or obsolete work                                                        |
+| `* * *`  | HR Officer                 | mark a task as done                                                            | keep track of completed work                                                             |
+| `* * *`  | HR Officer                 | mark a task as pending                                                         | keep track of work that still needs to be completed                                       |
 | `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
 | `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
 | `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
@@ -1090,6 +1143,100 @@ testers are expected to do more *exploratory* testing.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
+
+### Managing tasks
+
+1. Listing an employee's tasks
+
+   1. Prerequisites: Use `list` and choose an employee with at least two tasks,
+      including one pending and one completed task. Note the employee's displayed
+      index.
+
+   1. Test case: `task list 1`<br>
+      Expected: The selected employee's tasks are displayed in the order they
+      were added. Pending tasks show `[ ]` and completed tasks show `[x]`.
+
+   1. Test case: `task list 0`<br>
+      Expected: No task list is shown. The status message shows invalid command format.
+
+2. Adding a task
+
+   1. Prerequisites: Use `list` and note the index of an employee. Ensure the
+      employee does not already have the task used below.
+
+   1. Test case: `task add 1 d/Prepare monthly report`<br>
+      Expected: The task is added as pending. The status message confirms the
+      task was added, and `task list 1` shows it.
+
+   1. Test case: `task add 1 d/  prepare   MONTHLY report  `<br>
+      Expected: The task is rejected as a duplicate because task comparison
+      ignores surrounding whitespace, repeated whitespace, and capitalization.
+
+   1. Other incorrect add commands to try: `task add`, `task add 0 d/Test`,
+      `task add 1`, and a task description longer than 120 characters.<br>
+      Expected: No task is added. The status message shows invalid command format.
+
+3. Deleting a task
+
+   1. Prerequisites: Use `task list 1` for an employee with at least two tasks.
+
+   1. Test case: `task delete 1 i/1`<br>
+      Expected: The first task is deleted. The remaining tasks keep their
+      relative order and the status message confirms the deleted task.
+
+   1. Test case: `task delete 1 i/0`<br>
+      Expected: No task is deleted. The status message shows invalid command format.
+
+   1. Other incorrect delete commands to try: `task delete`,
+      `task delete 1`, and `task delete 1 i/x`.<br>
+      Expected: No task is deleted. The status message shows invalid command format.
+
+4. Marking and unmarking a task
+
+   1. Prerequisites: Use `task list 1` for an employee with a pending task and
+      note its task index.
+
+   1. Test case: `task mark 1 i/1`<br>
+      Expected: The task becomes completed. `task list 1` displays it with
+      `[x]`.
+
+   1. Test case: Run `task mark 1 i/1` again.<br>
+      Expected: The command succeeds without changing the task's completed
+      state.
+
+   1. Test case: `task unmark 1 i/1`<br>
+      Expected: The task becomes pending. `task list 1` displays it with
+      `[ ]`.
+
+   1. Test case: Run `task unmark 1 i/1` again.<br>
+      Expected: The command succeeds without changing the task's pending state.
+
+   1. Other incorrect mark/unmark commands to try: `task mark 0 i/1`,
+      `task unmark 1 i/0`, and `task mark 1 1`.<br>
+      Expected: No task state changes. The status message shows invalid command format.
+
+5. Operating on tasks after filtering
+
+   1. Prerequisites: Ensure at least two employees exist, and one employee has
+      a distinctive name such as `Alex`.
+
+   1. Test case: `find Alex`, followed by `task add 1 d/Submit access request`<br>
+      Expected: The task is added to the first employee in the filtered list,
+      and the filtered employee list remains displayed.
+
+   1. Test case: Run `task mark 1 i/1`, `task unmark 1 i/1`, or
+      `task delete 1 i/1` after a `find` or `filter` command.<br>
+      Expected: The command operates on the employee and task shown in the
+      current filtered view, which remains in place.
+
+6. Saving task changes
+
+   1. Prerequisites: Add or modify a task, then close the application normally.
+
+   1. Test case: Relaunch the app and run `list`, followed by `task list 1` for
+      the affected employee.<br>
+      Expected: The task, its order, and its completed/pending state are
+      preserved.
 
 ### Managing leave
 
