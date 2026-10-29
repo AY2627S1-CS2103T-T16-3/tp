@@ -220,8 +220,8 @@ after `find`, `filter`, or `sort`. The commands validate the employee index and 
 calling `Model#setEmployee` with the replacement employee.
 
 `Employee#addTask` rejects duplicate tasks by calling `Task#hasSameDetails`. That method compares normalized details:
-it trims the description, combines repeated spaces, and ignores letter case. The original description remains available
-through `Task#getDetails` for display.
+it trims the description, combines repeated Unicode whitespace, and ignores letter case. The original
+description remains available through `Task#getDetails` for display.
 
 Tasks are saved as part of the employee record. `JsonAdaptedEmployee` converts each `Task` to `JsonAdaptedTask`, which
 stores the task's `details` and `isDone` fields. Since tasks belong to `Employee`, deleting an employee also deletes

@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Represents a task assigned to an employee.
@@ -14,6 +15,8 @@ public class Task {
     public static final int MAX_DETAILS_LENGTH = 120;
     public static final String MESSAGE_CONSTRAINTS = "Task details should not be blank and should not exceed "
             + MAX_DETAILS_LENGTH + " characters.";
+    private static final Pattern WHITESPACE_PATTERN =
+            Pattern.compile("\\s+", Pattern.UNICODE_CHARACTER_CLASS);
 
     private final String details;
     private final boolean isDone;
@@ -87,7 +90,7 @@ public class Task {
      * @return Lowercase details with consecutive whitespace collapsed.
      */
     public String getNormalizedDetails() {
-        return details.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+        return WHITESPACE_PATTERN.matcher(details).replaceAll(" ").trim().toLowerCase(Locale.ROOT);
     }
 
     /**
