@@ -14,7 +14,7 @@ import seedu.address.commons.util.ToStringBuilder;
 /**
  * Matches employees against all supplied field criteria. Text matches are case-insensitive substrings;
  * task matches are case-insensitive substrings, tag matches are case-insensitive whole tag names,
- * and salary and annual leave entitlement matches are exact amounts or numeric comparisons.
+ * and salary and annual leave entitlement support comparisons and inclusive ranges.
  */
 public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
 
@@ -62,20 +62,26 @@ public class EmployeeMatchesCriteriaPredicate implements Predicate<Employee> {
             case ADDRESS -> containsIgnoreCase(employee.getAddress().value, value);
             case TASK -> employee.getTasks().stream()
                     .anyMatch(task -> containsIgnoreCase(task.getDetails(), value));
-            case SALARY -> matchesAmount(Integer.parseInt(employee.getSalary().salary), value);
-            case LEAVE_ENTITLEMENT -> matchesAmount(employee.getLeaveEntitlement().value, value);
+            case SALARY -> matchesAmount(employee.getSalary().salary, value);
+            case LEAVE_ENTITLEMENT -> matchesAmount(Integer.toString(employee.getLeaveEntitlement().value), value);
             case TAG -> employee.getTags().stream().anyMatch(tag -> tag.tagName.equalsIgnoreCase(value));
         };
     }
 
-    private boolean matchesAmount(int amount, String criterion) {
+    private boolean matchesAmount(String value, String criterion) {
+        int amount = Integer.parseInt(value);
+        if (criterion.contains("-")) {
+            String[] bounds = criterion.split("-");
+            return amount >= Integer.parseInt(bounds[0])
+                    && amount <= Integer.parseInt(bounds[1]);
+        }
         if (criterion.startsWith("<=") || criterion.startsWith(">=")) {
-            int threshold = Integer.parseInt(criterion.substring(2));
-            return criterion.startsWith("<=") ? amount <= threshold : amount >= threshold;
+            int comparison = Integer.compare(amount, Integer.parseInt(criterion.substring(2)));
+            return criterion.startsWith("<=") ? comparison <= 0 : comparison >= 0;
         }
         if (criterion.startsWith("<") || criterion.startsWith(">")) {
-            int threshold = Integer.parseInt(criterion.substring(1));
-            return criterion.startsWith("<") ? amount < threshold : amount > threshold;
+            int comparison = Integer.compare(amount, Integer.parseInt(criterion.substring(1)));
+            return criterion.startsWith("<") ? comparison < 0 : comparison > 0;
         }
         return amount == Integer.parseInt(criterion);
     }

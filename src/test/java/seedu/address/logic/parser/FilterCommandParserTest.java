@@ -173,6 +173,42 @@ public class FilterCommandParserTest {
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_LEAVE_ENTITLEMENT));
     }
 
+    @Test
+    public void parse_numericRanges_normalizesBothEndpoints() throws Exception {
+        for (String prefix : List.of("s/", "le/")) {
+            assertEquals(parser.parse(prefix + "14-21"), parser.parse(prefix + "0014 - 0021"));
+            assertEquals(parser.parse(prefix + "14-21"), parser.parse(prefix + "14 - 21"));
+            assertEquals(parser.parse(prefix + "14 - 14"), parser.parse(prefix + "14-14"));
+            for (String operator : List.of("<", "<=", ">", ">=")) {
+                assertEquals(parser.parse(prefix + operator + "14"),
+                        parser.parse(prefix + operator + " 0014"));
+            }
+        }
+    }
+
+    @Test
+    public void parse_invalidNumericRanges_throwsParseException() {
+        for (String prefix : List.of("s/", "le/")) {
+            for (String value : List.of("21-14")) {
+                assertParseFailure(parser, prefix + value,
+                        "Range minimum must not exceed its maximum.\n" + FilterCommand.MESSAGE_USAGE);
+            }
+        }
+        for (String value : List.of("0-50001", "0..50001", "1-", "1..", "..2", "1-2-3", "1.5-2", "-1-2")) {
+            assertParseFailure(parser, "s/" + value, Salary.MESSAGE_CONSTRAINTS);
+        }
+        assertParseFailure(parser, "le/0-366", LeaveEntitlement.MESSAGE_CONSTRAINTS);
+
+    }
+
+    @Test
+    public void parse_dotRanges_throwsParseException() {
+        for (String range : List.of("14..21", "14 .. 21", "14..14", "21..14")) {
+            assertParseFailure(parser, "s/" + range, Salary.MESSAGE_CONSTRAINTS);
+            assertParseFailure(parser, "le/" + range, LeaveEntitlement.MESSAGE_CONSTRAINTS);
+        }
+    }
+
     private void assertInvalidFormat(String input) {
         assertParseFailure(parser, input, String.format(MESSAGE_INVALID_COMMAND_FORMAT, FilterCommand.MESSAGE_USAGE));
     }

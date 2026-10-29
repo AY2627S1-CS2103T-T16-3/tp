@@ -14,19 +14,18 @@ public class FilterCommand extends Command {
 
     public static final String COMMAND_WORD = "filter";
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Lists employees matching all supplied criteria. Text fields use case-insensitive partial matches; "
-            + "tasks use case-insensitive partial matches; tags use case-insensitive whole tag matches; "
-            + "salary uses an exact amount or <, <=, >, or >= followed by an amount from 0 to 50000; "
-            + "annual leave entitlement uses an exact number or <, <=, >, or >= followed by days from 0 to 365.\n"
-            + "Parameters: [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... "
-            + "[s/SALARY] [le/DAYS]\n"
-            + "At least one non-empty criterion is required. Only t/ and task/ may be repeated.\n"
-            + "Example: " + COMMAND_WORD + " n/Alice p/912 s/<4000 le/>10";
+            + ": Match all supplied filters. Provide at least one.\n"
+            + "Fields: n/NAME p/PHONE e/EMAIL a/ADDRESS t/TAG task/DETAILS s/SALARY le/DAYS\n"
+            + "Text Fields: Partial Matches Allowed; Tags: Whole match Required (case-insensitive). "
+            + "Only t/ or task/ fields may be repeated.\n"
+            + "Salary (0-50000) and leave (0-365) fields only: supports exact, <, <=, >, >=, "
+            + "and inclusive range MIN-MAX.\n"
+            + "Example: filter task/report s/3000-5000 le/>=14";
 
     private final EmployeeMatchesCriteriaPredicate predicate;
 
     public FilterCommand(EmployeeMatchesCriteriaPredicate predicate) {
-        this.predicate = requireNonNull(predicate);
+        this.predicate = requireNonNull(predicate);ç
     }
 
     @Override
