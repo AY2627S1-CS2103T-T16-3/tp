@@ -25,7 +25,7 @@ public class FilterCommand extends Command {
     private final EmployeeMatchesCriteriaPredicate predicate;
 
     public FilterCommand(EmployeeMatchesCriteriaPredicate predicate) {
-        this.predicate = requireNonNull(predicate);ç
+        this.predicate = requireNonNull(predicate);
     }
 
     @Override
