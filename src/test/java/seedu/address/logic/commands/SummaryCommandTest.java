@@ -27,6 +27,7 @@ public class SummaryCommandTest {
             | Without tags         |     0 |
             | Assigned tasks       |     0 |
             | Employees with tasks |     0 |
+            | Leave records        |     0 |
             | Total salary         | $0.00 |
             | Average salary       |   N/A |
             +----------------------+-------+""";

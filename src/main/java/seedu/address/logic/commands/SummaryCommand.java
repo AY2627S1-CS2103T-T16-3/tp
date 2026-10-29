@@ -22,7 +22,7 @@ public class SummaryCommand extends Command {
     public static final String COMMAND_WORD = "summary";
     public static final String COMMAND_ALIAS = "/summary";
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Shows employee counts, tags, assigned task counts, and recorded salary statistics.\n"
+            + ": Shows employee counts, tags, task and leave-record counts, and recorded salary statistics.\n"
             + "Usage: summary [scope/all|scope/filtered] [i/INDEX...] [e/INDEX...] (alias: /summary).\n"
             + "Default scope: filtered. Indexes must be positive integers in the selected scope.\n"
             + "i/ includes only the listed indexes; e/ excludes them. Exclusions take precedence.\n"
@@ -68,7 +68,8 @@ public class SummaryCommand extends Command {
         requireNonNull(model);
         List<Employee> employees = scope == Scope.ALL
                 ? model.getAllEmployeesInDisplayOrder() : model.getFilteredEmployeeList();
-        EmployeeSummary summary = EmployeeSummary.fromEmployees(selectEmployees(employees));
+        EmployeeSummary summary = EmployeeSummary.fromEmployees(selectEmployees(employees),
+                model.getAddressBook().getLeaveList());
         return new CommandResult(formatSummary(summary), CommandResult.DisplayFormat.TABLE);
     }
 

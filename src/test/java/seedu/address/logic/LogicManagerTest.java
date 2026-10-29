@@ -105,6 +105,35 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_summaryAfterLeaveCommands_recountsAndPreservesSavedData() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/123 Main Street le/14");
+        logic.execute("add n/Bob p/98765432 e/bob@example.com a/456 Main Street le/14");
+        logic.execute("leave add 1 from/06-01-2025 to/06-01-2025");
+        logic.execute("leave add 1 from/05-01-2026 to/09-01-2026");
+        logic.execute("leave add 2 from/04-01-2027 to/05-01-2027");
+        logic.execute("find Alice");
+        AddressBook before = new AddressBook(model.getAddressBook());
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+        String savedData = Files.readString(dataFile);
+
+        for (String command : List.of("summary", "/summary")) {
+            assertSummaryValue(logic.execute(command).getFeedbackToUser(), "Leave records", "2");
+            assertSummaryValue(logic.execute(command + " scope/all").getFeedbackToUser(), "Leave records", "3");
+            assertEquals(before, model.getAddressBook());
+            assertEquals(displayed, model.getFilteredEmployeeList());
+            assertEquals(savedData, Files.readString(dataFile));
+        }
+
+        logic.execute("leave delete 1");
+        assertSummaryValue(logic.execute("summary").getFeedbackToUser(), "Leave records", "1");
+        logic.execute("delete 1");
+        assertSummaryValue(logic.execute("summary scope/all").getFeedbackToUser(), "Leave records", "1");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
+        assertEquals(new AddressBook(model.getAddressBook()), new AddressBook(storage.readAddressBook().orElseThrow()));
+    }
+
+    @Test
     public void execute_summaryAliasesWithTasksAndActiveFilter_preservesModelAndSavedData() throws Exception {
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering")
                 .withTasks(new Task("Report")).build();

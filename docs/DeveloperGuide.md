@@ -405,6 +405,8 @@ Each saved period counts once regardless of its duration, year, or whether it is
 The result is stored as a `long` in the immutable snapshot and displayed as `Leave records`.
 Empty selections and selections without matching records produce zero. The one-argument factory assumes
 no leave records. Neither factory retains or changes the input lists.
+The existing leave records are the source of truth after restart: the count is recalculated rather than
+saved separately. Changes to leave or employee records are reflected the next time `summary` runs.
 
 `EmployeeSummaryLeaveTest` checks record counting across years, stable IDs after renaming, empty and
 unmatched inputs, null inputs, and snapshot independence. `SummaryLeaveCommandTest` checks both aliases,
@@ -1313,6 +1315,9 @@ leave add 1 from/04-01-2027 to/05-01-2027
    Expected: Alpha's leave count falls to one. Run `edit 1 n/Summary Alicia`, then `find Alicia`, then `summary`:
    the count remains one because records are matched by employee ID. Run `delete 1`, then `summary scope/all`:
    only Beta remains, with one leave record. Alpha's remaining leave record has also been removed.
+10. Close and reopen the app from the same test folder, then run `summary`.
+    Expected: Beta still has one leave record, total salary `$1000.00`, and no tasks. Run `leave delete 3`,
+    then `summary`: the leave count becomes zero. The count is derived from the saved records after restart.
 
 For every summary command above, check that the employee list and saved data are unchanged by the summary itself.
 Run the command again after a change to see updated counts; summaries are not refreshed automatically.

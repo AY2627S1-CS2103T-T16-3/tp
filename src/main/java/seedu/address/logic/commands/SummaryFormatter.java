@@ -22,6 +22,7 @@ final class SummaryFormatter {
         metrics.put("Without tags", String.valueOf(summary.getEmployeesWithoutTags()));
         metrics.put("Assigned tasks", String.valueOf(summary.getTotalTasks()));
         metrics.put("Employees with tasks", String.valueOf(summary.getEmployeesWithTasks()));
+        metrics.put("Leave records", String.valueOf(summary.getTotalLeaveRecords()));
         metrics.put("Total salary", "$" + BigDecimal.valueOf(summary.getTotalSalary()).setScale(2).toPlainString());
         metrics.put("Average salary", summary.getAverageSalary()
                 .map(value -> "$" + value.toPlainString()).orElse("N/A"));

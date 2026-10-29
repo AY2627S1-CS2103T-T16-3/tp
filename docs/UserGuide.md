@@ -132,6 +132,7 @@ To select particular employees for the summary:
 * Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
   displayed list. With `scope/all`, they refer to the full employee list in the current sort order;
   run `list` first to view that numbering. Without an active sort, the full list uses stored order.
+  With everyone displayed, both scopes select the same employees even when sort values tie.
   Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
 * Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
   Excluding everyone produces an empty summary. Selections apply only to this invocation.
@@ -174,6 +175,7 @@ Scope: Filtered employees
 * `Leave records` counts saved leave periods belonging to the selected employees. Each period counts once,
   regardless of its length or year. Past, current, and future records are included. This is a count of records,
   not leave days or remaining entitlement. An empty selection or employees without leave records show `0`.
+  For example, one single-day period and one five-day period count as two records, not six days.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
   Employees with several tags count in each group, so tag counts can overlap.

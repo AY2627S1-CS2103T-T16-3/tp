@@ -26,6 +26,7 @@ public class SummaryFormatterTest {
                 | Without tags         |     0 |
                 | Assigned tasks       |     0 |
                 | Employees with tasks |     0 |
+                | Leave records        |     0 |
                 | Total salary         | $0.00 |
                 | Average salary       |   N/A |
                 +----------------------+-------+""";
@@ -47,6 +48,7 @@ public class SummaryFormatterTest {
                 | Without tags         |        1 |
                 | Assigned tasks       |        3 |
                 | Employees with tasks |        2 |
+                | Leave records        |        0 |
                 | Total salary         | $4000.00 |
                 | Average salary       | $1333.33 |
                 +----------------------+----------+
