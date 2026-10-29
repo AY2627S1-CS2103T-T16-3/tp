@@ -47,10 +47,16 @@ public class LeaveCommandParserTest {
     }
 
     @Test
-    public void parse_listWithArguments_throwsUsageMessage() {
+    public void parse_listWithArguments_returnsListLeaveCommand() throws Exception {
+        assertInstanceOf(ListLeaveCommand.class, parser.parse("list 1"));
+        assertInstanceOf(ListLeaveCommand.class, parser.parse("list extra arguments"));
+    }
+
+    @Test
+    public void parse_misspelledList_throwsUsageMessage() {
         assertThrows(ParseException.class,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, LeaveCommandParser.MESSAGE_USAGE), () ->
-                    parser.parse("list 1"));
+                    parser.parse("listing extra"));
     }
 
     @Test

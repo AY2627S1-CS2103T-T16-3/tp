@@ -12,6 +12,7 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.exceptions.DuplicateLeaveException;
@@ -108,7 +109,7 @@ class JsonSerializableAddressBook {
             throw new IllegalValueException(MESSAGE_ORPHANED_LEAVE, e);
         } catch (OverlappingLeaveException e) {
             throw new IllegalValueException(MESSAGE_OVERLAPPING_LEAVE, e);
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (EmployeeIdExhaustedException | IllegalArgumentException | IllegalStateException e) {
             throw new IllegalValueException(MESSAGE_INVALID_EMPLOYEE_ID, e);
         }
     }

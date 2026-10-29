@@ -14,6 +14,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.UniqueEmployeeList;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.LeaveId;
@@ -285,7 +286,7 @@ public class AddressBook implements ReadOnlyAddressBook {
                 continue;
             }
             if (nextIdAfterSet > Integer.MAX_VALUE) {
-                throw new IllegalStateException("No employee IDs are available.");
+                throw new EmployeeIdExhaustedException();
             }
             employeesWithIds.add(employee.withEmployeeId(new EmployeeId((int) nextIdAfterSet)));
             nextIdAfterSet++;
@@ -297,7 +298,7 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private EmployeeId createNextEmployeeId() {
         if (nextEmployeeId > Integer.MAX_VALUE) {
-            throw new IllegalStateException("No employee IDs are available.");
+            throw new EmployeeIdExhaustedException();
         }
         return new EmployeeId((int) nextEmployeeId);
     }
