@@ -1,7 +1,9 @@
 package seedu.address.storage;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
 import static seedu.address.testutil.TypicalEmployees.HOON;
@@ -9,6 +11,8 @@ import static seedu.address.testutil.TypicalEmployees.IDA;
 import static seedu.address.testutil.TypicalEmployees.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -17,7 +21,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.logic.LogicManager;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
+import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
@@ -32,6 +39,172 @@ public class JsonAddressBookStorageTest {
 
     @TempDir
     public Path testFolder;
+
+    @Test
+    public void saveAddressBook_partialWrite_preservesPreviousFile() throws Exception {
+        assertFailedSavePreservesFile("write");
+    }
+
+    @Test
+    public void saveAddressBook_failedMove_preservesPreviousFile() throws Exception {
+        assertFailedSavePreservesFile("move");
+    }
+
+    @Test
+    public void saveAddressBook_unsupportedAtomicMove_preservesPreviousFile() throws Exception {
+        assertFailedSavePreservesFile("unsupported");
+    }
+
+    private void assertFailedSavePreservesFile(String failure) throws Exception {
+        Path destination = testFolder.resolve("addressbook.json");
+        AddressBook original = getTypicalAddressBook();
+        new JsonAddressBookStorage(destination).saveAddressBook(original);
+        byte[] before = Files.readAllBytes(destination);
+        FailingStorage storage = new FailingStorage(destination);
+        storage.failure = failure;
+
+        assertThrows(IOException.class, () -> storage.saveAddressBook(new AddressBook()));
+
+        assertArrayEquals(before, Files.readAllBytes(destination));
+        assertEquals(original, new AddressBook(storage.readAddressBook().orElseThrow()));
+        assertFalse(Files.exists(storage.temporaryFile));
+    }
+
+    @Test
+    public void saveAddressBook_failedFirstSave_doesNotCreateDestination() throws Exception {
+        Path destination = testFolder.resolve("nested/addressbook.json");
+        FailingStorage storage = new FailingStorage(destination);
+        storage.failure = "write";
+
+        assertThrows(IOException.class, () -> storage.saveAddressBook(getTypicalAddressBook()));
+
+        assertFalse(Files.exists(destination));
+        assertFalse(Files.exists(storage.temporaryFile));
+    }
+
+    @Test
+    public void saveAddressBook_failedFirstReplacement_doesNotLoadCompleteTemporaryFile() throws Exception {
+        Path destination = testFolder.resolve("nested/addressbook.json");
+        FailingStorage storage = new FailingStorage(destination);
+        storage.failure = "move";
+        storage.failCleanup = true;
+
+        assertThrows(IOException.class, () -> storage.saveAddressBook(getTypicalAddressBook()));
+
+        assertFalse(Files.exists(destination));
+        assertEquals(getTypicalAddressBook(), new AddressBook(
+                new JsonAddressBookStorage(storage.temporaryFile).readAddressBook().orElseThrow()));
+        assertFalse(new JsonAddressBookStorage(destination).readAddressBook().isPresent());
+        storage.failure = "";
+        storage.failCleanup = false;
+        storage.saveAddressBook(new AddressBook());
+        assertEquals(new AddressBook(), storage.readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void saveAddressBook_existingFileAndCleanupFailure_keepsPreviousSave() throws Exception {
+        Path destination = testFolder.resolve("addressbook.json");
+        FailingStorage storage = new FailingStorage(destination);
+        storage.saveAddressBook(getTypicalAddressBook());
+        byte[] before = Files.readAllBytes(destination);
+        storage.failure = "move";
+        storage.failCleanup = true;
+
+        assertThrows(IOException.class, () -> storage.saveAddressBook(new AddressBook()));
+
+        assertArrayEquals(before, Files.readAllBytes(destination));
+        assertEquals(getTypicalAddressBook(), new JsonAddressBookStorage(destination).readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void saveAddressBook_cleanupFailure_preservesOriginalException() throws Exception {
+        FailingStorage storage = new FailingStorage(testFolder.resolve("addressbook.json"));
+        storage.failure = "write";
+        storage.failCleanup = true;
+
+        IOException error = org.junit.jupiter.api.Assertions.assertThrows(IOException.class, () ->
+                storage.saveAddressBook(getTypicalAddressBook()));
+
+        assertSame(storage.writeError, error);
+    }
+
+    @Test
+    public void saveAddressBook_cleanupFailureAfterCommit_stillSucceeds() throws Exception {
+        FailingStorage storage = new FailingStorage(testFolder.resolve("addressbook.json"));
+        storage.failCleanup = true;
+        AddressBook expected = getTypicalAddressBook();
+
+        storage.saveAddressBook(expected);
+
+        assertEquals(expected, new AddressBook(storage.readAddressBook().orElseThrow()));
+    }
+
+    @Test
+    public void execute_failedReplacementThenSuccessfulCommand_doesNotPersistRejectedChange() throws Exception {
+        Path destination = testFolder.resolve("addressbook.json");
+        FailingStorage storage = new FailingStorage(destination);
+        ModelManager model = new ModelManager();
+        LogicManager logic = new LogicManager(model, new StorageManager(storage,
+                new JsonUserPrefsStorage(testFolder.resolve("prefs.json"))));
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/Main Street le/14");
+        AddressBook before = new AddressBook(model.getAddressBook());
+        byte[] saved = Files.readAllBytes(destination);
+        storage.failure = "move";
+
+        assertThrows(CommandException.class, () -> logic.execute("salary 1 s/5000"));
+
+        assertEquals(before, model.getAddressBook());
+        assertArrayEquals(saved, Files.readAllBytes(destination));
+        storage.failure = "";
+        logic.execute("add-task 1 d/Report");
+        ReadOnlyAddressBook reloaded = storage.readAddressBook().orElseThrow();
+        assertEquals(model.getAddressBook(), new AddressBook(reloaded));
+        assertEquals(before.getEmployeeList().get(0).getSalary(), reloaded.getEmployeeList().get(0).getSalary());
+        assertEquals(1, reloaded.getEmployeeList().get(0).getTasks().size());
+    }
+
+    /** Exercises the real save workflow with failures at individual file-operation boundaries. */
+    private static class FailingStorage extends JsonAddressBookStorage {
+        private final IOException writeError = new IOException("Write failed");
+        private String failure = "";
+        private boolean failCleanup;
+        private Path temporaryFile;
+
+        FailingStorage(Path destination) {
+            super(destination);
+        }
+
+        @Override
+        void writeTemporaryFile(JsonSerializableAddressBook addressBook, Path temporaryFile) throws IOException {
+            this.temporaryFile = temporaryFile;
+            if (failure.equals("write")) {
+                Files.writeString(temporaryFile, "{incomplete");
+                throw writeError;
+            }
+            super.writeTemporaryFile(addressBook, temporaryFile);
+        }
+
+        @Override
+        void replaceFile(Path temporaryFile, Path destination) throws IOException {
+            assertEquals(destination.getParent(), temporaryFile.getParent());
+            if (failure.equals("move")) {
+                throw new IOException("Replacement failed");
+            }
+            if (failure.equals("unsupported")) {
+                throw new AtomicMoveNotSupportedException(temporaryFile.toString(), destination.toString(),
+                        "Atomic moves unsupported");
+            }
+            super.replaceFile(temporaryFile, destination);
+        }
+
+        @Override
+        void deleteTemporaryFile(Path temporaryFile) throws IOException {
+            if (failCleanup) {
+                throw new IOException("Cleanup failed");
+            }
+            super.deleteTemporaryFile(temporaryFile);
+        }
+    }
 
     @Test
     public void readAddressBook_nullFilePath_throwsNullPointerException() {

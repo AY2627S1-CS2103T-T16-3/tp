@@ -154,6 +154,55 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 ## **Implementation**
 
+### Save failures and atomic replacement
+
+After parsing a command, `LogicManager` captures a `ModelSnapshot` before execution. The model snapshot copies
+the address book (including leave records and next-ID counters) and retains the employee filter and comparator.
+If saving throws `IOException` or `AccessDeniedException`, Logic restores the snapshot through `Model` and
+reports the existing save error. Restoration updates the existing observable collections, preserving UI bindings.
+Snapshots rely on employee and leave values being immutable and on display predicates/comparators remaining unchanged.
+
+`JsonAddressBookStorage` creates a temporary file in the destination directory, writes and closes the JSON,
+then uses `Files.move` with `ATOMIC_MOVE` to commit the save. It does not pre-create the destination or fall back
+to a non-atomic overwrite. Atomic replacement of existing files depends on the file-system provider; an
+unsupported operation is surfaced as a save failure. Temporary-file cleanup errors are logged without hiding
+the original failure or reporting failure after a successful commit. Abandoned temporary files are not loaded
+at startup. This design does not provide historical backups or power-loss durability.
+
+`ModelManagerTest` covers snapshot restoration, `LogicManagerTest` covers rollback after save errors, and
+`JsonAddressBookStorageTest` injects write/move/cleanup failures at package-private file-operation boundaries.
+The storage tests also exercise a failed replacement followed by a successful command and reload.
+
+#### Limits of the current save structure
+
+* **Durability and recovery:** Atomic replacement avoids exposing a partially written destination during normal
+  saves; it does not force file contents and directory metadata to durable storage. There are no historical
+  backups. Existing startup behavior catches a data-loading error and opens an empty address book; a later
+  successful command can replace the unreadable file. This change does not address that recovery policy.
+* **Platform and permissions:** Atomic replacement of an existing file is provider-dependent. Saving now needs
+  permission to create a file in the parent directory and replace the destination, not merely write its contents.
+  Replacement uses the temporary file's metadata; custom permissions, file identity, and symbolic/hard-link
+  behavior should not be assumed equivalent to an in-place overwrite. Network/cloud-synchronized folders and
+  other operating systems require separate validation.
+* **Concurrency:** There is no cross-process lock or conflict detection. Multiple app instances or external edits
+  can overwrite one another. Commands are assumed to execute serially.
+* **Rollback scope:** The snapshot covers address-book data and employee display rules, not user preferences,
+  GUI selection/scroll state, or external side effects. Model listeners can observe changes before save succeeds
+  and notifications during restoration. This is not an isolated transaction across the UI and disk.
+* **Exception scope:** Rollback handles save-time `IOException` (including access-denied errors). Runtime errors,
+  memory exhaustion, partially mutating commands that throw before saving, or failure inside restoration are
+  outside this guarantee. Storage must not throw a save failure after the atomic replacement has committed.
+* **Cost and snapshot assumptions:** Every parsed command takes a full snapshot, and successful commands still
+  save the entire JSON file, including read-only commands such as help/list. Snapshot creation invokes existing
+  duplicate and leave validation; employee duplicate checks are quadratic in employee count. This work happens
+  synchronously and can delay the UI for large books. Shared employee/leave values must remain immutable, and
+  stored predicate/comparator objects must not be mutated after snapshot capture.
+* **Temporary files and preferences:** Crashes or cleanup failures can leave temporary files; startup ignores
+  them and does not reclaim them. User preferences still use the original direct-write storage path and are
+  not part of the address-book atomic save.
+
+See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) for the tested cases and exclusions.
+
 This section describes some noteworthy details on how certain features are implemented.
 
 ### Employee salary management

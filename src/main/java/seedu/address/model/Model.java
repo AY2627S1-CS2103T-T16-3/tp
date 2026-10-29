@@ -18,6 +18,12 @@ public interface Model {
     /** {@code Predicate} that always evaluates to true */
     Predicate<Employee> PREDICATE_SHOW_ALL_EMPLOYEES = unused -> true;
 
+    /** Captures data and display rules before a command executes. */
+    ModelSnapshot createSnapshot();
+
+    /** Restores data and display rules without replacing the observable list used by the UI. */
+    void restoreSnapshot(ModelSnapshot snapshot);
+
     /**
      * Returns the user prefs.
      */

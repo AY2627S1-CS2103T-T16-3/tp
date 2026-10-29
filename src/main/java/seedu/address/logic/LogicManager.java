@@ -13,6 +13,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
+import seedu.address.model.ModelSnapshot;
 import seedu.address.model.employee.Employee;
 import seedu.address.storage.Storage;
 
@@ -46,13 +47,16 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
+        ModelSnapshot snapshot = model.createSnapshot();
         commandResult = command.execute(model);
 
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
+            model.restoreSnapshot(snapshot);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
+            model.restoreSnapshot(snapshot);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 

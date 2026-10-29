@@ -34,3 +34,33 @@ This project has three types of tests:
    For example: `seedu.address.storage.StorageManagerTest`
 1. *Hybrid tests* combine unit and integration testing. These tests check both the individual units and how they work together.<br>
    For example: `seedu.address.logic.LogicManagerTest`
+
+## Save safety regression and stress tests
+
+Run `gradlew test --tests seedu.address.storage.SafeSaveStressTest --tests seedu.address.storage.JsonAddressBookStorageTest`
+for the save-focused stress tests, then `gradlew clean test checkstyleMain checkstyleTest` for full verification.
+
+`SafeSaveStressTest` covers:
+
+* 315 failure-and-retry scenarios: 21 valid commands, three display states, and five injected failures
+  (partial write, failure after complete JSON is written, replacement failure, access denied, unsupported atomic move).
+  Every failed save must preserve the old file byte-for-byte, restore the model and displayed list, and retain
+  the same observable list. Every retry must match a command executed once on the original state.
+* 63 successful-command comparisons against the original parse/execute/direct-serialization flow, including
+  command results, display order, all persisted fields and counters, exact JSON bytes, and reload results.
+  Command and parser implementations remain unchanged; this is a behavioral comparison, not a second application build.
+* 300 reproducible mixed successful/failed operations using seed 2103, compared after every operation with
+  a model that executes only accepted commands.
+* Ten failed clear/successful save cycles with 1,000 employees, verifying all records after reload.
+* Parse and command errors that must not reach storage, empty-filter restoration, relative Unicode paths,
+  a parent path occupied by a file, and a destination occupied by a nonempty directory.
+
+`JsonAddressBookStorageTest` additionally covers first-save failures, leftover complete temporary files that
+must not be adopted, cleanup failures before and after commit, and normal save/read compatibility.
+`ModelManagerTest` covers snapshot independence, initial unsorted state, filter/sort restoration, and retained
+observable bindings. `LogicManagerTest` covers both save-error messages and rollback across command types.
+
+These tests use real temporary files and real atomic replacements on the host file system. Write/close-stage,
+permission, and unsupported-move errors are simulated at file-operation boundaries; they do not physically
+exhaust a disk, alter OS access rules, or cut power. No GUI interaction or process-kill test is included.
+Passing tests therefore does not prove every possible failure mode or platform is covered.
