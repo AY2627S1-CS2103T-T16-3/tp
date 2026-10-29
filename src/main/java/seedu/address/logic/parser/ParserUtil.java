@@ -31,9 +31,9 @@ public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final String MESSAGE_INVALID_START_DATE =
-            "Start date must be a valid date in dd-MM-yyyy format.";
+            "Start date must be a valid date from year 0001 to 9999 in DD-MM-YYYY format.";
     public static final String MESSAGE_INVALID_END_DATE =
-            "End date must be a valid date in dd-MM-yyyy format.";
+            "End date must be a valid date from year 0001 to 9999 in DD-MM-YYYY format.";
 
     private static final DateTimeFormatter LEAVE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-uuuu",
             Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT);
@@ -101,7 +101,11 @@ public class ParserUtil {
             throw new ParseException(errorMessage);
         }
         try {
-            return LocalDate.parse(trimmedDate, LEAVE_DATE_FORMATTER);
+            LocalDate parsedDate = LocalDate.parse(trimmedDate, LEAVE_DATE_FORMATTER);
+            if (parsedDate.getYear() == 0) {
+                throw new ParseException(errorMessage);
+            }
+            return parsedDate;
         } catch (DateTimeParseException e) {
             throw new ParseException(errorMessage);
         }

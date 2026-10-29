@@ -115,11 +115,14 @@ public class ParserUtilTest {
         LocalDate expectedDate = LocalDate.of(2026, 10, 5);
         assertEquals(expectedDate, ParserUtil.parseStartDate("05-10-2026"));
         assertEquals(expectedDate, ParserUtil.parseEndDate(" 05-10-2026 "));
+        assertEquals(LocalDate.of(1, 1, 1), ParserUtil.parseStartDate("01-01-0001"));
+        assertEquals(LocalDate.of(9999, 12, 31), ParserUtil.parseEndDate("31-12-9999"));
     }
 
     @Test
     public void parseLeaveDate_invalidDate_throwsParseException() {
-        for (String invalidDate : List.of("31-02-2026", "2026-10-05", "01-01-+10000", "01-01--0001")) {
+        for (String invalidDate : List.of("31-02-2026", "2026-10-05", "01-01-0000", "01-01-+10000",
+                "01-01--0001")) {
             assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_START_DATE, () ->
                     ParserUtil.parseStartDate(invalidDate));
             assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_END_DATE, () ->

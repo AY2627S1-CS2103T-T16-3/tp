@@ -325,7 +325,8 @@ Records one leave period for the employee at the displayed index.
 Format: `leave add INDEX from/START_DATE to/END_DATE`
 
 * `INDEX` refers to the index shown in the current employee list and must be a positive integer.
-* Dates must use the `DD-MM-YYYY` format. Both dates are included in the leave period.
+* Dates must use the `DD-MM-YYYY` format. Years from `0001` to `9999` are accepted; year `0000` is invalid. Valid
+  past and future dates are allowed for record keeping. Both dates are included in the leave period.
 * The start date must be on or before the end date, and both dates must be in the same calendar year.
 * Only Mondays to Fridays count against the employee's entitlement. Saturdays and Sundays are excluded.
 * Public holidays are not excluded in the MVP. A public holiday that falls from Monday to Friday counts as a working

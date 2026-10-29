@@ -26,6 +26,10 @@ public class AddLeaveCommandParserTest {
                 LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 7)));
 
         assertParseSuccess(parser, "1 from/05-10-2026 to/07-10-2026", expectedCommand);
+
+        AddLeaveCommand earliestYearCommand = new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, new LeavePeriod(
+                LocalDate.of(1, 1, 1), LocalDate.of(1, 1, 5)));
+        assertParseSuccess(parser, "1 from/01-01-0001 to/05-01-0001", earliestYearCommand);
     }
 
     @Test
@@ -59,8 +63,10 @@ public class AddLeaveCommandParserTest {
                 ParserUtil.MESSAGE_INVALID_START_DATE);
         assertParseFailure(parser, "1 from/01-01--0001 to/03-01--0001",
                 ParserUtil.MESSAGE_INVALID_START_DATE);
+        assertParseFailure(parser, "1 from/01-01-0000 to/03-01-0000", ParserUtil.MESSAGE_INVALID_START_DATE);
         assertParseFailure(parser, "1 from/01-01-2026 to/03-01-+10000", ParserUtil.MESSAGE_INVALID_END_DATE);
         assertParseFailure(parser, "1 from/01-01-2026 to/03-01--0001", ParserUtil.MESSAGE_INVALID_END_DATE);
+        assertParseFailure(parser, "1 from/01-01-2026 to/03-01-0000", ParserUtil.MESSAGE_INVALID_END_DATE);
     }
 
     @Test
