@@ -23,7 +23,12 @@ public class ResultDisplayTest {
     public static void startToolkit() throws Exception {
         System.setProperty("prism.order", "sw");
         FutureTask<Void> startup = new FutureTask<>(() -> Platform.setImplicitExit(false), null);
-        Platform.startup(startup);
+        try {
+            Platform.startup(startup);
+        } catch (IllegalStateException e) {
+            // Other UI tests may have already started the shared JavaFX toolkit.
+            Platform.runLater(startup);
+        }
         startup.get(10, TimeUnit.SECONDS);
     }
 

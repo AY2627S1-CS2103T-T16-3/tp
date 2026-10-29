@@ -15,7 +15,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest HR Book `.jar` file from the [team's releases page](https://github.com/AY2627S1-CS2103T-T16-3/tp/releases).
 
 1. Copy the file to the folder you want to use as the _home folder_ for your HR Book.
 
@@ -86,9 +86,9 @@ Adds an employee to the address book.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
-Salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
+Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
-Employee cards display salary with a `$` prefix, for example `$5000`.
+Employee cards display salary with a monthly label, for example `Monthly salary: $5000`.
 
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
@@ -187,14 +187,17 @@ Run the command again after employee, task, or salary changes to refresh the fig
 
 ### Changing an employee's salary: `salary`
 
-Changes the salary of an existing employee in the address book.
+Changes the monthly salary of an existing employee in the address book.
 
 Format: `salary INDEX s/SALARY`
 
 * Updates the employee at the specified `INDEX` in the currently displayed employee list, including search results. The index **must be a positive integer** 1, 2, 3, …​
 * The salary is required and must contain only digits, representing a whole number from `0` to `50000` inclusive. Do not include a `$` sign, commas, or decimal points.
 * Supply `s/` exactly once. The new salary replaces the employee's existing salary; other employee details are preserved.
+* Other fields, such as `n/`, are rejected with "Unsupported field. The salary command only accepts s/." This check happens before salary validation, so only the unsupported-field error is shown when both the field and amount are invalid.
 * Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
+* When the salary changes, the feedback shows the employee's name and both amounts, for example: `Updated Betsy's salary from $5000 to $6000.`
+* If the employee already has the requested salary, the feedback reports that no changes were made, for example: `Betsy's salary is already $6000. No changes made.` The currently displayed employee list is preserved.
 
 Examples:
 * `salary 1 s/5000` changes the 1st employee's salary in the displayed list to `$5000`.
@@ -204,7 +207,7 @@ Examples:
 
 Edits an existing employee in the address book.
 
-Salary is preserved when editing other details. The `edit` command rejects `s/`;
+Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
@@ -327,7 +330,8 @@ Records one leave period for the employee at the displayed index.
 Format: `leave add INDEX from/START_DATE to/END_DATE`
 
 * `INDEX` refers to the index shown in the current employee list and must be a positive integer.
-* Dates must use the `DD-MM-YYYY` format. Both dates are included in the leave period.
+* Dates must use the `DD-MM-YYYY` format. Years from `0001` to `9999` are accepted; year `0000` is invalid. Valid
+  past and future dates are allowed for record keeping. Both dates are included in the leave period.
 * The start date must be on or before the end date, and both dates must be in the same calendar year.
 * Only Mondays to Fridays count against the employee's entitlement. Saturdays and Sundays are excluded.
 * Public holidays are not excluded. A public holiday that falls from Monday to Friday counts as a working
