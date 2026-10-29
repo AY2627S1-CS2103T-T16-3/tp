@@ -17,12 +17,13 @@ import seedu.address.model.employee.Task;
  */
 public class DeleteTaskCommand extends Command {
 
-    public static final String COMMAND_WORD = "delete-task";
+    public static final String SUBCOMMAND_WORD = "delete";
+    public static final String COMMAND_WORD = TaskCommand.COMMAND_WORD + " " + SUBCOMMAND_WORD;
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Deletes a task from the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer) i/TASK_INDEX (must be a positive integer)\n"
             + "Example: " + COMMAND_WORD + " 1 i/1";
-    public static final String MESSAGE_SUCCESS = "Deleted task from %1$s: %2$s";
+    public static final String MESSAGE_SUCCESS = "Deleted task for %1$s:\n%2$d. %3$s";
     public static final String MESSAGE_INVALID_TASK_INDEX = "The task index provided is invalid.";
 
     private final Index employeeIndex;
@@ -56,7 +57,7 @@ public class DeleteTaskCommand extends Command {
         Employee updatedEmployee = employee.deleteTask(taskIndex.getZeroBased());
         model.setEmployee(employee, updatedEmployee);
         return new CommandResult(String.format(MESSAGE_SUCCESS,
-                employee.getName().fullName, task.getDetails()));
+                employee.getName().fullName, taskIndex.getOneBased(), task));
     }
 
     @Override

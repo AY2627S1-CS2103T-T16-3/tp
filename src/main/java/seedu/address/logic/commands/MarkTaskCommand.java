@@ -17,7 +17,8 @@ import seedu.address.model.employee.Task;
  */
 public class MarkTaskCommand extends Command {
 
-    public static final String COMMAND_WORD = "mark-task";
+    public static final String SUBCOMMAND_WORD = "mark";
+    public static final String COMMAND_WORD = TaskCommand.COMMAND_WORD + " " + SUBCOMMAND_WORD;
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Marks a task as done for the employee identified by the displayed index.\n"
             + "Parameters: EMPLOYEE_INDEX (must be a positive integer) "

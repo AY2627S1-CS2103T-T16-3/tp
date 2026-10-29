@@ -15,7 +15,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest HR Book `.jar` file from the [team's releases page](https://github.com/AY2627S1-CS2103T-T16-3/tp/releases).
 
 1. Copy the file to the folder you want to use as the _home folder_ for your HR Book.
 
@@ -37,7 +37,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
    * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
 
-   * `clear` : Deletes all employee and leave records.
+   * `clear` : Deletes all employee and leave records and resets their identifier sequences.
 
    * `exit` : Exits the app.
 
@@ -63,7 +63,8 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `leave list`, `exit`, and
+  `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
   Exception: `/summary` and `summary` accept an optional scope followed by index selections using `i/` and `e/`.
 
@@ -203,7 +204,7 @@ Examples:
 
 Edits an existing employee in the address book.
 
-Salary is preserved when editing other details. The `edit` command rejects `s/`;
+Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
@@ -378,16 +379,17 @@ Format: `leave delete LEAVE_ID`
 * `LEAVE_ID` must be a positive integer displayed by `leave list`; it is not an employee list index.
 * Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
   balance is recalculated from the records that remain.
-* Deleted leave IDs are not reused.
+* Leave IDs removed using `leave delete` are not reused while the current address book remains in use. The `clear`
+  command starts a fresh address book and resets the ID sequence.
 
 Example:
 * `leave list` followed by `leave delete 2` deletes the leave record whose ID is `2`.
 
-### Listing tasks on an employee: `list-tasks`
+### Listing tasks on an employee: `task list`
 
 Lists the tasks related to an employee.
 
-Format: `list-tasks EMPLOYEE_INDEX`
+Format: `task list EMPLOYEE_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
@@ -398,7 +400,7 @@ Format: `list-tasks EMPLOYEE_INDEX`
 
 Example:
 
-* `list-tasks 1` lists the tasks related to the first displayed employee, for example:
+* `task list 1` lists the tasks related to the first displayed employee, for example:
 
   ```text
   Tasks for Alice Pauline:
@@ -406,11 +408,11 @@ Example:
   2. [x] Submit access request
   ```
 
-### Adding tasks to an employee: `add-task`
+### Adding tasks to an employee: `task add`
 
 Adds a task to an employee.
 
-Format: `add-task EMPLOYEE_INDEX d/DETAILS`
+Format: `task add EMPLOYEE_INDEX d/DETAILS`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
@@ -423,16 +425,16 @@ Format: `add-task EMPLOYEE_INDEX d/DETAILS`
 
 Examples:
 
-* `add-task 1 d/Prepare monthly report` adds the task to the first displayed
+* `task add 1 d/Prepare monthly report` adds the task to the first displayed
   employee.
-* `find Alex` followed by `add-task 1 d/Prepare monthly report` adds the
+* `find Alex` followed by `task add 1 d/Prepare monthly report` adds the
   task to the first employee in the filtered results.
 
-### Deleting tasks on an employee: `delete-task`
+### Deleting tasks on an employee: `task delete`
 
 Deletes a task related to an employee.
 
-Format: `delete-task EMPLOYEE_INDEX i/TASK_INDEX`
+Format: `task delete EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
@@ -442,16 +444,16 @@ Format: `delete-task EMPLOYEE_INDEX i/TASK_INDEX`
 
 Examples:
 
-* `delete-task 1 i/2` deletes the second task assigned to the first displayed
+* `task delete 1 i/2` deletes the second task assigned to the first displayed
   employee.
-* `find Alex` followed by `delete-task 1 i/1` deletes the first task from the
+* `find Alex` followed by `task delete 1 i/1` deletes the first task from the
   first employee in the filtered results.
 
-### Marking a task as done: `mark-task`
+### Marking a task as done: `task mark`
 
 Marks a task as completed.
 
-Format: `mark-task EMPLOYEE_INDEX i/TASK_INDEX`
+Format: `task mark EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
@@ -463,14 +465,14 @@ Format: `mark-task EMPLOYEE_INDEX i/TASK_INDEX`
 
 Examples:
 
-* `mark-task 1 i/1` marks the first task assigned to the first displayed employee as done.
-* `find Alex` followed by `mark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as done.
+* `task mark 1 i/1` marks the first task assigned to the first displayed employee as done.
+* `find Alex` followed by `task mark 1 i/2` marks the second task assigned to the first employee in the filtered results as done.
 
-### Marking a task as pending: `unmark-task`
+### Marking a task as pending: `task unmark`
 
 Marks a completed task as pending.
 
-Format: `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`
+Format: `task unmark EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
@@ -482,12 +484,13 @@ Format: `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`
 
 Examples:
 
-* `unmark-task 1 i/1` marks the first task assigned to the first displayed employee as pending.
-* `find Alex` followed by `unmark-task 1 i/2` marks the second task assigned to the first employee in the filtered results as pending.
+* `task unmark 1 i/1` marks the first task assigned to the first displayed employee as pending.
+* `find Alex` followed by `task unmark 1 i/2` marks the second task assigned to the first employee in the filtered results as pending.
 
 ### Clearing all entries: `clear`
 
-Clears all employee and leave records from HR Book.
+Clears all employee and leave records from HR Book and starts a fresh address book. This also resets HR Book's
+identifier sequences, so leave IDs used before `clear` may be assigned again.
 
 Format: `clear`
 
@@ -564,11 +567,11 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Record leave**      | `leave add INDEX from/START_DATE to/END_DATE`<br>e.g., `leave add 1 from/20-10-2026 to/22-10-2026` |
 | **List leaves**       | `leave list` |
 | **Delete leave**      | `leave delete LEAVE_ID`<br>e.g., `leave delete 2` |
-| **List tasks**        | `list-tasks EMPLOYEE_INDEX`<br>e.g., `list-tasks 1` |
-| **Add task**          | `add-task EMPLOYEE_INDEX d/DETAILS`<br>e.g., `add-task 1 d/Prepare report` |
-| **Delete task**       | `delete-task EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `delete-task 1 i/1` |
-| **Mark task**         | `mark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `mark-task 1 i/1` |
-| **Unmark task**       | `unmark-task EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `unmark-task 1 i/1` |
+| **List tasks**        | `task list EMPLOYEE_INDEX`<br>e.g., `task list 1` |
+| **Add task**          | `task add EMPLOYEE_INDEX d/DETAILS`<br>e.g., `task add 1 d/Prepare report` |
+| **Delete task**       | `task delete EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `task delete 1 i/1` |
+| **Mark task**         | `task mark EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `task mark 1 i/1` |
+| **Unmark task**       | `task unmark EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `task unmark 1 i/1` |
 | **Workforce summary** | `summary [scope/all\|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |

@@ -14,6 +14,7 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 
 /**
  * Adds an employee to the address book.
@@ -42,6 +43,8 @@ public class AddCommand extends Command {
 
     public static final String MESSAGE_SUCCESS = "New employee added: %1$s";
     public static final String MESSAGE_DUPLICATE_EMPLOYEE = "This employee already exists in the address book.";
+    public static final String MESSAGE_EMPLOYEE_ID_EXHAUSTED =
+            "No more employee IDs are available. The employee was not added.";
 
     private final Employee toAdd;
 
@@ -61,7 +64,11 @@ public class AddCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_EMPLOYEE);
         }
 
-        model.addEmployee(toAdd);
+        try {
+            model.addEmployee(toAdd);
+        } catch (EmployeeIdExhaustedException e) {
+            throw new CommandException(MESSAGE_EMPLOYEE_ID_EXHAUSTED);
+        }
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)));
     }
 
