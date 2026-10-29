@@ -15,10 +15,10 @@ import seedu.address.model.employee.Task;
 public class AddTaskCommandParser implements Parser<AddTaskCommand> {
 
     /**
-     * Parses the employee index and task details for an add-task command.
+     * Parses the employee index and task details for a task add command.
      *
      * @param args Arguments containing the employee index and task details.
-     * @return The parsed add-task command.
+     * @return The parsed task add command.
      * @throws ParseException If the arguments are invalid.
      */
     @Override

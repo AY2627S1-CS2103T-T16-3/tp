@@ -13,15 +13,19 @@ import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 public class FilterCommand extends Command {
 
     public static final String COMMAND_WORD = "filter";
+    public static final String MESSAGE_LEADING_ZEROS =
+            "Leading zeros are not allowed in salary or leave filters. Use 14 instead of 014; 0 is allowed.";
+    public static final String MESSAGE_TEXT_COMPARATOR =
+            "Comparators are only allowed for salary (s/) and annual leave entitlement (le/) filters.";
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Lists employees matching all supplied criteria. Text fields use case-insensitive partial matches; "
-            + "tasks use case-insensitive partial matches; tags use case-insensitive whole tag matches; "
-            + "salary uses an exact amount or < or > followed by an amount from 0 to 50000; "
-            + "annual leave entitlement uses an exact number or < or > followed by days from 0 to 365.\n"
-            + "Parameters: [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... "
-            + "[s/SALARY] [le/DAYS]\n"
-            + "At least one non-empty criterion is required. Only t/ and task/ may be repeated.\n"
-            + "Example: " + COMMAND_WORD + " n/Alice p/912 s/<4000 le/>10";
+            + ": Match all supplied filters. Provide at least one.\n"
+            + "Fields: n/NAME p/PHONE e/EMAIL a/ADDRESS t/TAG task/DETAILS s/SALARY le/DAYS\n"
+            + "Text: partial match; tags: whole match (case-insensitive). Repeat only t/ or task/.\n"
+            + "Values must follow field rules: names allow letters, digits and spaces; tags are alphanumeric; "
+            + "phones need at least 3 digits; emails must be valid; tasks allow up to 120 characters.\n"
+            + "Only salary (0-50000) and leave (0-365) support exact values, <, <=, >, >=, "
+            + "and inclusive ranges MIN-MAX. No leading zeros; 0 is valid.\n"
+            + "Example: filter task/report s/3000-5000 le/>=14";
 
     private final EmployeeMatchesCriteriaPredicate predicate;
 

@@ -60,6 +60,16 @@ public class JsonSerializableAddressBookTest {
     }
 
     @Test
+    public void toModelType_unassignedEmployeeWithoutAvailableId_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(new EmployeeBuilder().withoutEmployeeId().build());
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(employee),
+                (long) Integer.MAX_VALUE + 1);
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_INVALID_EMPLOYEE_ID,
+                data::toModelType);
+    }
+
+    @Test
     public void toModelType_validLeave_success() throws Exception {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(new EmployeeBuilder().withEmployeeId(1).build());
         Leave leave = new Leave(new LeaveId(1), new EmployeeId(1), new LeavePeriod(

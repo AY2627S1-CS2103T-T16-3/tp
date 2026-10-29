@@ -23,6 +23,7 @@ import javafx.collections.ObservableList;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.exceptions.DuplicateEmployeeException;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.LeaveId;
@@ -56,10 +57,10 @@ public class AddressBookTest {
     }
 
     @Test
-    public void constructor_unassignedEmployeeAfterMaximumId_throwsIllegalStateException() {
+    public void constructor_unassignedEmployeeAfterMaximumId_throwsEmployeeIdExhaustedException() {
         Employee unassignedEmployee = new EmployeeBuilder().build();
 
-        assertThrows(IllegalStateException.class, () ->
+        assertThrows(EmployeeIdExhaustedException.class, () ->
                 new AddressBook(List.of(unassignedEmployee), (long) Integer.MAX_VALUE + 1));
     }
 
@@ -206,10 +207,10 @@ public class AddressBookTest {
     }
 
     @Test
-    public void addEmployee_noAvailableId_throwsIllegalStateException() {
+    public void addEmployee_noAvailableId_throwsEmployeeIdExhaustedException() {
         AddressBook exhaustedAddressBook = new AddressBook(List.of(), (long) Integer.MAX_VALUE + 1);
 
-        assertThrows(IllegalStateException.class, () ->
+        assertThrows(EmployeeIdExhaustedException.class, () ->
                 exhaustedAddressBook.addEmployee(new EmployeeBuilder().build()));
     }
 

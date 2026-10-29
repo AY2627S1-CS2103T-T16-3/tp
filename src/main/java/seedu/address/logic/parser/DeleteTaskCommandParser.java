@@ -14,10 +14,10 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class DeleteTaskCommandParser implements Parser<DeleteTaskCommand> {
 
     /**
-     * Parses the employee and task indexes for a delete-task command.
+     * Parses the employee and task indexes for a task delete command.
      *
      * @param args Arguments containing the employee and task indexes.
-     * @return The parsed delete-task command.
+     * @return The parsed task delete command.
      * @throws ParseException If the arguments are invalid.
      */
     @Override
