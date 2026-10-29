@@ -33,7 +33,7 @@ public class AddTaskCommandTest {
 
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "Prepare report"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] Prepare report"), expectedModel);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class AddTaskCommandTest {
 
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task(details)),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "task......Task"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] task......Task"), expectedModel);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class AddTaskCommandTest {
 
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task(details)),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "T"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] T"), expectedModel);
     }
 
     @Test

@@ -35,7 +35,7 @@ public class LeaveCommandParser implements Parser<Command> {
         if (AddLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord)) {
             return new AddLeaveCommandParser().parse(arguments);
         }
-        if (ListLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord) && arguments.isBlank()) {
+        if (ListLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord)) {
             return new ListLeaveCommand();
         }
         if (DeleteLeaveCommand.SUBCOMMAND_WORD.equals(subcommandWord)) {

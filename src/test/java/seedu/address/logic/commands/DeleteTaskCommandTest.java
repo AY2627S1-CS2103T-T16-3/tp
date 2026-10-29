@@ -35,7 +35,7 @@ public class DeleteTaskCommandTest {
 
         assertCommandSuccess(new DeleteTaskCommand(Index.fromOneBased(1), Index.fromOneBased(1)),
                 model, String.format(DeleteTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "Prepare report"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] Prepare report"), expectedModel);
     }
 
     @Test

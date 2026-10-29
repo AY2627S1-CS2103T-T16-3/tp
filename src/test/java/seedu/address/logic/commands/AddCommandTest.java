@@ -20,8 +20,10 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
+import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
+import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.Leave;
@@ -56,6 +58,22 @@ public class AddCommandTest {
 
         assertThrows(CommandException.class,
                 AddCommand.MESSAGE_DUPLICATE_EMPLOYEE, () -> addCommand.execute(modelStub));
+    }
+
+    @Test
+    public void execute_employeeIdExhausted_throwsCommandException() throws Exception {
+        AddressBook addressBook = new AddressBook(List.of(), Integer.MAX_VALUE);
+        Model model = new ModelManager(addressBook, new UserPrefs());
+        Employee lastEmployee = new EmployeeBuilder().withName("Last").withPhone("92222222")
+                .withEmail("last@example.com").build();
+        Employee overflowEmployee = new EmployeeBuilder().withName("Overflow").withPhone("93333333")
+                .withEmail("overflow@example.com").build();
+
+        new AddCommand(lastEmployee).execute(model);
+        assertThrows(CommandException.class,
+                AddCommand.MESSAGE_EMPLOYEE_ID_EXHAUSTED, () -> new AddCommand(overflowEmployee).execute(model));
+        assertEquals(List.of(new EmployeeBuilder(lastEmployee).withEmployeeId(Integer.MAX_VALUE).build()),
+                model.getAddressBook().getEmployeeList());
     }
 
     @Test
