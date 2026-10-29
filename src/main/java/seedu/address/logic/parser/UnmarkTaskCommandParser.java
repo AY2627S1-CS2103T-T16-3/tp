@@ -14,10 +14,10 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class UnmarkTaskCommandParser implements Parser<UnmarkTaskCommand> {
 
     /**
-     * Parses the employee and task indexes for an unmark-task command.
+     * Parses the employee and task indexes for a task unmark command.
      *
      * @param args Arguments containing the employee and task indexes.
-     * @return The parsed unmark-task command.
+     * @return The parsed task unmark command.
      * @throws ParseException If the arguments are invalid.
      */
     @Override
