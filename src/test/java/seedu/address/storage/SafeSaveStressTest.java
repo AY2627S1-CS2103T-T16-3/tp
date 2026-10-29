@@ -2,14 +2,12 @@ package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,6 +24,7 @@ import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
+import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.testutil.EmployeeBuilder;
@@ -40,13 +39,13 @@ public class SafeSaveStressTest {
             "find Bob", "filter t/engineering", "sort n/des", "list", "list-tasks 1",
             "summary", "/summary scope/all", "help", "exit");
     private static final List<String> VIEWS = List.of("list", "sort n/des", "find Alice");
-    private static final List<String> FAILURES = List.of("partial", "closed", "move", "denied", "unsupported");
+    private static final List<String> FAILURES = List.of("partial", "write", "denied");
 
     @TempDir
     public Path folder;
 
     @Test
-    public void execute_failureMatrix_restoresStateAndPreservesFile() throws Exception {
+    public void execute_failureMatrix_restoresStateAndAllowsRetry() throws Exception {
         for (String view : VIEWS) {
             for (String command : COMMANDS) {
                 for (String failure : FAILURES) {
@@ -66,8 +65,9 @@ public class SafeSaveStressTest {
                     assertEquals(before, fixture.model.getAddressBook(), context);
                     assertSame(observable, fixture.model.getFilteredEmployeeList(), context);
                     assertEquals(displayed, observable, context);
-                    assertArrayEquals(bytes, Files.readAllBytes(fixture.path), context);
-                    assertFalse(Files.exists(fixture.storage.temporaryFile), context);
+                    if (!failure.equals("partial")) {
+                        assertArrayEquals(bytes, Files.readAllBytes(fixture.path), context);
+                    }
 
                     // Retrying must behave exactly like executing the command once on the original state.
                     ModelManager expected = new ModelManager(before, new UserPrefs());
@@ -127,15 +127,19 @@ public class SafeSaveStressTest {
             if (random.nextBoolean()) {
                 fixture.storage.failure = FAILURES.get(random.nextInt(FAILURES.size()));
                 assertThrows(CommandException.class, () -> fixture.logic.execute(command));
-                assertArrayEquals(before, Files.readAllBytes(fixture.path));
+                if (!fixture.storage.failure.equals("partial")) {
+                    assertArrayEquals(before, Files.readAllBytes(fixture.path));
+                }
             } else {
                 fixture.storage.failure = "";
                 assertEquals(parser.parseCommand(command).execute(accepted), fixture.logic.execute(command));
             }
             assertEquals(accepted.getAddressBook(), fixture.model.getAddressBook(), "Iteration " + i);
             assertEquals(accepted.getFilteredEmployeeList(), fixture.model.getFilteredEmployeeList());
-            assertEquals(accepted.getAddressBook(), fixture.storage.readAddressBook().orElseThrow());
-            assertFalse(Files.exists(fixture.storage.temporaryFile));
+            // Only a successful save repairs damage from an earlier partial write.
+            if (fixture.storage.failure.isEmpty()) {
+                assertEquals(accepted.getAddressBook(), fixture.storage.readAddressBook().orElseThrow());
+            }
         }
     }
 
@@ -151,11 +155,9 @@ public class SafeSaveStressTest {
         fixture.logic.execute("sort n/des");
         for (int i = 0; i < 10; i++) {
             AddressBook before = new AddressBook(fixture.model.getAddressBook());
-            byte[] bytes = Files.readAllBytes(fixture.path);
             fixture.storage.failure = "partial";
             assertThrows(CommandException.class, () -> fixture.logic.execute("clear"));
             assertEquals(before, fixture.model.getAddressBook());
-            assertArrayEquals(bytes, Files.readAllBytes(fixture.path));
             fixture.storage.failure = "";
             fixture.logic.execute("salary 1 s/" + i);
             assertEquals(fixture.model.getAddressBook(), fixture.storage.readAddressBook().orElseThrow());
@@ -216,7 +218,7 @@ public class SafeSaveStressTest {
     }
 
     @Test
-    public void execute_parentIsFile_rollsBackBeforeTemporaryFileCreation() throws Exception {
+    public void execute_parentIsFile_rollsBackModel() throws Exception {
         Fixture fixture = new Fixture();
         Path parent = folder.resolve("blocked");
         Files.writeString(parent, "Keep this file");
@@ -270,11 +272,10 @@ public class SafeSaveStressTest {
         }
     }
 
-    /** Injects errors while retaining the actual temporary-file workflow and JSON serialization. */
+    /** Injects save failures while retaining real direct writes for successful saves. */
     private static class FaultStorage extends JsonAddressBookStorage {
         private String failure = "";
         private IOException lastFailure;
-        private Path temporaryFile;
         private int writes;
 
         FaultStorage(Path path) {
@@ -282,34 +283,21 @@ public class SafeSaveStressTest {
         }
 
         @Override
-        void writeTemporaryFile(JsonSerializableAddressBook book, Path path) throws IOException {
+        public void saveAddressBook(ReadOnlyAddressBook book, Path path) throws IOException {
             writes++;
-            temporaryFile = path;
             if (failure.equals("partial")) {
                 Files.writeString(path, "{incomplete");
-                lastFailure = new IOException("Partial write");
-                throw lastFailure;
             }
-            super.writeTemporaryFile(book, path);
-            if (failure.equals("closed")) {
-                lastFailure = new IOException("Failure after writing complete JSON");
-                throw lastFailure;
-            }
-        }
-
-        @Override
-        void replaceFile(Path source, Path destination) throws IOException {
             lastFailure = switch (failure) {
-                case "move" -> new IOException("Replacement failed");
-                case "denied" -> new AccessDeniedException(destination.toString());
-                case "unsupported" -> new AtomicMoveNotSupportedException(source.toString(), destination.toString(),
-                        "Unsupported atomic replacement");
+                case "partial" -> new IOException("Partial write");
+                case "write" -> new IOException("Write failed");
+                case "denied" -> new AccessDeniedException(path.toString());
                 default -> null;
             };
             if (lastFailure != null) {
                 throw lastFailure;
             }
-            super.replaceFile(source, destination);
+            super.saveAddressBook(book, path);
         }
     }
 }

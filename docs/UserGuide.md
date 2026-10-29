@@ -503,9 +503,9 @@ HR Book automatically saves employee and leave data after every command. You do 
 
 If saving fails, HR Book shows an error and restores the data, employee filter, and sort order from before
 the command. Fix the reported problem and retry the command; rejected changes will not be saved by later commands.
-HR Book writes a temporary file before atomically replacing the save file, preserving the previous save if
-the temporary write fails. If your file system does not support atomic replacement, saving fails safely
-instead of overwriting the file directly. This does not provide save history or guarantee recovery from power loss.
+Saving writes directly to the data file. Restoring the app's data does not repair a partially written file;
+a failed save may leave the file incomplete or containing rejected changes. A later successful command saves
+the restored data, but restarting before a successful save can lose data. There is no automatic backup recovery.
 
 Older save files without salary values load with a salary of `0`.
 
