@@ -208,19 +208,29 @@ into a user-facing command error instead of allowing the exception to terminate 
 
 ### Employee salary management
 
-The `salary INDEX s/SALARY` command replaces the salary of the employee identified by their displayed index. For example, `salary 1 s/5000` sets the first employee's salary in the current list to 5000.
+The `salary INDEX s/SALARY` command changes the monthly salary of the employee at the specified index in the
+currently displayed list.
 
-`AddressBookParser` routes the command to `SalaryCommandParser`, which parses the index and the compulsory `s/` prefix. It rejects invalid indices, missing or repeated salary prefixes, and salary values that are not whole numbers from 0 to 50000. Valid input produces a `SalaryCommand` containing an `Index` and a validated `Salary` value object.
+`AddressBookParser` routes the command to `SalaryCommandParser`. The parser rejects unsupported field prefixes
+before validating the index and salary. It requires a positive index and exactly one `s/` field. `Salary` accepts
+only digits representing an amount from 0 to 50000 inclusive and removes leading zeros.
 
 At execution, the command follows these steps:
 
-1. Retrieves the currently filtered employee list through `Model#getFilteredEmployeeList` and checks that the index is within its bounds.
-2. Compares the selected employee's salary with the requested `Salary`. If they are equal, returns feedback stating that the salary is already set and no changes were made, without replacing the employee or changing the displayed view. Leading zeros do not affect equality.
-3. If the salary differs, calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
+1. Retrieves the currently displayed employee list through `Model#getFilteredEmployeeList` and rejects an index
+   outside its bounds.
+2. Compares the employee's current salary with the requested salary. If they are equal, returns feedback that no
+   changes were made, preserving the employee and displayed view. Leading zeros do not affect this comparison.
+3. Otherwise, calls `Employee#withSalary` to create a replacement employee, preserving their internal ID, contact
+   details, tags, tasks, and annual leave entitlement.
 4. Replaces the original employee through `Model#setEmployee`.
-5. Resets the employee filter to show all employees, retaining the active sort, and returns feedback containing the employee's name and the old and new salaries.
+5. Resets the filter to show all employees while retaining the active sort, and returns feedback identifying the
+   employee and their old and new salaries.
 
-This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The usual application-wide save still runs after command execution, including when the salary is unchanged.
+`LogicManager` attempts to save after command execution, including when the salary is unchanged. If saving throws
+`IOException`, it restores the model snapshot taken before execution, including the previous salary, filter, and
+sort, and reports a save error. This restores the running application's state; it does not guarantee recovery of
+the data file. See **Save failures and model rollback** for details.
 
 ### Filtering employees
 
@@ -569,6 +579,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
+| `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
 | `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
@@ -1007,46 +1018,58 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to change an employee's salary, and provides the employee's details.
-2. System changes the employee's salary.
-3. System displays the employee with the new salary.
+1. HR manager identifies an employee and requests to change their salary to a specified amount.
+2. System changes the employee's salary and confirms the change.
 
    Use case ends.
 
 **Extensions**
 
-* 1a. The HR manager does not provide one or more required fields.
+* 1a. The HR manager omits required information.
 
-    * 1a1. System informs the HR manager to provide all required fields.
-    * 1a2. System does not change the employee's salary.
-
-    Use case ends.
-
-* 1b. The HR manager provides an invalid salary value.
-
-    * 1b1. System informs the HR manager that the salary value is invalid.
-    * 1b2. System does not change the employee's salary.
+    * 1a1. System informs the HR manager of the required command format.
+    * 1a2. System leaves the employee's salary unchanged.
 
     Use case ends.
 
-* 1c. The HR manager provides more fields than required.
+* 1b. The HR manager provides an invalid salary.
 
-    * 1c1. System informs the HR manager that there are too many fields.
-    * 1c2. System does not change the employee's salary.
-
-    Use case ends.
-
-* 1d. The HR manager provides an invalid index.
-
-    * 1d1. System informs the HR manager that the index is invalid.
-    * 1d2. System does not change the employee's salary.
+    * 1b1. System informs the HR manager that salary must contain only digits and represent an amount from 0 to 50000.
+    * 1b2. System leaves the employee's salary unchanged.
 
     Use case ends.
 
-* 2a. An error occurs while saving new salary of employee into storage.
+* 1c. The HR manager provides unsupported information.
 
-    * 2a1. System informs the HR manager that the salary could not be changed.
-    * 2a2. System does not change the employee's salary.
+    * 1c1. System informs the HR manager that only the salary field is accepted.
+    * 1c2. System leaves the employee's salary unchanged.
+
+    Use case ends.
+
+* 1d. The HR manager specifies the salary more than once.
+
+    * 1d1. System informs the HR manager that the salary field cannot be repeated.
+    * 1d2. System leaves the employee's salary unchanged.
+
+    Use case ends.
+
+* 1e. The HR manager provides an invalid employee selection.
+
+    * 1e1. System informs the HR manager that the command format or employee selection is invalid.
+    * 1e2. System leaves all employee salaries unchanged.
+
+    Use case ends.
+
+* 2a. The employee already has the requested salary.
+
+    * 2a1. System informs the HR manager that no change is needed.
+
+    Use case ends.
+
+* 2b. System cannot save the salary change.
+
+    * 2b1. System leaves the employee's salary unchanged.
+    * 2b2. System informs the HR manager that the change could not be saved.
 
     Use case ends.
 
@@ -1122,6 +1145,79 @@ testers are expected to do more *exploratory* testing.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
+
+### Managing employee salaries
+
+Use a separate copy of the application with test data. Before each test, note the selected employee's name and
+current salary. Recheck displayed indexes after commands that change the list.
+
+1. Updating a salary
+
+   1. Prerequisites: Run `list`. Choose an employee whose salary differs from the test amount and note their
+      displayed index.
+
+   2. Test case: `salary INDEX s/5000`, replacing `INDEX` with the selected employee's index.<br>
+      Expected: Their monthly salary becomes `$5000`. Feedback identifies the employee and their previous and new
+      salaries. Their other details and other employees remain unchanged.
+
+   3. Repeat with `s/0` and `s/50000`, rechecking the employee's index before each command.<br>
+      Expected: Both boundary amounts are accepted.
+
+   4. Test case: Set the employee's salary to a different amount, then use `s/005000`.<br>
+      Expected: Their salary is stored as `5000` and displayed as `Monthly salary: $5000`.
+
+2. Rejecting invalid requests
+
+   1. Prerequisites: Run `list` with at least one employee displayed. Note the existing salaries.
+
+   2. Test cases: `salary 1 s/50001`, `salary 1 s/-1`, `salary 1 s/abc`, and `salary 1 s/1.5`.<br>
+      Expected: Each command reports the salary constraints. No salary changes.
+
+   3. Test cases: `salary 0 s/5000`, `salary x s/5000`, `salary 1`, and `salary 1 s/`.<br>
+      Expected: Each command reports an invalid command format or salary value. No salary changes.
+
+   4. Test case: `salary INDEX s/5000`, using a positive index larger than the displayed list size.<br>
+      Expected: An invalid employee-index error is shown. No salary changes.
+
+   5. Test case: `salary 1 s/5000 s/6000`.<br>
+      Expected: The repeated salary field is rejected. No salary changes.
+
+   6. Test cases: `salary 1 s/5000 n/Alice` and `salary 1 s/abc n/Alice`.<br>
+      Expected: Both report `Unsupported field. The salary command only accepts s/.` No salary changes.
+
+3. Updating an employee from search results
+
+   1. Prerequisites: Have multiple employees. Run `find NAME` using a name that matches exactly one employee whose
+      salary is not `$6000`.
+
+   2. Test case: `salary 1 s/6000`.<br>
+      Expected: The employee in the search results receives the new salary. All employees are displayed afterward,
+      retaining the active sort. Other employees remain unchanged.
+
+4. Requesting an unchanged salary
+
+   1. Prerequisites: Run `find NAME` to display exactly one employee. Note their salary.
+
+   2. Test case: Run `salary 1 s/AMOUNT` using their current salary, then repeat with leading zeros added to the
+      amount.<br>
+      Expected: Both commands report that the salary is already set and no changes were made. The search results
+      remain displayed.
+
+5. Updating a salary in a sorted list
+
+   1. Prerequisites: Have at least two employees with different salaries below `$50000`. Run `list`, then
+      `sort s/asc`. Note the employee at index 1.
+
+   2. Test case: `salary 1 s/50000`.<br>
+      Expected: The employee previously shown at index 1 receives the new salary and moves to their position in
+      ascending salary order. Other employees' salaries remain unchanged.
+
+6. Retaining a salary after restarting
+
+   1. Prerequisites: Successfully change an employee's salary to `$5000`. Note their name.
+
+   2. Test case: Exit and relaunch the application using the same data file.<br>
+      Expected: The same employee still has a monthly salary of `$5000`.
 
 ### Managing tasks
 

@@ -99,7 +99,7 @@ An employee can have any number of tags, including zero.
 </div>
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 le/14`
+* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 le/14 s/5000`
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 le/20 t/criminal`
 
 ### Listing all employees: `list`
