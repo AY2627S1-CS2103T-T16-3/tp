@@ -58,6 +58,9 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         Map<Field, List<String>> criteria = new EnumMap<>(Field.class);
         for (Map.Entry<Prefix, Field> entry : FIELDS.entrySet()) {
             List<String> values = arguments.getAllValues(entry.getKey());
+            if (entry.getValue() == Field.TASK) {
+                values = values.stream().map(ParserUtil::unescapeTaskText).toList();
+            }
             if (values.stream().anyMatch(String::isBlank)) {
                 throw invalidFormat();
             }

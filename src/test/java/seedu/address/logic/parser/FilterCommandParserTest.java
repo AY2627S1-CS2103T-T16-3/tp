@@ -170,6 +170,16 @@ public class FilterCommandParserTest {
     }
 
     @Test
+    public void parse_taskWithEscapedPrefix_returnsCommandWithLiteralSlash() {
+        assertParseSuccess(parser, "task/Coordinate w\\/Finance",
+                new FilterCommand(new EmployeeMatchesCriteriaPredicate(
+                        Map.of(Field.TASK, List.of("Coordinate w/Finance")))));
+        assertParseSuccess(parser, "task/Discuss n\\/Alice and task\\/review",
+                new FilterCommand(new EmployeeMatchesCriteriaPredicate(
+                        Map.of(Field.TASK, List.of("Discuss n/Alice and task/review")))));
+    }
+
+    @Test
     public void parse_leaveEntitlement_acceptsExactAmountsAndComparators() {
         for (String operator : List.of("", "<", "<=", ">", ">=")) {
             for (String amount : List.of("0", "14", "365")) {

@@ -79,6 +79,15 @@ public class AddTaskCommandTest {
     }
 
     @Test
+    public void execute_duplicateTaskWithUnicodeWhitespace_throwsCommandException() {
+        Employee employee = model.getFilteredEmployeeList().get(0);
+        model.setEmployee(employee, employee.addTask(new Task("Prepare report")));
+
+        assertCommandFailure(new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare\u2003\u2003report")),
+                model, AddTaskCommand.MESSAGE_DUPLICATE_TASK);
+    }
+
+    @Test
     public void execute_invalidEmployeeIndex_throwsCommandException() {
         Index invalidIndex = Index.fromOneBased(model.getFilteredEmployeeList().size() + 1);
         assertCommandFailure(new AddTaskCommand(invalidIndex, new Task("Prepare report")), model,
