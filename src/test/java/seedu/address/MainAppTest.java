@@ -8,12 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import javafx.stage.Stage;
+import seedu.address.commons.util.JsonUtil;
 import seedu.address.logic.LogicManager;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.AddressBook;
@@ -72,6 +76,28 @@ public class MainAppTest {
         assertEquals(new AddressBook(), app.model.getAddressBook());
         app.stop();
         assertEquals(data, Files.readString(dataFile));
+    }
+
+    @Test
+    public void start_nullEmployeeFields_showsSameErrorAndPreservesFileThroughShutdown() throws Exception {
+        AddressBook saved = new AddressBook();
+        saved.addEmployee(new EmployeeBuilder().build());
+        storage.saveAddressBook(saved);
+        String baseline = Files.readString(dataFile);
+        for (String field : List.of("leaveEntitlement", "phone", "salary", "employeeId", "tags", "tasks")) {
+            ObjectNode root = JsonUtil.fromJsonString(baseline, ObjectNode.class);
+            ObjectNode employee = (ObjectNode) root.at("/persons/0");
+            employee.putNull(field);
+            String data = root.toString();
+            Files.writeString(dataFile, data);
+            ui.feedback = null;
+            loadModelAndStart();
+
+            assertLoadingErrorShown();
+            assertEquals(new AddressBook(), app.model.getAddressBook(), field);
+            app.stop();
+            assertEquals(data, Files.readString(dataFile), field);
+        }
     }
 
     @Test

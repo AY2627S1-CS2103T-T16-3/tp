@@ -139,12 +139,14 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
-Saved data is treated as untrusted input because files may be edited accidentally or modified maliciously. The
-defensive validation starts with `null` entries inside the saved leave list, preventing these
-entries from causing an uncaught exception during startup. This check specifically covers null leave records.
-On startup, such an entry is rejected with an `IllegalValueException`, which
-`JsonAddressBookStorage` wraps in a `DataLoadingException`. A missing or null leave-list field remains supported for
-legacy files. `MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
+Saved address-book data is treated as untrusted input because files may be edited accidentally or modified maliciously.
+Before deserializing the file, `JsonAddressBookStorage` scans its JSON tokens and rejects every explicit `null` with an
+`IllegalValueException`, wrapped in a `DataLoadingException`. This applies to all employee and leave fields, internal
+IDs and counters, nested task and tag data, array entries, unknown fields, and the root document itself. Validation
+happens before deserialization can turn nulls into default values. Omitted fields retain their existing compatibility
+defaults; an explicit `null` is always rejected. The quoted text `"null"` is a string rather than a JSON null and remains
+subject to the existing field validation. This check applies to `addressbook.json`.
+`MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
 `Ui#setFeedbackToUser`. `UiManager` forwards the message through `MainWindow` to the existing `ResultDisplay`,
 identifying the data file and explaining recovery.
 Neither loading nor closing the app rewrites the address-book file; the next successfully executed command saves the
@@ -1434,6 +1436,12 @@ Run the command again after a change to see updated counts; summaries are not re
    1. Test case: In the previous case, execute `list`.<br>
       Expected: The saved file is replaced with the empty address book, as explained in the message. The results box
       displays the command result normally.
+
+   1. Test case: In an otherwise valid file, set each employee or leave field to `null` in turn. Include
+      `leaveEntitlement`, `phone`, `salary`, employee and leave IDs, next-ID counters, task details and completion state,
+      whole collections, and entries inside task and tag arrays. Also try a file containing only `null`.<br>
+      Expected: Every explicit JSON null produces the same loading error in the results box and empty model. Closing
+      without running a command preserves the file. Valid zero values, `false`, and empty arrays remain supported.
 
    1. Test case: Repeat with malformed JSON, then with a valid data file and with a missing data file.<br>
       Expected: Malformed JSON produces the same error message and recovery behaviour. Valid data loads normally. A missing
