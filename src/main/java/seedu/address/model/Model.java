@@ -81,7 +81,7 @@ public interface Model {
 
     /**
      * Returns an unmodifiable snapshot of all employees in the current display sort order, ignoring the filter.
-     * Without an active sort, employees follow their stored order. Equal sort values retain stored order.
+     * Shares the displayed list's ordering for tied values. Without an active sort, uses stored order.
      */
     List<Employee> getAllEmployeesInDisplayOrder();
 

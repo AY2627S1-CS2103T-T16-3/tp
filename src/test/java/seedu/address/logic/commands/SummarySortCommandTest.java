@@ -89,6 +89,46 @@ public class SummarySortCommandTest {
     }
 
     @Test
+    public void execute_repeatedSortsWithTiedValues_scopesSelectSameEmployees() throws Exception {
+        Model model = modelWithEmployees(new EmployeeBuilder(CAROL).withSalary("1000").build(),
+                new EmployeeBuilder(BOB).withSalary("1000").build(), ALICE);
+        parser.parseCommand("sort n/asc").execute(model);
+        parser.parseCommand("sort s/asc").execute(model);
+        parser.parseCommand("list").execute(model);
+        assertEquals(List.of("Alice", "Bob", "Carol"), model.getFilteredEmployeeList().stream()
+                .map(employee -> employee.getName().fullName).toList());
+
+        for (String alias : List.of("summary", "/summary")) {
+            for (String selection : List.of("i/1", "e/1", "i/1 2 3 e/2")) {
+                String filtered = parser.parseCommand(alias + " " + selection).execute(model).getFeedbackToUser();
+                String all = parser.parseCommand(alias + " scope/all " + selection).execute(model).getFeedbackToUser();
+                assertEquals(filtered.replace("Scope: Filtered employees", "Scope: All employees"), all);
+            }
+        }
+    }
+
+    @Test
+    public void execute_sortWithHiddenEmployeesAndTies_fullScopeMatchesListAfterFilterReset() throws Exception {
+        Model model = modelWithEmployees(new EmployeeBuilder(CAROL).withSalary("1000").build(),
+                new EmployeeBuilder(BOB).withSalary("1000").build(), ALICE);
+        parser.parseCommand("sort n/asc").execute(model);
+        parser.parseCommand("find Alice Carol").execute(model);
+        parser.parseCommand("sort s/asc").execute(model);
+        AddressBook before = new AddressBook(model.getAddressBook());
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+
+        String all = parser.parseCommand("summary scope/all i/2").execute(model).getFeedbackToUser();
+        assertSummaryValue(all, "remote", "1");
+        assertSummaryValue(all, "Assigned tasks", "0");
+        assertEquals(displayed, model.getFilteredEmployeeList());
+        assertEquals(before, model.getAddressBook());
+
+        parser.parseCommand("list").execute(model);
+        String filtered = parser.parseCommand("summary i/2").execute(model).getFeedbackToUser();
+        assertEquals(filtered.replace("Scope: Filtered employees", "Scope: All employees"), all);
+    }
+
+    @Test
     public void execute_afterParsing_usesCurrentSortAndEmployeeValues() throws Exception {
         Model model = modelWithEmployees(ALICE, BOB, CAROL);
         Command summary = parser.parseCommand("summary scope/all i/1");

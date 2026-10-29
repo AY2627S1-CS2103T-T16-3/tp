@@ -123,7 +123,7 @@ How the parsing works:
 The `Model` component,
 
 * stores the address book data i.e., all `Employee` objects (which are contained in a `UniqueEmployeeList` object).
-* selects employees using a JavaFX `FilteredList<Employee>` and wraps it in a `SortedList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
+* sorts employees using a JavaFX `SortedList<Employee>` and wraps it in a `FilteredList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
@@ -246,14 +246,14 @@ with `SortCommand.MESSAGE_USAGE`. Tags and tasks are not sortable because each e
   rather than remaining leave or leave dates.
 * Phone numbers use `BigInteger` comparison, supporting differing digit lengths, leading zeros,
   and numbers too large for primitive integer types.
-* Descending order reverses the field comparator. Ties retain the underlying address book order.
+* Descending order reverses the field comparator. Tied values use the order maintained by the shared sorted view.
 
 The model maintains this observable transformation chain:
 
-`AddressBook.getEmployeeList()` → `FilteredList<Employee>` → `SortedList<Employee>` → UI
+`AddressBook.getEmployeeList()` → `SortedList<Employee>` → `FilteredList<Employee>` → UI
 
 `ModelManager.sortFilteredEmployeeList` sets the comparator on the existing sorted view.
-`getFilteredEmployeeList()` returns that same view, preserving references already held by the UI and logic.
+`getFilteredEmployeeList()` returns the existing filtered view of that list, preserving references held by the UI and logic.
 The filter predicate is unchanged, hidden employees stay hidden, and an empty list can be sorted normally.
 Employee updates propagate through the chain, so changing a salary repositions the employee as needed.
 Index-based commands read the sorted view and therefore act on the employee at the displayed index.
@@ -295,8 +295,9 @@ The command stores a `SummaryCommand.Scope` enum and immutable inclusion/exclusi
 At execution time the command reads
 `model.getFilteredEmployeeList()` for the default/filtered scope, or
 `model.getAllEmployeesInDisplayOrder()` for explicit `scope/all`. The latter returns a snapshot of all employees
-using the active display comparator, with stored order preserved for ties or when no sort is active.
-The snapshot is sorted without changing stored records or the filter. Indexes refer to positions in this collection.
+by copying the shared `SortedList` before filtering. Both scopes therefore use the same ordering for tied
+values, including after repeated sorts. Without an active sort, the full list follows stored order.
+Creating the snapshot does not change stored records or the filter. Indexes refer to positions in this collection.
 Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
 An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
 passed to `EmployeeSummary.fromEmployees`, so all statistics share the same selection. The command labels
@@ -331,8 +332,10 @@ selection, empty matches, execution-time reads, and preservation of the filter p
 `SummaryIndexCommandTest` covers index selection in both scopes, overlap, empty selections, invalid indexes,
 execution-time resolution, and preservation of employee records and filters. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
-`SummarySortCommandTest` covers sorted inclusion/exclusion, hidden employees, ties, and sort/data changes
-after parsing. `ModelManagerTest` checks that the full sorted snapshot preserves the filter and stored order.
+`SummarySortCommandTest` covers sorted inclusion/exclusion, hidden employees, ties after repeated sorts,
+and sort/data changes after parsing. `ModelManagerTest` checks that the full sorted snapshot preserves
+the filter and stored order, and matches the displayed list after filtering and employee changes.
+`LogicManagerTest` checks the repeated-sort regression through real commands without changing saved data.
 `SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
 `CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,
 normal/error font restoration, caret reset, and null input handling on the JavaFX thread.

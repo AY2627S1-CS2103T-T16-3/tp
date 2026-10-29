@@ -295,7 +295,7 @@ Format: `sort FIELD/ORDER`
 * Fields: `n/` (name), `p/` (phone), `e/` (email), `a/` (address), `s/` (salary), or `le/` (annual leave entitlement).
 * Order: `asc` for ascending or `des` for descending. Supply exactly one field and order.
 * Salary, phone numbers, and annual leave entitlement sort numerically. Text sorts alphabetically, ignoring case.
-* Employees with equal values retain their original address book order.
+* When values tie, `summary scope/all` uses the same employee order as `list`. Earlier sorts can affect this order.
 * Sorting changes the display only; employee details and the stored address book order stay unchanged.
 * The chosen sort stays active when you filter, find, edit, or list employees. `list` shows all employees in that order. Another `sort` replaces it; restarting the app restores the stored order.
 * Index commands such as `edit`, `salary`, and `delete` use the positions in the sorted displayed list.
