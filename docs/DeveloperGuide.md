@@ -317,7 +317,7 @@ is omitted from the diagram for clarity.
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
-headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks,
+headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks, saved leave records,
 and total/average recorded salary.
 
 The partial class diagram below shows how scope selection, aggregation, and table formatting are separated.
@@ -339,7 +339,8 @@ values, including after repeated sorts. Without an active sort, the full list fo
 Creating the snapshot does not change stored records or the filter. Indexes refer to positions in this collection.
 Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
 An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
-passed to `EmployeeSummary.fromEmployees`, so all statistics share the same selection. The command labels
+passed to `EmployeeSummary.fromEmployees` together with `model.getAddressBook().getLeaveList()`, so all
+statistics share the same employee selection. The command labels
 the multiline result `Scope: All employees` or
 `Scope: Filtered employees`, followed by any inclusion/exclusion lists in ascending order.
 Empty selections remain empty; no fallback or filter mutation occurs.
@@ -361,7 +362,7 @@ No new window or storage fields are needed.
 Aggregation is recomputed on each invocation, without stored counters, new JSON fields, or changes to
 employees, tags, user preferences, or the current filter. The existing application-wide automatic
 save after command execution remains unchanged. This feature does not infer attendance, active
-employment, or departments. It remains independent of the leave records stored in the model.
+employment, or departments.
 
 Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, locale independence, and
 snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
@@ -381,6 +382,24 @@ normal/error font restoration, caret reset, and null input handling on the JavaF
 Linux CI runs these tests with Xvfb to provide a virtual display.
 The JavaFX result-panel preview was checked with synthetic data
 for aligned columns, empty results, and restoration of the normal feedback font.
+
+#### Leave-record counts
+
+`EmployeeSummary.fromEmployees(employees, leaves)` builds a set of the selected employees' stable IDs,
+then counts each leave record whose employee ID belongs to that set. Employee names and displayed indexes
+are not used to match records. Employees without an ID contribute no leave records.
+This takes O(E + L) time for E selected employees and L stored leave records.
+
+Each saved period counts once regardless of its duration, year, or whether it is in the past or future.
+The result is stored as a `long` in the immutable snapshot and displayed as `Leave records`.
+Empty selections and selections without matching records produce zero. The one-argument factory assumes
+no leave records. Neither factory retains or changes the input lists.
+
+`EmployeeSummaryLeaveTest` checks record counting across years, stable IDs after renaming, empty and
+unmatched inputs, null inputs, and snapshot independence. `SummaryLeaveCommandTest` checks both aliases,
+filtered/all scopes, inclusion/exclusion selections, displayed indexes after sorting, and fresh counts
+after leave or employee deletion. `LogicManagerTest` exercises real leave commands and verifies that
+summaries preserve the active filter and saved data, and that changes persist correctly.
 
 #### Task counts
 
@@ -1235,6 +1254,57 @@ testers are expected to do more *exploratory* testing.
    Expected: successful sorting of an empty list without restoring hidden employees.
 6. Close and reopen the app after sorting.
    Expected: the stored employee order returns; sorting has not changed employee details or saved order.
+
+### Workforce summary
+
+Use a separate, empty test folder and launch the JAR as described in the
+[User Guide](UserGuide.md#quick-start). Create these fictional records in the order shown:
+
+```text
+clear
+add n/Summary Beta p/90000001 e/beta@example.com a/One le/14 s/3000 t/remote
+add n/Summary Alpha p/90000002 e/alpha@example.com a/Two le/14 s/1000 t/engineering
+task add 2 d/Prepare report
+leave add 2 from/06-01-2025 to/06-01-2025
+leave add 2 from/05-01-2026 to/09-01-2026
+leave add 1 from/04-01-2027 to/05-01-2027
+```
+
+1. Run `summary`, then `/summary`.
+   Expected: both show two employees, one assigned task, one employee with tasks, three leave records,
+   total salary `$4000.00`, average salary `$2000.00`, and one employee in each tag group.
+   The leave count is three records, rather than the eight working days covered by those records.
+2. Run `summary i/2`, `summary e/2`, and `summary i/1 2 e/1`.
+   Expected: total salaries are `$1000.00`, `$3000.00`, and `$1000.00`; leave counts are two, one, and two.
+   `summary i/2 2` produces the same counts as `summary i/2`.
+3. Run `filter t/remote`, then `summary`, then `summary scope/all`.
+   Expected: the default summary shows one employee, `$3000.00`, and one leave record. The full-scope summary
+   shows two employees, `$4000.00`, and three leave records. Only Summary Beta remains displayed.
+4. Run `find NoSuchEmployee`, then `summary`.
+   Expected: zero employees, zero tasks, zero leave records, total salary `$0.00`, and average salary `N/A`.
+   `summary scope/all` still includes both employees. After `list`, `summary e/1 2` also produces zero counts.
+5. Try `summary i/0`, `summary i/`, `summary i/1 i/2`, `summary scope/unknown`, and `summary scope/all i/3`.
+   Expected: a format, duplicate-prefix, or invalid-index error as applicable. The last command reports index 3,
+   the full-scope size of two, and valid indexes `1-2`. Employee data and the current filter stay unchanged.
+6. Run `sort n/asc`, then `list`.
+   Expected: Summary Alpha is displayed first. `summary i/1` and `summary scope/all i/1` both show `$1000.00`,
+   one task, and two leave records. `summary e/1` and `summary scope/all e/1` both show `$3000.00`, zero tasks,
+   and one leave record. Only the scope labels differ between the matching results.
+7. Run `salary 2 s/1000`, then `sort s/asc`, then `list`.
+   Expected: after the earlier name sort, the tied salaries leave Summary Alpha first. Both forms of `i/1`
+   still select Alpha's one task and two leave records; both forms of `e/1` select Beta's zero tasks and one
+   leave record. Run `summary` without selections: total salary is now `$2000.00`, with an average of `$1000.00`.
+8. Run `find Alpha`, then `summary scope/all i/2`, then `summary i/1`.
+   Expected: the full-scope selection includes Beta's one leave record; the displayed selection includes
+   Alpha's two. The displayed list still contains only Alpha. Run `task mark 1 i/1`, then `summary`:
+   the assigned-task count remains one, and `task list 1` shows that task as completed.
+9. Run `leave delete 1`, then `summary`.
+   Expected: Alpha's leave count falls to one. Run `edit 1 n/Summary Alicia`, then `find Alicia`, then `summary`:
+   the count remains one because records are matched by employee ID. Run `delete 1`, then `summary scope/all`:
+   only Beta remains, with one leave record. Alpha's remaining leave record has also been removed.
+
+For every summary command above, check that the employee list and saved data are unchanged by the summary itself.
+Run the command again after a change to see updated counts; summaries are not refreshed automatically.
 
 ### Saving data
 
