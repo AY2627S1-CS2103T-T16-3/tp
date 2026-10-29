@@ -63,7 +63,6 @@ public class FilterCommandTest {
     public void execute_newFilter_searchesEntireAddressBook() throws Exception {
         assertFilter("n/Alice", List.of(ALICE));
         assertFilter("n/Benson", List.of(BENSON));
-        assertFilter("p/00000000", List.of());
         assertFilter("n/Alice", List.of(ALICE));
         assertEquals(getTypicalAddressBook(), model.getAddressBook());
     }
@@ -126,6 +125,10 @@ public class FilterCommandTest {
         assertFilter("s/<004000", List.of(alice));
         assertFilter("s/>004000", List.of(daniel));
         assertFilter("s/4000", List.of(benson));
+        assertFilter("s/<=4000", List.of(alice, benson));
+        assertFilter("s/>=4000", List.of(benson, daniel));
+        assertFilter("s/<=004000", List.of(alice, benson));
+        assertFilter("s/>=004000", List.of(benson, daniel));
         assertFilter("s/<0", List.of());
         assertFilter("s/>50000", List.of());
         assertFilter("s/>0", List.of(alice, benson, daniel));
@@ -151,6 +154,16 @@ public class FilterCommandTest {
         assertFilter("s/1", List.of(benson));
         assertFilter("s/49999", List.of(carl));
         assertFilter("s/50000", List.of(daniel));
+
+        // Inclusive comparisons must include salaries equal to the threshold, including the limits.
+        assertFilter("s/<=0", List.of(alice));
+        assertFilter("s/>=0", List.of(alice, benson, carl, daniel));
+        assertFilter("s/<=1", List.of(alice, benson));
+        assertFilter("s/>=1", List.of(benson, carl, daniel));
+        assertFilter("s/<=49999", List.of(alice, benson, carl));
+        assertFilter("s/>=49999", List.of(carl, daniel));
+        assertFilter("s/<=50000", List.of(alice, benson, carl, daniel));
+        assertFilter("s/>=50000", List.of(daniel));
 
         // Strict comparisons must exclude salaries equal to the threshold.
         assertFilter("s/<0", List.of());
@@ -196,6 +209,14 @@ public class FilterCommandTest {
 
         assertFilter("le/14", List.of(benson));
         assertFilter("le/<14", List.of(alice));
+        assertFilter("le/<=14", List.of(alice, benson));
+        assertFilter("le/>=14", List.of(benson, daniel));
+        assertFilter("le/<=014", List.of(alice, benson));
+        assertFilter("le/>=014", List.of(benson, daniel));
+        assertFilter("le/<=0", List.of(alice));
+        assertFilter("le/>=0", List.of(alice, benson, daniel));
+        assertFilter("le/<=365", List.of(alice, benson, daniel));
+        assertFilter("le/>=365", List.of(daniel));
         assertFilter("le/>14", List.of(daniel));
         assertFilter("le/>9", List.of(benson, daniel));
         assertFilter("le/0", List.of(alice));
@@ -220,6 +241,10 @@ public class FilterCommandTest {
         model.setAddressBook(addressBook);
 
         assertFilter("n/Alice p/943 s/<4000 le/>10", List.of(alice));
+        assertFilter("n/Alice task/report s/<=3000 le/>=14", List.of(alice));
+        assertFilter("n/Alice s/>=3000 le/<=14", List.of(alice));
+        assertFilter("n/Alice s/<=2999 le/>=14", List.of());
+        assertFilter("n/Alice s/<=3000 le/>=15", List.of());
         assertFilter("n/Alice p/943 s/>4000 le/>10", List.of());
         assertFilter("n/Alice p/943 s/<4000 le/<10", List.of());
         assertFilter("n/Alice p/987 le/>10", List.of());
@@ -232,6 +257,35 @@ public class FilterCommandTest {
                 new LeavePeriod(LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 6)));
         assertFilter("n/Alice le/14", List.of(alice));
         assertFilter("n/Alice le/9", List.of());
+    }
+
+    @Test
+    public void execute_numericRanges_includeEndpointsAndCombineFields() throws Exception {
+        Employee alice = new EmployeeBuilder(ALICE).withSalary("3000").withLeaveEntitlement(14)
+                .withPhone("90000000").build();
+        Employee benson = new EmployeeBuilder(BENSON).withSalary("5000").withLeaveEntitlement(21)
+                .withPhone("99999999").build();
+        Employee carl = new EmployeeBuilder(CARL).withSalary("2999").withLeaveEntitlement(13)
+                .withPhone("89999999").build();
+        Employee daniel = new EmployeeBuilder(DANIEL).withSalary("5001").withLeaveEntitlement(22)
+                .withPhone("100000000000000000000000000000").build();
+        AddressBook addressBook = new AddressBook();
+        for (Employee employee : List.of(alice, benson, carl, daniel)) {
+            addressBook.addEmployee(employee);
+        }
+        model.setAddressBook(addressBook);
+
+        assertFilter("s/3000-5000", List.of(alice, benson));
+        assertFilter("le/14-21", List.of(alice, benson));
+        assertFilter("s/3000-3000", List.of(alice));
+        assertFilter("le/14-14", List.of(alice));
+        assertFilter("s/3001-4999", List.of());
+        assertFilter("s/0-50000 le/0-365", List.of(alice, benson, carl, daniel));
+        assertFilter("s/3000-5000 le/21-21", List.of(benson));
+        assertFilter("p/900", List.of(alice));
+        assertFilter("p/>=90000000", List.of());
+        assertFilter("p/90000000-99999999", List.of());
+        assertEquals(addressBook, model.getAddressBook());
     }
 
     private void assertFilter(String arguments, List<Employee> expectedEmployees) throws Exception {

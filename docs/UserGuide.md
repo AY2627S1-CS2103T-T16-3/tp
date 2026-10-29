@@ -255,11 +255,12 @@ Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAIL
 * Supply at least one non-empty criterion.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Comparisons exclude the specified amount itself. Amounts must be whole numbers from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000. Operators such as `<=`, `>=`, and `=` are not supported.
-* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Days must be whole numbers from 0 to 365 with no leading zeros, as with `add` and `edit`. Operators such as `<=`, `>=`, and `=` are not supported.
+* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Use `s/<=4000` for at most 4000 or `s/>=4000` for at least 4000. `<` and `>` exclude the specified amount; `<=` and `>=` include it. Amounts must be whole numbers from 0 to 50000. Leading zeros are allowed: `s/003000` matches salary 3000. The `=` operator is not supported; omit the operator for an exact match.
+* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Use `le/<=14` for at most 14 days or `le/>=14` for at least 14 days. `<` and `>` exclude the threshold; `<=` and `>=` include it. Days must be whole numbers from 0 to 365. Leading zeros are allowed: `le/014` matches 14 days. The `=` operator is not supported; omit the operator for an exact match.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
 * All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
 * Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
+* Range filtering is supported **only for salary (`s/`) and annual leave entitlement (`le/`)**. These fields support `<`, `<=`, `>`, `>=`, and inclusive ranges written as `MIN-MAX`. Both endpoints are included; the minimum must not exceed the maximum. Spaces around an operator or range separator are allowed. Salary endpoints must be from 0 to 50000, leave endpoints from 0 to 365. Phone queries use partial matching.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
@@ -275,7 +276,11 @@ Examples:
 * `filter n/Alice s/<4000 le/>10` lists employees whose name contains `Alice`, salary is below 4000, and annual leave entitlement is above 10 days.
 * `filter s/<4000` lists employees earning less than 4000.
 * `filter s/>4000` lists employees earning more than 4000.
+* `filter s/<=4000` lists employees earning 4000 or less.
+* `filter s/>=4000` lists employees earning 4000 or more.
+* `filter s/<=4000 le/>=14` lists employees earning at most 4000 with at least 14 days of annual leave entitlement.
 * `filter n/Alice p/912 s/<4000` lists employees whose name contains `Alice`, whose phone number contains `912`, and whose salary is less than 4000.
+* `filter s/3000-5000 le/14-21` lists employees earning 3000 through 5000 with 14 through 21 days of entitlement, including both endpoints.
 
 ### Sorting the displayed employees: `sort`
 
@@ -561,7 +566,7 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Salary**            | `salary INDEX s/SALARY`<br>e.g., `salary 1 s/5000` |
 | **Edit employee**     | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`<br>e.g., `edit 2 n/James Lee le/21` |
 | **Find**              | `find KEYWORD [MORE_KEYWORDS]`<br>e.g., `find James Jake` |
-| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY]`<br>e.g., `filter task/report s/3000` |
+| **Filter**            | `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`<br>e.g., `filter task/report s/<=3000 le/>=14` |
 | **Sort**              | `sort FIELD/ORDER`<br> e.g., `sort s/asc` or `sort p/des` |
 | **List employees**    | `list` |
 | **Record leave**      | `leave add INDEX from/START_DATE to/END_DATE`<br>e.g., `leave add 1 from/20-10-2026 to/22-10-2026` |

@@ -172,6 +172,28 @@ At execution, the command follows these steps:
 
 This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The usual application-wide save still runs after command execution, including when the salary is unchanged.
 
+### Filtering employees
+
+`filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
+supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
+and repeated scalar fields, and uses `ParserUtil` to validate numeric thresholds. Salary thresholds
+must be whole numbers from 0 to 50000; annual leave entitlement thresholds must be whole numbers
+from 0 to 365. Leading zeros are normalized before constructing the predicate.
+
+Both numeric fields accept exact values (no operator), `<`, `<=`, `>`, and `>=`. The parser checks
+for the two-character inclusive operators before splitting the operator from its amount. It rejects
+missing thresholds and malformed operators such as `=`, `=<`, `=>`, or `<==` through the existing
+field validation errors. `EmployeeMatchesCriteriaPredicate#matchesAmount` likewise checks inclusive
+operators first, compares integer values, and includes equality only for `<=` and `>=` (or an exact
+match). Leave filtering uses annual entitlement, irrespective of leave already taken.
+
+`FilterCommand#execute` updates the model's filtered employee list and reports the number of matches.
+For example, `filter s/<=4000 le/>=14` includes employees earning exactly 4000 with exactly 14 days
+of entitlement, provided they satisfy both criteria. Employee records are unchanged.
+
+`FilterCommandParserTest` covers all operators, normalized values, valid limits, and invalid input.
+`FilterCommandTest` exercises parsing through execution, checking equality at inclusive thresholds,
+strict comparisons, limits (0/50000 salary and 0/365 days), and combinations with other criteria.
 ### Task management
 
 Users can keep track of tasks for each employee. The `Task` class stores the description and completion status.

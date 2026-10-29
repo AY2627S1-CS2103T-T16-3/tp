@@ -33,6 +33,8 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             PREFIX_LEAVE_ENTITLEMENT, Field.LEAVE_ENTITLEMENT);
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<!\\S)[A-Za-z]+/");
 
+    private static final Pattern RANGE_PATTERN = Pattern.compile("(\\d+)\\s*-\\s*(\\d+)");
+
     @Override
     public FilterCommand parse(String args) throws ParseException {
         // The shared tokenizer recognizes prefixes preceded by a space.
@@ -60,10 +62,8 @@ public class FilterCommandParser implements Parser<FilterCommand> {
                 throw invalidFormat();
             }
             if (!values.isEmpty()) {
-                if (entry.getValue() == Field.SALARY) {
-                    values = List.of(parseSalaryCriterion(values.get(0)));
-                } else if (entry.getValue() == Field.LEAVE_ENTITLEMENT) {
-                    values = List.of(parseLeaveCriterion(values.get(0)));
+                if (entry.getValue() == Field.SALARY || entry.getValue() == Field.LEAVE_ENTITLEMENT) {
+                    values = List.of(parseNumericCriterion(values.get(0), entry.getValue()));
                 }
                 criteria.put(entry.getValue(), values);
             }
@@ -75,23 +75,31 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     }
 
     /**
-     * Normalizes an exact salary or a strict comparison, validating the amount using salary constraints.
+     * Normalizes a comparison or inclusive range using the constraints of its numeric field.
      */
-    private String parseSalaryCriterion(String value) throws ParseException {
-        if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseSalary(value.substring(1)).salary;
+    private String parseNumericCriterion(String value, Field field) throws ParseException {
+        Matcher range = RANGE_PATTERN.matcher(value);
+        if (range.matches()) {
+            String lower = parseAmount(range.group(1), field);
+            String upper = parseAmount(range.group(2), field);
+            if (Integer.parseInt(lower) > Integer.parseInt(upper)) {
+                throw new ParseException("Range minimum must not exceed its maximum.\n" + FilterCommand.MESSAGE_USAGE);
+            }
+            return lower + "-" + upper;
         }
-        return ParserUtil.parseSalary(value).salary;
+        if (value.startsWith("<") || value.startsWith(">")) {
+            int operatorLength = value.startsWith("<=") || value.startsWith(">=") ? 2 : 1;
+            return value.substring(0, operatorLength) + parseAmount(value.substring(operatorLength).trim(), field);
+        }
+        return parseAmount(value, field);
     }
 
-    /**
-     * Normalizes an exact annual entitlement or a strict comparison using leave entitlement constraints.
-     */
-    private String parseLeaveCriterion(String value) throws ParseException {
-        if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseLeaveEntitlement(value.substring(1)).value;
-        }
-        return Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
+    private String parseAmount(String value, Field field) throws ParseException {
+        return switch (field) {
+            case SALARY -> ParserUtil.parseSalary(value).salary;
+            case LEAVE_ENTITLEMENT -> Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
+            default -> throw new IllegalArgumentException("Field is not numeric: " + field);
+        };
     }
 
     private ParseException invalidFormat() {
