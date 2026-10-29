@@ -64,6 +64,12 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             if (!values.isEmpty()) {
                 if (entry.getValue() == Field.SALARY || entry.getValue() == Field.LEAVE_ENTITLEMENT) {
                     values = List.of(parseNumericCriterion(values.get(0), entry.getValue()));
+                } else if (values.stream().anyMatch(this::startsWithComparator)) {
+                    throw new ParseException(FilterCommand.MESSAGE_TEXT_COMPARATOR);
+                } else {
+                    for (String value : values) {
+                        validateTextCriterion(value, entry.getValue());
+                    }
                 }
                 criteria.put(entry.getValue(), values);
             }
@@ -95,11 +101,37 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     }
 
     private String parseAmount(String value, Field field) throws ParseException {
+        checkNoLeadingZeros(value);
         return switch (field) {
             case SALARY -> ParserUtil.parseSalary(value).salary;
             case LEAVE_ENTITLEMENT -> Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
             default -> throw new IllegalArgumentException("Field is not numeric: " + field);
         };
+    }
+
+    /**
+     * Applies the same field constraints used when adding or editing employee details.
+     */
+    private void validateTextCriterion(String value, Field field) throws ParseException {
+        switch (field) {
+            case NAME -> ParserUtil.parseName(value);
+            case PHONE -> ParserUtil.parsePhone(value);
+            case EMAIL -> ParserUtil.parseEmail(value);
+            case ADDRESS -> ParserUtil.parseAddress(value);
+            case TAG -> ParserUtil.parseTag(value);
+            case TASK -> ParserUtil.parseTask(value);
+            default -> throw new IllegalArgumentException("Field is not a text field: " + field);
+        }
+    }
+
+    private boolean startsWithComparator(String value) {
+        return value.startsWith("<") || value.startsWith(">") || value.startsWith("=") || value.startsWith("!=");
+    }
+
+    private void checkNoLeadingZeros(String amount) throws ParseException {
+        if (amount.matches("0[0-9]+")) {
+            throw new ParseException(FilterCommand.MESSAGE_LEADING_ZEROS);
+        }
     }
 
     private ParseException invalidFormat() {

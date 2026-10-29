@@ -13,13 +13,18 @@ import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 public class FilterCommand extends Command {
 
     public static final String COMMAND_WORD = "filter";
+    public static final String MESSAGE_LEADING_ZEROS =
+            "Leading zeros are not allowed in salary or leave filters. Use 14 instead of 014; 0 is allowed.";
+    public static final String MESSAGE_TEXT_COMPARATOR =
+            "Comparators are only allowed for salary (s/) and annual leave entitlement (le/) filters.";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Match all supplied filters. Provide at least one.\n"
             + "Fields: n/NAME p/PHONE e/EMAIL a/ADDRESS t/TAG task/DETAILS s/SALARY le/DAYS\n"
-            + "Name, Phone, Email, Tasks: Partial Matches Allowed; Tags: Whole match Required (case-insensitive).\n"
-            + "Only t/ or task/ fields may be repeated.\n"
-            + "Salary (0-50000) and leave (0-365) fields only: supports exact, <, <=, >, >=, "
-            + "and inclusive range MIN-MAX.\n"
+            + "Text: partial match; tags: whole match (case-insensitive). Repeat only t/ or task/.\n"
+            + "Values must follow field rules: names allow letters, digits and spaces; tags are alphanumeric; "
+            + "phones need at least 3 digits; emails must be valid; tasks allow up to 120 characters.\n"
+            + "Only salary (0-50000) and leave (0-365) support exact values, <, <=, >, >=, "
+            + "and inclusive ranges MIN-MAX. No leading zeros; 0 is valid.\n"
             + "Example: filter task/report s/3000-5000 le/>=14";
 
     private final EmployeeMatchesCriteriaPredicate predicate;
