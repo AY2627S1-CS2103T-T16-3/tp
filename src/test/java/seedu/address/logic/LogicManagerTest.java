@@ -316,6 +316,37 @@ public class LogicManagerTest {
         assertEquals(model.getAddressBook(), saved);
     }
 
+    @Test
+    public void execute_salaryWithUnsupportedField_preservesModelListAndSavedData() throws Exception {
+        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000")
+                .withTasks(new Task("Report")).build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob").withSalary("2000").build());
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+
+        for (String selection : List.of("list", "find Bob", "sort s/des")) {
+            logic.execute(selection);
+            AddressBook before = new AddressBook(model.getAddressBook());
+            List<Employee> displayedEmployees = List.copyOf(model.getFilteredEmployeeList());
+            String savedData = Files.readString(dataFile);
+
+            for (String args : List.of("1 s/5000 n/Charlie", "1 n/Charlie s/5000",
+                    "1 s/-1 n/Charlie", "1 s/5000 x/test", "0 s/5000 n/Charlie",
+                    "1 s/5000 s/4000 n/Charlie", "1 n/Charlie")) {
+                assertThrows(ParseException.class, "Unsupported field. The salary command only accepts s/.", () ->
+                        logic.execute("salary " + args));
+                assertEquals(before, model.getAddressBook());
+                assertEquals(displayedEmployees, model.getFilteredEmployeeList());
+                assertEquals(savedData, Files.readString(dataFile));
+            }
+        }
+
+        logic.execute("salary 1 s/003000");
+        assertEquals("3000", model.getAddressBook().getEmployeeList().get(1).getSalary().salary);
+        assertEquals("1000", model.getAddressBook().getEmployeeList().get(0).getSalary().salary);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+    }
+
     /**
      * Executes the command and confirms that
      * - no exceptions are thrown <br>
