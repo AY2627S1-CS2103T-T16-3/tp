@@ -87,6 +87,25 @@ public class AddressBook implements ReadOnlyAddressBook {
 
         AddressBook replacement = new AddressBook(newData.getEmployeeList(), newData.getNextEmployeeId(),
                 newData.getLeaveList(), newData.getNextLeaveId());
+        restoreValidatedData(replacement);
+    }
+
+    /**
+     * Copies this validated book into independent lists, sharing only immutable values.
+     * Internal snapshots must not repeat validation intended for external data.
+     */
+    AddressBook copyForSnapshot() {
+        AddressBook copy = new AddressBook();
+        copy.restoreValidatedData(this);
+        return copy;
+    }
+
+    /**
+     * Restores trusted model data while retaining observable list identities and exact ID counters.
+     * This internal path must only receive an already-validated address book.
+     */
+    void restoreValidatedData(AddressBook replacement) {
+        requireNonNull(replacement);
         employees.setEmployees(replacement.employees);
         leaves.setLeaves(replacement.leaves);
         nextEmployeeId = replacement.nextEmployeeId;

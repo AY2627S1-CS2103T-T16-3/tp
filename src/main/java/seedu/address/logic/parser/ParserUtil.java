@@ -228,4 +228,15 @@ public class ParserUtil {
             throw new ParseException(Task.MESSAGE_CONSTRAINTS, exception);
         }
     }
+
+    /**
+     * Replaces escaped slashes in task text with literal slashes.
+     *
+     * @param taskText Task text containing zero or more escaped slashes.
+     * @return Task text with each {@code \/} replaced by {@code /}.
+     */
+    public static String unescapeTaskText(String taskText) {
+        requireNonNull(taskText);
+        return taskText.replace("\\/", "/");
+    }
 }

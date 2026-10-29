@@ -12,7 +12,6 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
-import static seedu.address.testutil.TypicalEmployees.AMY;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -285,6 +284,37 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_saveFailure_restoresDataFilterAndSort() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/Main Street le/14");
+        logic.execute("add n/Bob p/91234568 e/bob@example.com a/Main Street le/14");
+        logic.execute("leave add 1 from/05-10-2026 to/07-10-2026");
+        logic.execute("sort n/asc");
+        logic.execute("find Alice");
+        AddressBook before = new AddressBook(model.getAddressBook());
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(temporaryFolder.resolve("unused.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        logic = new LogicManager(model, new StorageManager(failingStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("prefs.json"))));
+
+        for (String command : List.of(
+                "add n/Charlie p/81234567 e/charlie@example.com a/Main Street le/14",
+                "salary 1 s/5000", "delete 1", "task add 1 d/Report", "leave delete 1",
+                "leave add 1 from/12-10-2026 to/13-10-2026", "list", "sort n/des")) {
+            assertThrows(CommandException.class, () -> logic.execute(command));
+            assertEquals(before, model.getAddressBook());
+            assertEquals(displayed, model.getFilteredEmployeeList());
+            model.updateFilteredEmployeeList(Model.PREDICATE_SHOW_ALL_EMPLOYEES);
+            assertEquals(before.getEmployeeList(), model.getFilteredEmployeeList());
+            model.updateFilteredEmployeeList(employee -> employee.getName().fullName.equals("Alice"));
+        }
+    }
+
+    @Test
     public void getFilteredEmployeeList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredEmployeeList().remove(0));
     }
@@ -474,9 +504,7 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + LEAVE_ENTITLEMENT_DESC_AMY;
-        Employee expectedEmployee = new EmployeeBuilder(AMY).withoutEmployeeId().withTags().build();
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addEmployee(expectedEmployee);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 

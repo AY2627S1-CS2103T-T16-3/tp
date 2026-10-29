@@ -31,6 +31,14 @@ public class AddTaskCommandParserTest {
     }
 
     @Test
+    public void parse_escapedDetailsPrefix_returnsCommandWithLiteralSlash() {
+        assertParseSuccess(parser, "1 d/Document d\\/DETAILS syntax",
+                new AddTaskCommand(Index.fromOneBased(1), new Task("Document d/DETAILS syntax")));
+        assertParseSuccess(parser, "1 d/Review d\\/DETAILS and d\\/EXAMPLE",
+                new AddTaskCommand(Index.fromOneBased(1), new Task("Review d/DETAILS and d/EXAMPLE")));
+    }
+
+    @Test
     public void parse_missingDetails_throwsParseException() {
         assertParseFailure(parser, "1", "Invalid command format!\n"
                 + AddTaskCommand.MESSAGE_USAGE);
