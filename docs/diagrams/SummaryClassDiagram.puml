@@ -20,7 +20,7 @@ class SummaryCommand LOGIC_COLOR {
 
 interface Model <<interface>> MODEL_COLOR {
     +getFilteredEmployeeList()
-    +getAddressBook()
+    +getAllEmployeesInDisplayOrder()
 }
 
 class EmployeeSummary MODEL_COLOR {
