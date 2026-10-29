@@ -12,7 +12,6 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.SummaryTestUtil.assertSummaryValue;
-import static seedu.address.testutil.TypicalEmployees.AMY;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -106,6 +105,35 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_summaryAfterLeaveCommands_recountsAndPreservesSavedData() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/123 Main Street le/14");
+        logic.execute("add n/Bob p/98765432 e/bob@example.com a/456 Main Street le/14");
+        logic.execute("leave add 1 from/06-01-2025 to/06-01-2025");
+        logic.execute("leave add 1 from/05-01-2026 to/09-01-2026");
+        logic.execute("leave add 2 from/04-01-2027 to/05-01-2027");
+        logic.execute("find Alice");
+        AddressBook before = new AddressBook(model.getAddressBook());
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+        String savedData = Files.readString(dataFile);
+
+        for (String command : List.of("summary", "/summary")) {
+            assertSummaryValue(logic.execute(command).getFeedbackToUser(), "Leave records", "2");
+            assertSummaryValue(logic.execute(command + " scope/all").getFeedbackToUser(), "Leave records", "3");
+            assertEquals(before, model.getAddressBook());
+            assertEquals(displayed, model.getFilteredEmployeeList());
+            assertEquals(savedData, Files.readString(dataFile));
+        }
+
+        logic.execute("leave delete 1");
+        assertSummaryValue(logic.execute("summary").getFeedbackToUser(), "Leave records", "1");
+        logic.execute("delete 1");
+        assertSummaryValue(logic.execute("summary scope/all").getFeedbackToUser(), "Leave records", "1");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
+        assertEquals(new AddressBook(model.getAddressBook()), new AddressBook(storage.readAddressBook().orElseThrow()));
+    }
+
+    @Test
     public void execute_summaryAliasesWithTasksAndActiveFilter_preservesModelAndSavedData() throws Exception {
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering")
                 .withTasks(new Task("Report")).build();
@@ -160,7 +188,7 @@ public class LogicManagerTest {
         model.addEmployee(new EmployeeBuilder().withName("Bob").withTags()
                 .withTasks(new Task("Review")).build());
         logic.execute("find Alice");
-        logic.execute("add-task 1 d/Report");
+        logic.execute("task add 1 d/Report");
         AddressBook before = new AddressBook(model.getAddressBook());
         Path dataFile = temporaryFolder.resolve("addressBook.json");
         String savedData = Files.readString(dataFile);
@@ -171,7 +199,7 @@ public class LogicManagerTest {
         assertEquals(before, model.getAddressBook());
         assertEquals(savedData, Files.readString(dataFile));
 
-        logic.execute("delete-task 1 i/1");
+        logic.execute("task delete 1 i/1");
         before = new AddressBook(model.getAddressBook());
         savedData = Files.readString(dataFile);
         result = logic.execute("summary scope/all").getFeedbackToUser();
@@ -181,6 +209,34 @@ public class LogicManagerTest {
         assertEquals(savedData, Files.readString(dataFile));
         JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
         assertEquals(before, new AddressBook(storage.readAddressBook().orElseThrow()));
+    }
+
+    @Test
+    public void execute_summaryAfterRepeatedSortsWithTies_preservesFilterAndSavedData() throws Exception {
+        logic.execute("add n/Carol p/91234561 e/carol@example.com a/One le/14 s/1000 t/finance");
+        logic.execute("add n/Bob p/91234562 e/bob@example.com a/Two le/14 s/1000 t/remote");
+        logic.execute("add n/Alice p/91234563 e/alice@example.com a/Three le/14 s/1000 t/engineering");
+        logic.execute("sort n/asc");
+        logic.execute("sort s/asc");
+        logic.execute("list");
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+        String savedData = Files.readString(dataFile);
+        AddressBook before = new AddressBook(model.getAddressBook());
+
+        for (String alias : List.of("summary", "/summary")) {
+            for (String selection : List.of("i/1", "e/1")) {
+                String filtered = logic.execute(alias + " " + selection).getFeedbackToUser();
+                String all = logic.execute(alias + " scope/all " + selection).getFeedbackToUser();
+                assertEquals(filtered.replace("Scope: Filtered employees", "Scope: All employees"), all);
+            }
+        }
+
+        logic.execute("find Alice Carol");
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+        assertSummaryValue(logic.execute("summary scope/all i/2").getFeedbackToUser(), "remote", "1");
+        assertEquals(displayed, model.getFilteredEmployeeList());
+        assertEquals(before, model.getAddressBook());
+        assertEquals(savedData, Files.readString(dataFile));
     }
 
     @Test
@@ -257,8 +313,59 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_saveFailure_restoresDataFilterAndSort() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/Main Street le/14");
+        logic.execute("add n/Bob p/91234568 e/bob@example.com a/Main Street le/14");
+        logic.execute("leave add 1 from/05-10-2026 to/07-10-2026");
+        logic.execute("sort n/asc");
+        logic.execute("find Alice");
+        AddressBook before = new AddressBook(model.getAddressBook());
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(temporaryFolder.resolve("unused.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        logic = new LogicManager(model, new StorageManager(failingStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("prefs.json"))));
+
+        for (String command : List.of(
+                "add n/Charlie p/81234567 e/charlie@example.com a/Main Street le/14",
+                "salary 1 s/5000", "delete 1", "task add 1 d/Report", "leave delete 1",
+                "leave add 1 from/12-10-2026 to/13-10-2026", "list", "sort n/des")) {
+            assertThrows(CommandException.class, () -> logic.execute(command));
+            assertEquals(before, model.getAddressBook());
+            assertEquals(displayed, model.getFilteredEmployeeList());
+            model.updateFilteredEmployeeList(Model.PREDICATE_SHOW_ALL_EMPLOYEES);
+            assertEquals(before.getEmployeeList(), model.getFilteredEmployeeList());
+            model.updateFilteredEmployeeList(employee -> employee.getName().fullName.equals("Alice"));
+        }
+    }
+
+    @Test
     public void getFilteredEmployeeList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredEmployeeList().remove(0));
+    }
+
+    @Test
+    public void execute_sameSalaryCommand_preservesFilteredModelAndStoredData() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/123 Main Street le/14 s/1000");
+        logic.execute("add n/Bob p/92345678 e/bob@example.com a/456 Main Street le/14 s/2000");
+        logic.execute("find Bob");
+        List<Employee> originalEmployees = List.copyOf(model.getAddressBook().getEmployeeList());
+        List<Employee> originalFilteredEmployees = List.copyOf(model.getFilteredEmployeeList());
+        Path storagePath = temporaryFolder.resolve("addressBook.json");
+        String originalStoredData = Files.readString(storagePath);
+
+        CommandResult result = logic.execute("salary 1 s/002000");
+
+        assertEquals("Bob's salary is already $2000. No changes made.", result.getFeedbackToUser());
+        assertEquals(originalEmployees, model.getAddressBook().getEmployeeList());
+        assertEquals(originalFilteredEmployees, model.getFilteredEmployeeList());
+        assertEquals(originalStoredData, Files.readString(storagePath));
+        ReadOnlyAddressBook saved = new JsonAddressBookStorage(storagePath).readAddressBook().orElseThrow();
+        assertEquals(originalEmployees, saved.getEmployeeList());
     }
 
     @Test
@@ -284,7 +391,7 @@ public class LogicManagerTest {
         // Expected feedback for tested command
         CommandResult expectedFeedback = new CommandResult(
                 String.format(SalaryCommand.MESSAGE_SUCCESS,
-                        expected.getSalary(), Messages.format(expected)));
+                        expected.getName(), charlie.getSalary(), expected.getSalary()));
 
         // Asserts that command feedback is correct
         assertEquals(expectedFeedback, logic.execute("salary 1 s/005000"));
@@ -314,6 +421,37 @@ public class LogicManagerTest {
 
         // Asserts that the saved address book matches the model
         assertEquals(model.getAddressBook(), saved);
+    }
+
+    @Test
+    public void execute_salaryWithUnsupportedField_preservesModelListAndSavedData() throws Exception {
+        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000")
+                .withTasks(new Task("Report")).build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob").withSalary("2000").build());
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+
+        for (String selection : List.of("list", "find Bob", "sort s/des")) {
+            logic.execute(selection);
+            AddressBook before = new AddressBook(model.getAddressBook());
+            List<Employee> displayedEmployees = List.copyOf(model.getFilteredEmployeeList());
+            String savedData = Files.readString(dataFile);
+
+            for (String args : List.of("1 s/5000 n/Charlie", "1 n/Charlie s/5000",
+                    "1 s/-1 n/Charlie", "1 s/5000 x/test", "0 s/5000 n/Charlie",
+                    "1 s/5000 s/4000 n/Charlie", "1 n/Charlie")) {
+                assertThrows(ParseException.class, "Unsupported field. The salary command only accepts s/.", () ->
+                        logic.execute("salary " + args));
+                assertEquals(before, model.getAddressBook());
+                assertEquals(displayedEmployees, model.getFilteredEmployeeList());
+                assertEquals(savedData, Files.readString(dataFile));
+            }
+        }
+
+        logic.execute("salary 1 s/003000");
+        assertEquals("3000", model.getAddressBook().getEmployeeList().get(1).getSalary().salary);
+        assertEquals("1000", model.getAddressBook().getEmployeeList().get(0).getSalary().salary);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
     }
 
     /**
@@ -395,9 +533,7 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + LEAVE_ENTITLEMENT_DESC_AMY;
-        Employee expectedEmployee = new EmployeeBuilder(AMY).withoutEmployeeId().withTags().build();
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addEmployee(expectedEmployee);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 

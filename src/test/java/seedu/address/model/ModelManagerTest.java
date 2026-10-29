@@ -2,23 +2,77 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_EMPLOYEES;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalEmployees.ALICE;
 import static seedu.address.testutil.TypicalEmployees.BENSON;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
+import seedu.address.model.employee.Task;
+import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.AddressBookBuilder;
+import seedu.address.testutil.EmployeeBuilder;
 
 public class ModelManagerTest {
 
     private ModelManager modelManager = new ModelManager();
+
+    @Test
+    public void restoreSnapshot_changedDataAndDisplay_restoresOriginalStateAndBindings() {
+        modelManager.addEmployee(new EmployeeBuilder(ALICE).withTasks(new Task("Report")).build());
+        modelManager.addEmployee(BENSON);
+        Employee alice = modelManager.getAddressBook().getEmployeeList().get(0);
+        modelManager.addLeave(alice.getEmployeeId().orElseThrow(), new LeavePeriod(
+                LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 7)));
+        modelManager.updateFilteredEmployeeList(employee -> employee.equals(alice));
+        modelManager.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName));
+        AddressBook before = new AddressBook(modelManager.getAddressBook());
+        var displayed = modelManager.getFilteredEmployeeList();
+        ModelSnapshot snapshot = modelManager.createSnapshot();
+
+        modelManager.deleteEmployee(alice);
+        modelManager.addEmployee(new EmployeeBuilder().withName("Charlie").build());
+        modelManager.sortFilteredEmployeeList(
+                Comparator.comparing((Employee employee) -> employee.getName().fullName).reversed());
+        modelManager.restoreSnapshot(snapshot);
+
+        assertEquals(before, modelManager.getAddressBook());
+        assertSame(displayed, modelManager.getFilteredEmployeeList());
+        assertEquals(List.of(alice), displayed);
+        modelManager.updateFilteredEmployeeList(PREDICATE_SHOW_ALL_EMPLOYEES);
+        assertEquals(before.getEmployeeList(), displayed);
+        modelManager.deleteEmployee(alice);
+        assertEquals(1, displayed.size());
+        modelManager.restoreSnapshot(snapshot);
+        assertEquals(before, modelManager.getAddressBook());
+        assertEquals(List.of(alice), displayed);
+    }
+
+    @Test
+    public void restoreSnapshot_initialDisplayRules_restoresUnsortedUnfilteredView() {
+        modelManager.addEmployee(BENSON);
+        modelManager.addEmployee(ALICE);
+        ModelSnapshot snapshot = modelManager.createSnapshot();
+        List<Employee> originalOrder = List.copyOf(modelManager.getFilteredEmployeeList());
+        modelManager.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName));
+        modelManager.updateFilteredEmployeeList(employee -> false);
+
+        modelManager.restoreSnapshot(snapshot);
+
+        assertEquals(originalOrder, modelManager.getFilteredEmployeeList());
+        modelManager.addEmployee(new EmployeeBuilder().withName("Aaron").build());
+        assertEquals("Aaron", modelManager.getFilteredEmployeeList().get(2).getName().fullName);
+    }
 
     @Test
     public void constructor() {
@@ -71,6 +125,63 @@ public class ModelManagerTest {
     @Test
     public void getFilteredEmployeeList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredEmployeeList().remove(0));
+    }
+
+    @Test
+    public void getAllEmployeesInDisplayOrder_sortedAndFiltered_keepsHiddenEmployeesAndStoredOrder() {
+        AddressBook addressBook = new AddressBookBuilder().withEmployee(ALICE).withEmployee(BENSON).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+        modelManager.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName,
+                String.CASE_INSENSITIVE_ORDER.reversed()));
+        modelManager.updateFilteredEmployeeList(employee -> employee.equals(ALICE));
+
+        assertEquals(List.of(BENSON, ALICE), modelManager.getAllEmployeesInDisplayOrder());
+        assertEquals(List.of(ALICE), modelManager.getFilteredEmployeeList());
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getEmployeeList());
+    }
+
+    @Test
+    public void getAllEmployeesInDisplayOrder_withoutSort_returnsUnmodifiableSnapshotInStoredOrder() {
+        AddressBook addressBook = new AddressBookBuilder().withEmployee(BENSON).withEmployee(ALICE).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+        List<Employee> snapshot = modelManager.getAllEmployeesInDisplayOrder();
+
+        assertEquals(List.of(BENSON, ALICE), snapshot);
+        assertThrows(UnsupportedOperationException.class, () -> snapshot.remove(0));
+        modelManager.deleteEmployee(BENSON);
+        assertEquals(List.of(BENSON, ALICE), snapshot);
+        assertEquals(List.of(ALICE), modelManager.getAllEmployeesInDisplayOrder());
+    }
+
+    @Test
+    public void getAllEmployeesInDisplayOrder_repeatedSortsWithTies_matchesViewAfterDataAndFilterChanges() {
+        Employee alice = new EmployeeBuilder().withName("Alice").withEmployeeId(1).build();
+        Employee bob = new EmployeeBuilder().withName("Bob").withEmployeeId(2).build();
+        Employee carol = new EmployeeBuilder().withName("Carol").withEmployeeId(3).build();
+        AddressBook addressBook = new AddressBookBuilder().withEmployee(carol).withEmployee(bob)
+                .withEmployee(alice).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+        var displayed = modelManager.getFilteredEmployeeList();
+        modelManager.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName));
+        modelManager.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getSalary().salary));
+        assertEquals(List.of(alice, bob, carol), displayed);
+        assertEquals(displayed, modelManager.getAllEmployeesInDisplayOrder());
+
+        List<Employee> snapshot = modelManager.getAllEmployeesInDisplayOrder();
+        modelManager.updateFilteredEmployeeList(employee -> !employee.equals(bob));
+        assertEquals(List.of(alice, carol), displayed);
+        assertEquals(snapshot, modelManager.getAllEmployeesInDisplayOrder());
+        modelManager.updateFilteredEmployeeList(PREDICATE_SHOW_ALL_EMPLOYEES);
+        assertEquals(snapshot, displayed);
+
+        modelManager.deleteEmployee(bob);
+        Employee renamed = new EmployeeBuilder(alice).withName("Alicia").build();
+        modelManager.setEmployee(alice, renamed);
+        assertEquals(List.of(alice, bob, carol), snapshot);
+        assertEquals(displayed, modelManager.getAllEmployeesInDisplayOrder());
+        assertTrue(displayed.contains(renamed));
+        assertFalse(displayed.contains(bob));
+        assertEquals(List.of(carol, renamed), modelManager.getAddressBook().getEmployeeList());
     }
 
     @Test

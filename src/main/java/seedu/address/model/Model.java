@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
@@ -17,6 +18,12 @@ import seedu.address.model.leave.LeavePeriod;
 public interface Model {
     /** {@code Predicate} that always evaluates to true */
     Predicate<Employee> PREDICATE_SHOW_ALL_EMPLOYEES = unused -> true;
+
+    /** Captures data and display rules before a command executes. */
+    ModelSnapshot createSnapshot();
+
+    /** Restores data and display rules without replacing the observable list used by the UI. */
+    void restoreSnapshot(ModelSnapshot snapshot);
 
     /**
      * Returns the user prefs.
@@ -77,6 +84,12 @@ public interface Model {
 
     /** Returns an unmodifiable view of the filtered employee list */
     ObservableList<Employee> getFilteredEmployeeList();
+
+    /**
+     * Returns an unmodifiable snapshot of all employees in the current display sort order, ignoring the filter.
+     * Shares the displayed list's ordering for tied values. Without an active sort, uses stored order.
+     */
+    List<Employee> getAllEmployeesInDisplayOrder();
 
     /**
      * Updates the filter of the filtered employee list to filter by the given {@code predicate}.

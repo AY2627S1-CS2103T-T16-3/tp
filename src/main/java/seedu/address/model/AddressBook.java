@@ -14,6 +14,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.employee.UniqueEmployeeList;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.LeaveId;
@@ -86,6 +87,25 @@ public class AddressBook implements ReadOnlyAddressBook {
 
         AddressBook replacement = new AddressBook(newData.getEmployeeList(), newData.getNextEmployeeId(),
                 newData.getLeaveList(), newData.getNextLeaveId());
+        restoreValidatedData(replacement);
+    }
+
+    /**
+     * Copies this validated book into independent lists, sharing only immutable values.
+     * Internal snapshots must not repeat validation intended for external data.
+     */
+    AddressBook copyForSnapshot() {
+        AddressBook copy = new AddressBook();
+        copy.restoreValidatedData(this);
+        return copy;
+    }
+
+    /**
+     * Restores trusted model data while retaining observable list identities and exact ID counters.
+     * This internal path must only receive an already-validated address book.
+     */
+    void restoreValidatedData(AddressBook replacement) {
+        requireNonNull(replacement);
         employees.setEmployees(replacement.employees);
         leaves.setLeaves(replacement.leaves);
         nextEmployeeId = replacement.nextEmployeeId;
@@ -285,7 +305,7 @@ public class AddressBook implements ReadOnlyAddressBook {
                 continue;
             }
             if (nextIdAfterSet > Integer.MAX_VALUE) {
-                throw new IllegalStateException("No employee IDs are available.");
+                throw new EmployeeIdExhaustedException();
             }
             employeesWithIds.add(employee.withEmployeeId(new EmployeeId((int) nextIdAfterSet)));
             nextIdAfterSet++;
@@ -297,7 +317,7 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private EmployeeId createNextEmployeeId() {
         if (nextEmployeeId > Integer.MAX_VALUE) {
-            throw new IllegalStateException("No employee IDs are available.");
+            throw new EmployeeIdExhaustedException();
         }
         return new EmployeeId((int) nextEmployeeId);
     }

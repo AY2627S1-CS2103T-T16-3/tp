@@ -70,6 +70,19 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void unescapeTaskText_escapedSlashes_returnsLiteralSlashes() {
+        assertEquals("Coordinate w/Finance", ParserUtil.unescapeTaskText("Coordinate w\\/Finance"));
+        assertEquals("Review d/DETAILS and n/NAME",
+                ParserUtil.unescapeTaskText("Review d\\/DETAILS and n\\/NAME"));
+    }
+
+    @Test
+    public void unescapeTaskText_noEscapedSlash_returnsUnchangedText() {
+        assertEquals("Prepare report", ParserUtil.unescapeTaskText("Prepare report"));
+        assertEquals("https://example.com", ParserUtil.unescapeTaskText("https://example.com"));
+    }
+
+    @Test
     public void parseLeaveEntitlement_invalidValue_throwsParseException() {
         for (String value : List.of("", " ", "-1", "366", "000366", "1.5", "abc",
                 "999999999999999999999", "9".repeat(1000))) {
@@ -115,14 +128,19 @@ public class ParserUtilTest {
         LocalDate expectedDate = LocalDate.of(2026, 10, 5);
         assertEquals(expectedDate, ParserUtil.parseStartDate("05-10-2026"));
         assertEquals(expectedDate, ParserUtil.parseEndDate(" 05-10-2026 "));
+        assertEquals(LocalDate.of(1, 1, 1), ParserUtil.parseStartDate("01-01-0001"));
+        assertEquals(LocalDate.of(9999, 12, 31), ParserUtil.parseEndDate("31-12-9999"));
     }
 
     @Test
     public void parseLeaveDate_invalidDate_throwsParseException() {
-        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_START_DATE, () ->
-                ParserUtil.parseStartDate("31-02-2026"));
-        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_END_DATE, () ->
-                ParserUtil.parseEndDate("2026-10-05"));
+        for (String invalidDate : List.of("31-02-2026", "2026-10-05", "01-01-0000", "01-01-+10000",
+                "01-01--0001")) {
+            assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_START_DATE, () ->
+                    ParserUtil.parseStartDate(invalidDate));
+            assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_END_DATE, () ->
+                    ParserUtil.parseEndDate(invalidDate));
+        }
     }
 
     @Test

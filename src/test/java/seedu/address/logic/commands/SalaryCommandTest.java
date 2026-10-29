@@ -2,11 +2,13 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_EMPLOYEE;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -48,8 +50,8 @@ public class SalaryCommandTest {
         assertEquals(original.getEmail(), updated.getEmail());
         assertEquals(original.getAddress(), updated.getAddress());
         assertEquals(original.getTags(), updated.getTags());
-        assertEquals(String.format(SalaryCommand.MESSAGE_SUCCESS, updatedSalary, Messages.format(updated)),
-                result.getFeedbackToUser());
+        assertEquals(original.getLeaveEntitlement(), updated.getLeaveEntitlement());
+        assertEquals("Updated Alice's salary from $1000 to $5000.", result.getFeedbackToUser());
         assertEquals(original.getTasks(), updated.getTasks());
     }
 
@@ -122,15 +124,92 @@ public class SalaryCommandTest {
 
     @Test
     public void execute_sameSalary_preservesEmployeeAndListSize() throws Exception {
-        Model model = new ModelManager();
-        Employee original = new EmployeeBuilder().withSalary("5000").build();
+        Model model = new ModelManager() {
+            @Override
+            public void setEmployee(Employee target, Employee editedEmployee) {
+                throw new AssertionError("An unchanged salary must not update the employee.");
+            }
+        };
+        Employee original = new EmployeeBuilder().withName("Alice").withSalary("5000").build();
         model.addEmployee(original);
         Employee storedOriginal = model.getAddressBook().getEmployeeList().get(0);
 
-        new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("005000")).execute(model);
+        for (String salary : List.of("5000", "005000")) {
+            CommandResult result = new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary(salary)).execute(model);
+            assertEquals("Alice's salary is already $5000. No changes made.", result.getFeedbackToUser());
+        }
 
         assertEquals(1, model.getAddressBook().getEmployeeList().size());
         assertEquals(storedOriginal, model.getAddressBook().getEmployeeList().get(0));
+    }
+
+    @Test
+    public void execute_sameSalaryFilteredList_preservesFilter() throws Exception {
+        Model model = new ModelManager();
+        Employee alice = new EmployeeBuilder().withName("Alice").withSalary("1000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob").withSalary("2000").build();
+        model.addEmployee(alice);
+        model.addEmployee(bob);
+        model.updateFilteredEmployeeList(employee -> employee.getName().equals(bob.getName()));
+        List<Employee> originalEmployees = List.copyOf(model.getAddressBook().getEmployeeList());
+
+        CommandResult result = new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("2000")).execute(model);
+
+        assertEquals("Bob's salary is already $2000. No changes made.", result.getFeedbackToUser());
+        assertEquals(originalEmployees, model.getAddressBook().getEmployeeList());
+        assertEquals(List.of(originalEmployees.get(1)), model.getFilteredEmployeeList());
+    }
+
+    @Test
+    public void execute_repeatedSalaryCommand_reportsNoChange() throws Exception {
+        Model model = new ModelManager();
+        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000").build());
+        SalaryCommand command = new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("5000"));
+
+        CommandResult firstResult = command.execute(model);
+        CommandResult secondResult = command.execute(model);
+
+        assertEquals("Updated Alice's salary from $1000 to $5000.", firstResult.getFeedbackToUser());
+        assertEquals("Alice's salary is already $5000. No changes made.", secondResult.getFeedbackToUser());
+        assertEquals(new Salary("5000"), model.getFilteredEmployeeList().get(0).getSalary());
+    }
+
+    @Test
+    public void execute_boundarySalaries_preservesOtherDetails() throws Exception {
+        Model model = new ModelManager();
+        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000").build());
+
+        for (String salary : List.of("0", "50000", "0")) {
+            Employee before = model.getFilteredEmployeeList().get(0);
+            Employee expected = new EmployeeBuilder(before).withSalary(salary).build();
+
+            CommandResult result = new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary(salary)).execute(model);
+
+            assertEquals("Updated Alice's salary from " + before.getSalary() + " to $" + salary + ".",
+                    result.getFeedbackToUser());
+            assertEquals(List.of(expected), model.getAddressBook().getEmployeeList());
+            assertFalse(result.isExit());
+            assertFalse(result.isShowHelp());
+        }
+    }
+
+    @Test
+    public void execute_sameSalarySortedList_preservesOrderAndEmployeeInstances() throws Exception {
+        Model model = new ModelManager();
+        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000").build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob").withSalary("2000").build());
+        model.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName,
+                Comparator.reverseOrder()));
+        List<Employee> originalEmployees = List.copyOf(model.getFilteredEmployeeList());
+
+        CommandResult result = new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("002000")).execute(model);
+
+        assertEquals("Bob's salary is already $2000. No changes made.", result.getFeedbackToUser());
+        assertEquals(originalEmployees, model.getFilteredEmployeeList());
+        assertSame(originalEmployees.get(0), model.getFilteredEmployeeList().get(0));
+        assertSame(originalEmployees.get(1), model.getFilteredEmployeeList().get(1));
+        assertFalse(result.isExit());
+        assertFalse(result.isShowHelp());
     }
 
     @Test

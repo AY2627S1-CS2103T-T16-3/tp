@@ -6,6 +6,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,16 @@ public class JsonSerializableAddressBookTest {
     }
 
     @Test
+    public void toModelType_unassignedEmployeeWithoutAvailableId_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(new EmployeeBuilder().withoutEmployeeId().build());
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(employee),
+                (long) Integer.MAX_VALUE + 1);
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_INVALID_EMPLOYEE_ID,
+                data::toModelType);
+    }
+
+    @Test
     public void toModelType_validLeave_success() throws Exception {
         JsonAdaptedEmployee employee = new JsonAdaptedEmployee(new EmployeeBuilder().withEmployeeId(1).build());
         Leave leave = new Leave(new LeaveId(1), new EmployeeId(1), new LeavePeriod(
@@ -71,6 +82,33 @@ public class JsonSerializableAddressBookTest {
 
         assertEquals(List.of(leave), result.getLeaveList());
         assertEquals(2, result.getNextLeaveId());
+    }
+
+    @Test
+    public void toModelType_nullLeaveRecord_throwsIllegalValueException() {
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(), 1L,
+                Arrays.asList((JsonAdaptedLeave) null), 1L);
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_NULL_LEAVE,
+                data::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullAfterValidLeave_throwsIllegalValueException() {
+        JsonAdaptedEmployee employee = new JsonAdaptedEmployee(new EmployeeBuilder().withEmployeeId(1).build());
+        JsonAdaptedLeave leave = new JsonAdaptedLeave(1, 1, "2026-10-05", "2026-10-07");
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(employee), 2L,
+                Arrays.asList(leave, null), 2L);
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_NULL_LEAVE,
+                data::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullLeaveCollection_loadsLegacyDataWithoutLeave() throws Exception {
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(), 1L, null, 1L);
+
+        assertEquals(new AddressBook(), data.toModelType());
     }
 
     @Test

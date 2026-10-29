@@ -33,6 +33,8 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             PREFIX_LEAVE_ENTITLEMENT, Field.LEAVE_ENTITLEMENT);
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<!\\S)[A-Za-z]+/");
 
+    private static final Pattern RANGE_PATTERN = Pattern.compile("(\\d+)\\s*-\\s*(\\d+)");
+
     @Override
     public FilterCommand parse(String args) throws ParseException {
         // The shared tokenizer recognizes prefixes preceded by a space.
@@ -56,14 +58,21 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         Map<Field, List<String>> criteria = new EnumMap<>(Field.class);
         for (Map.Entry<Prefix, Field> entry : FIELDS.entrySet()) {
             List<String> values = arguments.getAllValues(entry.getKey());
+            if (entry.getValue() == Field.TASK) {
+                values = values.stream().map(ParserUtil::unescapeTaskText).toList();
+            }
             if (values.stream().anyMatch(String::isBlank)) {
                 throw invalidFormat();
             }
             if (!values.isEmpty()) {
-                if (entry.getValue() == Field.SALARY) {
-                    values = List.of(parseSalaryCriterion(values.get(0)));
-                } else if (entry.getValue() == Field.LEAVE_ENTITLEMENT) {
-                    values = List.of(parseLeaveCriterion(values.get(0)));
+                if (entry.getValue() == Field.SALARY || entry.getValue() == Field.LEAVE_ENTITLEMENT) {
+                    values = List.of(parseNumericCriterion(values.get(0), entry.getValue()));
+                } else if (values.stream().anyMatch(this::startsWithComparator)) {
+                    throw new ParseException(FilterCommand.MESSAGE_TEXT_COMPARATOR);
+                } else {
+                    for (String value : values) {
+                        validateTextCriterion(value, entry.getValue());
+                    }
                 }
                 criteria.put(entry.getValue(), values);
             }
@@ -75,23 +84,57 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     }
 
     /**
-     * Normalizes an exact salary or a strict comparison, validating the amount using salary constraints.
+     * Normalizes a comparison or inclusive range using the constraints of its numeric field.
      */
-    private String parseSalaryCriterion(String value) throws ParseException {
-        if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseSalary(value.substring(1)).salary;
+    private String parseNumericCriterion(String value, Field field) throws ParseException {
+        Matcher range = RANGE_PATTERN.matcher(value);
+        if (range.matches()) {
+            String lower = parseAmount(range.group(1), field);
+            String upper = parseAmount(range.group(2), field);
+            if (Integer.parseInt(lower) > Integer.parseInt(upper)) {
+                throw new ParseException("Range minimum must not exceed its maximum.\n" + FilterCommand.MESSAGE_USAGE);
+            }
+            return lower + "-" + upper;
         }
-        return ParserUtil.parseSalary(value).salary;
+        if (value.startsWith("<") || value.startsWith(">")) {
+            int operatorLength = value.startsWith("<=") || value.startsWith(">=") ? 2 : 1;
+            return value.substring(0, operatorLength) + parseAmount(value.substring(operatorLength).trim(), field);
+        }
+        return parseAmount(value, field);
+    }
+
+    private String parseAmount(String value, Field field) throws ParseException {
+        checkNoLeadingZeros(value);
+        return switch (field) {
+            case SALARY -> ParserUtil.parseSalary(value).salary;
+            case LEAVE_ENTITLEMENT -> Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
+            default -> throw new IllegalArgumentException("Field is not numeric: " + field);
+        };
     }
 
     /**
-     * Normalizes an exact annual entitlement or a strict comparison using leave entitlement constraints.
+     * Applies the same field constraints used when adding or editing employee details.
      */
-    private String parseLeaveCriterion(String value) throws ParseException {
-        if (value.startsWith("<") || value.startsWith(">")) {
-            return value.substring(0, 1) + ParserUtil.parseLeaveEntitlement(value.substring(1)).value;
+    private void validateTextCriterion(String value, Field field) throws ParseException {
+        switch (field) {
+            case NAME -> ParserUtil.parseName(value);
+            case PHONE -> ParserUtil.parsePhone(value);
+            case EMAIL -> ParserUtil.parseEmail(value);
+            case ADDRESS -> ParserUtil.parseAddress(value);
+            case TAG -> ParserUtil.parseTag(value);
+            case TASK -> ParserUtil.parseTask(value);
+            default -> throw new IllegalArgumentException("Field is not a text field: " + field);
         }
-        return Integer.toString(ParserUtil.parseLeaveEntitlement(value).value);
+    }
+
+    private boolean startsWithComparator(String value) {
+        return value.startsWith("<") || value.startsWith(">") || value.startsWith("=") || value.startsWith("!=");
+    }
+
+    private void checkNoLeadingZeros(String amount) throws ParseException {
+        if (amount.matches("0[0-9]+")) {
+            throw new ParseException(FilterCommand.MESSAGE_LEADING_ZEROS);
+        }
     }
 
     private ParseException invalidFormat() {

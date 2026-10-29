@@ -10,4 +10,7 @@ public interface Ui {
     /** Starts the UI (and the App).  */
     void start(Stage primaryStage);
 
+    /** Displays feedback in the existing command result box. */
+    void setFeedbackToUser(String feedbackToUser);
+
 }

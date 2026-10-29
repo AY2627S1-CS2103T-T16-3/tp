@@ -33,6 +33,11 @@ import seedu.address.ui.UiManager;
 public class MainApp extends Application {
 
     public static final String VERSION = "V1.3.0";
+    public static final String MESSAGE_DATA_LOADING_ERROR =
+            "Could not load saved data from %s: the file is invalid or unreadable.\n"
+            + "Started with an empty address book. The saved file is unchanged.\n"
+            + "The next successful command will overwrite it. To recover your data, close HR Book now and correct"
+            + " the file or restore a valid backup before reopening.";
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
@@ -42,6 +47,8 @@ public class MainApp extends Application {
     protected Logic logic;
     protected Storage storage;
     protected Model model;
+
+    private boolean dataLoadingFailed;
 
     @Override
     public void init() throws Exception {
@@ -65,8 +72,9 @@ public class MainApp extends Application {
      * The data from the sample address book will be used instead if {@code storage}'s address book is not found,
      * or an empty address book will be used instead if errors occur when reading {@code storage}'s address book.
      */
-    private Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) {
+    Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) {
         logger.info("Using data file : " + storage.getAddressBookFilePath());
+        dataLoadingFailed = false;
 
         Optional<ReadOnlyAddressBook> addressBookOptional;
         ReadOnlyAddressBook initialData;
@@ -78,6 +86,7 @@ public class MainApp extends Application {
             }
             initialData = addressBookOptional.orElseGet(SampleDataUtil::getSampleAddressBook);
         } catch (DataLoadingException e) {
+            dataLoadingFailed = true;
             logger.warning("Data file at " + storage.getAddressBookFilePath() + " could not be loaded."
                     + " Will be starting with an empty AddressBook.");
             initialData = new AddressBook();
@@ -122,6 +131,9 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) {
         logger.info("Starting AddressBook " + MainApp.VERSION);
         ui.start(primaryStage);
+        if (dataLoadingFailed) {
+            ui.setFeedbackToUser(String.format(MESSAGE_DATA_LOADING_ERROR, storage.getAddressBookFilePath()));
+        }
     }
 
     @Override

@@ -33,7 +33,7 @@ public class AddTaskCommandTest {
 
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare report")),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "Prepare report"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] Prepare report"), expectedModel);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class AddTaskCommandTest {
 
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task(details)),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "task......Task"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] task......Task"), expectedModel);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class AddTaskCommandTest {
 
         assertCommandSuccess(new AddTaskCommand(Index.fromOneBased(1), new Task(details)),
                 model, String.format(AddTaskCommand.MESSAGE_SUCCESS,
-                        employee.getName().fullName, "T"), expectedModel);
+                        employee.getName().fullName, 1, "[ ] T"), expectedModel);
     }
 
     @Test
@@ -75,6 +75,15 @@ public class AddTaskCommandTest {
         model.setEmployee(employee, employee.addTask(new Task("Prepare report")));
 
         assertCommandFailure(new AddTaskCommand(Index.fromOneBased(1), new Task(" prepare  REPORT ")),
+                model, AddTaskCommand.MESSAGE_DUPLICATE_TASK);
+    }
+
+    @Test
+    public void execute_duplicateTaskWithUnicodeWhitespace_throwsCommandException() {
+        Employee employee = model.getFilteredEmployeeList().get(0);
+        model.setEmployee(employee, employee.addTask(new Task("Prepare report")));
+
+        assertCommandFailure(new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare\u2003\u2003report")),
                 model, AddTaskCommand.MESSAGE_DUPLICATE_TASK);
     }
 

@@ -89,6 +89,15 @@ public class TaskTest {
     }
 
     @Test
+    public void equals_unicodeWhitespaceDifferences_returnsTrue() {
+        Task firstTask = new Task("Prepare report");
+        Task secondTask = new Task("\u2003Prepare\u2003\u2003report\u2003");
+
+        assertEquals(firstTask, secondTask);
+        assertEquals(firstTask.hashCode(), secondTask.hashCode());
+    }
+
+    @Test
     public void equals_differentDetails_returnsFalse() {
         assertFalse(new Task("Prepare report").equals(new Task("Submit report")));
     }

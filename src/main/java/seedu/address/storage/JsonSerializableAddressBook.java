@@ -12,6 +12,7 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.exceptions.EmployeeIdExhaustedException;
 import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 import seedu.address.model.leave.Leave;
 import seedu.address.model.leave.exceptions.DuplicateLeaveException;
@@ -29,6 +30,7 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_ORPHANED_LEAVE = "Leave list contains a record for an unknown employee.";
     public static final String MESSAGE_OVERLAPPING_LEAVE = "Leave list contains overlapping records for an employee.";
     public static final String MESSAGE_INVALID_NEXT_LEAVE_ID = "Address book contains an invalid next leave ID.";
+    public static final String MESSAGE_NULL_LEAVE = "Leave list contains a null record.";
 
     // Retain the existing JSON key so saved address books remain compatible.
     @JsonProperty("persons")
@@ -92,6 +94,9 @@ class JsonSerializableAddressBook {
 
         List<Leave> modelLeaves = new ArrayList<>();
         for (JsonAdaptedLeave jsonAdaptedLeave : leaves) {
+            if (jsonAdaptedLeave == null) {
+                throw new IllegalValueException(MESSAGE_NULL_LEAVE);
+            }
             modelLeaves.add(jsonAdaptedLeave.toModelType());
         }
 
@@ -108,7 +113,7 @@ class JsonSerializableAddressBook {
             throw new IllegalValueException(MESSAGE_ORPHANED_LEAVE, e);
         } catch (OverlappingLeaveException e) {
             throw new IllegalValueException(MESSAGE_OVERLAPPING_LEAVE, e);
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (EmployeeIdExhaustedException | IllegalArgumentException | IllegalStateException e) {
             throw new IllegalValueException(MESSAGE_INVALID_EMPLOYEE_ID, e);
         }
     }

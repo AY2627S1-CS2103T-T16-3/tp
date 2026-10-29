@@ -36,7 +36,7 @@ The following provides a quick overview of the main components and their interac
 
 **Main components of the architecture**
 
-**`Main`** (consisting of classes [`Main`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
+**`Main`** (consisting of classes [`Main`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
 * At app launch, it initializes the other components in the correct sequence, and connects them up with each other.
 * At shut down, it shuts down the other components and invokes cleanup methods where necessary.
 
@@ -68,24 +68,24 @@ The sections below give more details of each component.
 
 ### UI component
 
-The **API** of this component is specified in [`Ui.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/Ui.java)
+The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/ui/Ui.java)
 
 ![Structure of the UI Component](images/UiClassDiagram.png)
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `EmployeeListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
+The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
 
 The `UI` component,
 
 * executes user commands using the `Logic` component.
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
-* depends on some classes in the `Model` component because it displays `Person` objects from the model.
+* depends on some classes in the `Model` component because it displays `Employee` objects from the model.
 
 ### Logic component
 
-**API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
+**API** : [`Logic.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/logic/Logic.java)
 
 Here's a (partial) class diagram of the `Logic` component:
 
@@ -102,7 +102,7 @@ How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
+1. The command can communicate with the `Model` when it is executed (e.g. to delete an employee).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
@@ -115,28 +115,21 @@ How the parsing works:
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
-**API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
+**API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/model/Model.java)
 
 <img src="images/ModelClassDiagram.png" width="450" />
 
 
 The `Model` component,
 
-* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
-* selects employees using a JavaFX `FilteredList<Employee>` and wraps it in a `SortedList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
+* stores the address book data i.e., all `Employee` objects (which are contained in a `UniqueEmployeeList` object).
+* sorts employees using a JavaFX `SortedList<Employee>` and wraps it in a `FilteredList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The alternative, arguably more object-oriented, design below keeps a unique list of tags in `AddressBook`, and each `Person` references tags from that list. This lets `AddressBook` maintain one `Tag` object per unique tag instead of each `Person` holding its own `Tag` objects.<br>
-
-<img src="images/BetterModelClassDiagram.png" width="450" />
-
-</div>
-
-
 ### Storage component
 
-**API** : [`Storage.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/storage/Storage.java)
+**API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/storage/Storage.java)
 
 <img src="images/StorageClassDiagram.png" width="550" />
 
@@ -146,6 +139,17 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+Saved data is treated as untrusted input because files may be edited accidentally or modified maliciously. The
+defensive validation starts with `null` entries inside the saved leave list, preventing these
+entries from causing an uncaught exception during startup. This check specifically covers null leave records.
+On startup, such an entry is rejected with an `IllegalValueException`, which
+`JsonAddressBookStorage` wraps in a `DataLoadingException`. A missing or null leave-list field remains supported for
+legacy files. `MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
+`Ui#setFeedbackToUser`. `UiManager` forwards the message through `MainWindow` to the existing `ResultDisplay`,
+identifying the data file and explaining recovery.
+Neither loading nor closing the app rewrites the address-book file; the next successfully executed command saves the
+current model. A missing file instead starts with sample data and does not show a loading error.
+
 ### Common classes
 
 Classes used by multiple components are in the `seedu.address.commons` package.
@@ -154,7 +158,53 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 ## **Implementation**
 
+### Save failures and model rollback
+
+After parsing a command, `LogicManager` captures a `ModelSnapshot` before execution. The model snapshot copies
+the address book (including leave records and next-ID counters) and retains the employee filter and comparator.
+If saving throws `IOException` or `AccessDeniedException`, Logic restores the snapshot through `Model` and
+reports the existing save error. Restoration updates the existing observable collections, preserving UI bindings.
+Snapshots rely on employee and leave values being immutable and on display predicates/comparators remaining unchanged.
+
+`JsonAddressBookStorage` writes JSON directly to the destination using the original storage workflow.
+Rollback restores memory only: a failed write can leave the destination incomplete or containing rejected data.
+A later successful save in the same session writes the restored model, but restarting before that save does
+not guarantee recovery. There are no backups or power-loss guarantees. Existing startup behavior opens an empty
+address book after a data-loading error; a later save can overwrite the unreadable file.
+
+`AddressBookSnapshotTest` covers independent copies, exhausted ID counters, and retained observable lists.
+`ModelManagerTest` covers snapshot restoration and `LogicManagerTest` covers rollback after save errors.
+Storage tests inject failures before writing and after a partial direct write. They verify model restoration
+and that a later successful command saves only accepted changes.
+
+#### Limits of the current save structure
+
+* **Concurrency:** There is no cross-process lock or conflict detection. Multiple app instances or external edits
+  can overwrite one another. Commands are assumed to execute serially.
+* **Rollback scope:** The snapshot covers address-book data and employee display rules, not user preferences,
+  GUI selection/scroll state, or external side effects. Model listeners can observe changes before save succeeds
+  and notifications during restoration. This is not an isolated transaction across the UI and disk.
+* **Exception scope:** Rollback handles save-time `IOException` (including access-denied errors). Runtime errors,
+  memory exhaustion, partially mutating commands that throw before saving, or failure inside restoration are
+  outside this guarantee. Even a failed save may already have changed the disk file.
+* **Cost and snapshot assumptions:** Every parsed command takes a full snapshot, and successful commands still
+  save the entire JSON file, including read-only commands such as help/list. Snapshot creation and restoration
+  copy validated collections
+  without repeating duplicate or leave-overlap checks. Copying is linear in the number of records; loading
+  external data still performs full validation. Saving and observable-list updates remain synchronous.
+  Shared employee/leave values must remain immutable, and
+  stored predicate/comparator objects must not be mutated after snapshot capture.
+
+See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) for the tested cases and exclusions.
+
 This section describes some noteworthy details on how certain features are implemented.
+
+### Employee identifier allocation
+
+`AddressBook` assigns each employee an internal positive integer ID from 1 to `Integer.MAX_VALUE`. The next-ID counter
+is stored as a `long`, allowing `Integer.MAX_VALUE + 1` to represent an exhausted ID sequence without numeric overflow.
+If an `add` command reaches this state, `AddressBook` throws `EmployeeIdExhaustedException`, which `AddCommand` converts
+into a user-facing command error instead of allowing the exception to terminate command execution.
 
 ### Employee salary management
 
@@ -165,11 +215,71 @@ The `salary INDEX s/SALARY` command replaces the salary of the employee identifi
 At execution, the command follows these steps:
 
 1. Retrieves the currently filtered employee list through `Model#getFilteredEmployeeList` and checks that the index is within its bounds.
-2. Selects the employee and calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
-3. Replaces the original employee through `Model#setEmployee`.
-4. Resets the employee filter to show all employees and returns a success message containing the updated employee's details.
+2. Compares the selected employee's salary with the requested `Salary`. If they are equal, returns feedback stating that the salary is already set and no changes were made, without replacing the employee or changing the displayed view. Leading zeros do not affect equality.
+3. If the salary differs, calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
+4. Replaces the original employee through `Model#setEmployee`.
+5. Resets the employee filter to show all employees, retaining the active sort, and returns feedback containing the employee's name and the old and new salaries.
 
-This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The updated salary is saved with the rest of the employee data after the command runs.
+This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The usual application-wide save still runs after command execution, including when the salary is unchanged.
+
+### Filtering employees
+
+`filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
+supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
+and repeated scalar fields, and uses `ParserUtil` to validate numeric thresholds. Salary thresholds
+must be whole numbers from 0 to 50000; annual leave entitlement thresholds must be whole numbers
+from 0 to 365. Leading zeros are normalized before constructing the predicate.
+
+Both numeric fields accept exact values (no operator), `<`, `<=`, `>`, and `>=`. The parser checks
+for the two-character inclusive operators before splitting the operator from its amount. It rejects
+missing thresholds and malformed operators such as `=`, `=<`, `=>`, or `<==` through the existing
+field validation errors. `EmployeeMatchesCriteriaPredicate#matchesAmount` likewise checks inclusive
+operators first, compares integer values, and includes equality only for `<=` and `>=` (or an exact
+match). Leave filtering uses annual entitlement, irrespective of leave already taken.
+
+`FilterCommand#execute` updates the model's filtered employee list and reports the number of matches.
+For example, `filter s/<=4000 le/>=14` includes employees earning exactly 4000 with exactly 14 days
+of entitlement, provided they satisfy both criteria. Employee records are unchanged.
+
+`FilterCommandParserTest` covers all operators, normalized values, valid limits, and invalid input.
+`FilterCommandTest` exercises parsing through execution, checking equality at inclusive thresholds,
+strict comparisons, limits (0/50000 salary and 0/365 days), and combinations with other criteria.
+### Task management
+
+Users can keep track of tasks for each employee. The `Task` class stores the description and completion status.
+The constructor rejects blank descriptions and descriptions longer than 120 characters. In the command syntax, `INDEX`
+and `TASK_INDEX` are one-based indexes chosen by the user. The task commands use an employee's position in
+`Model#getFilteredEmployeeList` and a task's position in `Employee#getTasks` to identify the records being changed.
+
+`Employee#getTasks` returns a read-only view of the tasks for each `Employee`. `Task` is immutable: methods such as
+`Task#markDone` and `Task#markUndone` return a new `Task` instead of changing the existing object. Similarly,
+`Employee#addTask`, `Employee#deleteTask`, and `Employee#updateTask` return a new `Employee`. The replacement preserves
+the original employee's other details, including salary, leave entitlement, tags, and unrelated tasks.
+
+`AddressBookParser` passes commands beginning with task to `TaskCommandParser`. The available subcommands are:
+
+* `task list INDEX` displays the selected employee's tasks without changing the model.
+* `task add INDEX d/DETAILS` adds a new incomplete task to the selected employee.
+* `task delete INDEX i/TASK_INDEX` deletes a task.
+* `task mark INDEX i/TASK_INDEX` marks a task as complete.
+* `task unmark INDEX i/TASK_INDEX` marks a task as incomplete.
+
+Each mutating task command reads `Model#getFilteredEmployeeList` when its `execute` method runs. This ensures that
+`AddTaskCommand`, `DeleteTaskCommand`, `MarkTaskCommand`, and `UnmarkTaskCommand` use the same employee ordering shown
+after `find`, `filter`, or `sort`. The commands validate the employee index and the task index, if applicable, before
+calling `Model#setEmployee` with the replacement employee.
+
+`Employee#addTask` rejects duplicate tasks by calling `Task#hasSameDetails`. That method compares normalized details:
+it trims the description, combines repeated Unicode whitespace, and ignores letter case. The original
+description remains available through `Task#getDetails` for display.
+
+Tasks are saved as part of the employee record. `JsonAdaptedEmployee` converts each `Task` to `JsonAdaptedTask`, which
+stores the task's `details` and `isDone` fields. Since tasks belong to `Employee`, deleting an employee also deletes
+its tasks.
+
+When loading data, `JsonAdaptedTask#toModelType` reconstructs each `Task` and applies the constructor's validation.
+`JsonAdaptedEmployee#toModelType` then checks the reconstructed tasks with `Task#hasSameDetails` and rejects duplicates.
+Invalid task data therefore cannot be used to create an invalid `Employee`.
 
 ### Sorting displayed employees
 
@@ -186,14 +296,14 @@ with `SortCommand.MESSAGE_USAGE`. Tags and tasks are not sortable because each e
   rather than remaining leave or leave dates.
 * Phone numbers use `BigInteger` comparison, supporting differing digit lengths, leading zeros,
   and numbers too large for primitive integer types.
-* Descending order reverses the field comparator. Ties retain the underlying address book order.
+* Descending order reverses the field comparator. Tied values use the order maintained by the shared sorted view.
 
 The model maintains this observable transformation chain:
 
-`AddressBook.getEmployeeList()` → `FilteredList<Employee>` → `SortedList<Employee>` → UI
+`AddressBook.getEmployeeList()` → `SortedList<Employee>` → `FilteredList<Employee>` → UI
 
 `ModelManager.sortFilteredEmployeeList` sets the comparator on the existing sorted view.
-`getFilteredEmployeeList()` returns that same view, preserving references already held by the UI and logic.
+`getFilteredEmployeeList()` returns the existing filtered view of that list, preserving references held by the UI and logic.
 The filter predicate is unchanged, hidden employees stay hidden, and an empty list can be sorted normally.
 Employee updates propagate through the chain, so changing a salary repositions the employee as needed.
 Index-based commands read the sorted view and therefore act on the employee at the displayed index.
@@ -218,7 +328,7 @@ is omitted from the diagram for clarity.
 ### Workforce summary
 
 The `summary` command (alias `/summary`) produces a read-only overview of employees in the selected scope:
-headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks,
+headcount, employees without tags, employee counts by tag, assigned tasks, employees with tasks, saved leave records,
 and total/average recorded salary.
 
 The partial class diagram below shows how scope selection, aggregation, and table formatting are separated.
@@ -234,10 +344,14 @@ while repeated prefixes use the shared duplicate-prefix error.
 The command stores a `SummaryCommand.Scope` enum and immutable inclusion/exclusion index sets, not employee snapshots.
 At execution time the command reads
 `model.getFilteredEmployeeList()` for the default/filtered scope, or
-`model.getAddressBook().getEmployeeList()` for explicit `scope/all`. Indexes refer to positions in this collection.
+`model.getAllEmployeesInDisplayOrder()` for explicit `scope/all`. The latter returns a snapshot of all employees
+by copying the shared `SortedList` before filtering. Both scopes therefore use the same ordering for tied
+values, including after repeated sorts. Without an active sort, the full list follows stored order.
+Creating the snapshot does not change stored records or the filter. Indexes refer to positions in this collection.
 Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
 An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
-passed to `EmployeeSummary.fromEmployees`, so all statistics share the same selection. The command labels
+passed to `EmployeeSummary.fromEmployees` together with `model.getAddressBook().getLeaveList()`, so all
+statistics share the same employee selection. The command labels
 the multiline result `Scope: All employees` or
 `Scope: Filtered employees`, followed by any inclusion/exclusion lists in ascending order.
 Empty selections remain empty; no fallback or filter mutation occurs.
@@ -245,7 +359,7 @@ Empty selections remain empty; no fallback or filter mutation occurs.
 right-aligned values. The tag table is omitted when there are no tags. Explanatory notes remain in the User Guide.
 `CommandResult.DisplayFormat.TABLE` carries the presentation choice to `ResultDisplay`, which applies
 the `table` CSS pseudo-class for a monospaced font. Ordinary feedback and errors restore the normal font.
-No new window, storage fields, or model API is needed.
+No new window or storage fields are needed.
 
 `EmployeeSummary.fromEmployees` owns aggregation independently of presentation:
 
@@ -259,7 +373,7 @@ No new window, storage fields, or model API is needed.
 Aggregation is recomputed on each invocation, without stored counters, new JSON fields, or changes to
 employees, tags, user preferences, or the current filter. The existing application-wide automatic
 save after command execution remains unchanged. This feature does not infer attendance, active
-employment, or departments. It remains independent of the leave records stored in the model.
+employment, or departments.
 
 Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, locale independence, and
 snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
@@ -269,12 +383,36 @@ selection, empty matches, execution-time reads, and preservation of the filter p
 `SummaryIndexCommandTest` covers index selection in both scopes, overlap, empty selections, invalid indexes,
 execution-time resolution, and preservation of employee records and filters. Logic tests
 exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
+`SummarySortCommandTest` covers sorted inclusion/exclusion, hidden employees, ties after repeated sorts,
+and sort/data changes after parsing. `ModelManagerTest` checks that the full sorted snapshot preserves
+the filter and stored order, and matches the displayed list after filtering and employee changes.
+`LogicManagerTest` checks the repeated-sort regression through real commands without changing saved data.
 `SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
 `CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,
 normal/error font restoration, caret reset, and null input handling on the JavaFX thread.
 Linux CI runs these tests with Xvfb to provide a virtual display.
 The JavaFX result-panel preview was checked with synthetic data
 for aligned columns, empty results, and restoration of the normal feedback font.
+
+#### Leave-record counts
+
+`EmployeeSummary.fromEmployees(employees, leaves)` builds a set of the selected employees' stable IDs,
+then counts each leave record whose employee ID belongs to that set. Employee names and displayed indexes
+are not used to match records. Employees without an ID contribute no leave records.
+This takes O(E + L) time for E selected employees and L stored leave records.
+
+Each saved period counts once regardless of its duration, year, or whether it is in the past or future.
+The result is stored as a `long` in the immutable snapshot and displayed as `Leave records`.
+Empty selections and selections without matching records produce zero. The one-argument factory assumes
+no leave records. Neither factory retains or changes the input lists.
+The existing leave records are the source of truth after restart: the count is recalculated rather than
+saved separately. Changes to leave or employee records are reflected the next time `summary` runs.
+
+`EmployeeSummaryLeaveTest` checks record counting across years, stable IDs after renaming, empty and
+unmatched inputs, null inputs, and snapshot independence. `SummaryLeaveCommandTest` checks both aliases,
+filtered/all scopes, inclusion/exclusion selections, displayed indexes after sorting, and fresh counts
+after leave or employee deletion. `LogicManagerTest` exercises real leave commands and verifies that
+summaries preserve the active filter and saved data, and that changes persist correctly.
 
 #### Task counts
 
@@ -304,27 +442,20 @@ No currency period, benefits, or payroll assumptions are added. Tests cover empt
 zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
 and recomputation after a salary command.
 
-### Salary management
-
-`salary INDEX s/SALARY` follows this flow:
-
-1. `SalaryCommandParser` parses the displayed employee index and requires exactly one salary field. `Salary` validates the amount and normalises leading zeros.
-2. `SalaryCommand` resolves the index against `Model#getFilteredEmployeeList` and rejects an index outside the displayed list.
-3. The command creates an updated employee using `Employee#withSalary` and replaces the original through `Model#setEmployee`, preserving the employee's other details.
-4. The command resets the filter to display all employees and returns a success message.
-5. `LogicManager` saves the updated address book after command execution.
-
 ### Leave management
 
 The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
 `AddressBookParser` passes the remaining input to `LeaveCommandParser`, which selects the matching subcommand parser.
+The `list` subcommand must be spelled exactly, while any arguments after it are ignored like those of other commands
+that take no parameters.
 
 #### Recording leave
 
 `leave add INDEX from/START_DATE to/END_DATE` follows this flow:
 
 1. `AddLeaveCommandParser` parses a displayed employee index and two `DD-MM-YYYY` dates into an `Index` and immutable
-   `LeavePeriod`.
+   `LeavePeriod`. Dates use exactly four year digits and accept valid past and future dates in years `0001` to `9999`;
+   year `0000` is rejected.
 2. `AddLeaveCommand` resolves the index against `Model#getFilteredEmployeeList`. This lets a user run `find` or
    `filter` before selecting an employee without exposing the employee's internal ID.
 3. `AddressBook#addLeave` finds the employee through its internal `EmployeeId`, rejects an overlapping period, and
@@ -333,7 +464,7 @@ The leave feature is implemented as a `leave` command group with the `add`, `lis
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
 
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
-at least one such day. Public holidays are deliberately not modelled for the MVP, so a public holiday on a weekday is
+at least one such day. Public holidays are not excluded, so a public holiday on a weekday is
 charged as a working leave day. Overlap detection uses every calendar date in the inclusive range, not only charged
 weekdays.
 
@@ -362,8 +493,13 @@ a fixed clock for deterministic status checks:
 
 The status is presentation data and is not persisted.
 
-`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so a deleted ID is never
-reused. No balance mutation is required; the next balance calculation automatically excludes the deleted record.
+`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so an ID removed using
+`leave delete` is not reused while the current address book remains in use. No balance mutation is required; the next
+balance calculation automatically excludes the deleted record.
+
+`ClearCommand` has broader semantics than deleting records individually. It replaces the model data with a new
+`AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
+IDs used before `clear` may therefore be assigned again in the fresh address book.
 
 Employee deletion cascades through `AddressBook#removeEmployee`, which removes the employee and all records with the
 same internal `EmployeeId`. During bulk replacement, `removeOrphanedLeaves` provides the equivalent safeguard. Storage
@@ -387,95 +523,6 @@ invalid identifiers or periods.
 * Employees use the displayed list index because users already rely on that workflow for edit and delete operations.
 * Leave records use a stable, public `LeaveId` because their position in a workforce-wide list must not change the
   target of a later delete command.
-
-### \[Proposed\] Undo/redo feature
-
-#### Proposed Implementation
-
-The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
-
-* `VersionedAddressBook#commit()` — Saves the current address book state in its history.
-* `VersionedAddressBook#undo()` — Restores the previous address book state from its history.
-* `VersionedAddressBook#redo()` — Restores a previously undone address book state from its history.
-
-These operations are exposed in the `Model` interface as `Model#commitAddressBook()`, `Model#undoAddressBook()` and `Model#redoAddressBook()` respectively.
-
-Given below is an example usage scenario and how the undo/redo mechanism behaves at each step.
-
-Step 1. The user launches the application for the first time. The `VersionedAddressBook` will be initialized with the initial address book state, and the `currentStatePointer` pointing to that single address book state.
-
-![UndoRedoState0](images/UndoRedoState0.png)
-
-Step 2. The user executes `delete 5` command to delete the 5th person in the address book. The `delete` command calls `Model#commitAddressBook()`, causing the modified state of the address book after the `delete 5` command executes to be saved in the `addressBookStateList`, and the `currentStatePointer` is shifted to the newly inserted address book state.
-
-![UndoRedoState1](images/UndoRedoState1.png)
-
-Step 3. The user executes `add n/David …​` to add a new person. The `add` command also calls `Model#commitAddressBook()`, causing another modified address book state to be saved into the `addressBookStateList`.
-
-![UndoRedoState2](images/UndoRedoState2.png)
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
-
-</div>
-
-Step 4. The user now decides that adding the person was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoAddressBook()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous address book state, and restores the address book to that state.
-
-![UndoRedoState3](images/UndoRedoState3.png)
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** If the `currentStatePointer` is at index 0, pointing to the initial AddressBook state, then there are no previous AddressBook states to restore. The `undo` command uses `Model#canUndoAddressBook()` to check if this is the case. If so, it will return an error to the user rather
-than attempting to perform the undo.
-
-</div>
-
-The following sequence diagram shows how an undo operation goes through the `Logic` component:
-
-![UndoSequenceDiagram](images/UndoSequenceDiagram-Logic.png)
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `UndoCommand` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
-
-</div>
-
-Similarly, how an undo operation goes through the `Model` component is shown below:
-
-![UndoSequenceDiagram](images/UndoSequenceDiagram-Model.png)
-
-The `redo` command does the opposite — it calls `Model#redoAddressBook()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the address book to that state.
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** If the `currentStatePointer` is at index `addressBookStateList.size() - 1`, pointing to the latest address book state, then there are no undone AddressBook states to restore. The `redo` command uses `Model#canRedoAddressBook()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
-
-</div>
-
-Step 5. The user then decides to execute the command `list`. Commands that do not modify the address book, such as `list`, will usually not call `Model#commitAddressBook()`, `Model#undoAddressBook()` or `Model#redoAddressBook()`. Thus, the `addressBookStateList` remains unchanged.
-
-![UndoRedoState4](images/UndoRedoState4.png)
-
-Step 6. The user executes `clear`, which calls `Model#commitAddressBook()`. Since the `currentStatePointer` is not pointing at the end of the `addressBookStateList`, all address book states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …​` command. This is the behavior that most modern desktop applications follow.
-
-![UndoRedoState5](images/UndoRedoState5.png)
-
-The following activity diagram summarizes what happens when a user executes a new command:
-
-<img src="images/CommitActivityDiagram.png" width="250" />
-
-#### Design considerations:
-
-**Aspect: How undo & redo execute:**
-
-* **Alternative 1 (current choice):** Saves the entire address book.
-  * Pros: Easy to implement.
-  * Cons: May have performance issues in terms of memory usage.
-
-* **Alternative 2:** Individual command knows how to undo/redo by
-  itself.
-  * Pros: Will use less memory (e.g. for `delete`, just save the person being deleted).
-  * Cons: We must ensure that the implementation of each individual command is correct.
-
-_{more aspects and alternatives to be added}_
-
-### \[Proposed\] Data archiving
-
-_{Explain here how the data archiving feature will be implemented}_
-
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -511,16 +558,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and learn its capabilities        |
 | `* * *`  | HR Officer                 | edit employee contact details and annual leave entitlement                     | keep employee records up to date                                                         |
 | `* * *`  | HR Officer                 | add a new employee profile with an annual leave entitlement                    | record a new hire and enforce their leave allowance                                      |
-| `* * *`  | HR Officer                 | keep track of tasks for an employee                                            | remember the work that needs to be completed for that employee                           |
-| `* * *`  | HR Officer                 | view an employee's tasks                                                       | review the work related to that employee                                                  |
-| `* * *`  | HR Officer                 | delete an employee's task                                                      | remove completed or obsolete work                                                        |
+| `* * *`  | HR Officer                 | add a task for an employee                                                     | record work that needs to be completed                                                   |
+| `* * *`  | HR Officer                 | list the tasks for an employee                                                 | review the work related to that employee                                                  |
+| `* * *`  | HR Officer                 | delete a task for an employee                                                  | remove completed or obsolete work                                                        |
+| `* * *`  | HR Officer                 | mark a task as done                                                            | keep track of completed work                                                             |
+| `* * *`  | HR Officer                 | mark a task as pending                                                         | keep track of work that still needs to be completed                                       |
 | `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
 | `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
 | `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
 | `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
-| `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
 | `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
@@ -538,7 +586,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **MSS**
 
 1. HR manager requests to add an employee, providing the employee's details and annual leave entitlement.
-2. System adds the employee.
+2. System adds the employee and saves the employee information.
 3. System displays the added employee and confirms that the employee was added.
 
     Use case ends.
@@ -580,7 +628,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 2a. System cannot complete the addition of the employee.
+* 2a. An error occurs while saving employee information into storage.
 
     * 2a1. System informs the HR manager that the employee could not be added.
     * 2a2. System does not add the employee.
@@ -912,81 +960,64 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 2a. The leave ID is invalid or no matching record exists.
+* 2a. The leave ID is malformed, zero, or negative.
 
-    * 2a1. System informs the HR manager that the leave record cannot be found.
+    * 2a1. System informs the HR manager that the command is invalid and displays the correct usage.
     * 2a2. System leaves all employee and leave information unchanged.
 
       Use case ends.
 
-**Use case: UC11 - Show Employee Details**
+* 2b. The leave ID is a valid positive integer, but no matching record exists.
+
+    * 2b1. System informs the HR manager that no leave record was found with that ID.
+    * 2b2. System leaves all employee and leave information unchanged.
+
+      Use case ends.
+
+**Use case: UC11 - Sort employees**
 
 **MSS**
 
-1.  HR officer request for a specific detail of an employee on HR Book.
-2.  System displays employee profile and the relevant detail highlighted to user.
+1. HR manager requests to sort the currently displayed employees by one supported field
+   (name, phone number, email, address, salary, or annual leave entitlement) in ascending or descending order.
+2. System displays the employees in the requested order and confirms the sort.
+   Name, email, and address are sorted alphabetically, ignoring case;
+   phone number, salary, and annual leave entitlement are sorted numerically.
+   Any active filter remains applied.
 
-    Use case ends
+    Use case ends.
 
 **Extensions**
 
-* 1a. The request contains an employee ID that does not exist in the system
+* 1a. The request omits the sort field or order, specifies an unsupported field or order,
+  or specifies more than one sort criterion.
 
-    * 1a1. System informs the HR manager that the request is invalid as employee ID does not exist in the system.
-    * 1a2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1b. The request uses an employee ID that does not follow the correct format (eg. includes letters/special characters)
-
-    * 1b1. System informs the HR officer that Employee ID should adhere to strictly numbers and a specified length.
-    * 1b2. System does not display specified detail of requested employee.
+    * 1a1. System informs the HR manager that the command is invalid and displays the correct usage.
+    * 1a2. System leaves the displayed employee order and active filter unchanged.
 
       Use case ends.
 
-* 1c. The detail field for the specified employee is empty
+* 2a. The currently displayed employee list is empty.
 
-    * 1c1. System informs the HR manager that no such detail has been recorded for the employee.
-    * 1c2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1d. The request inputs an invalid detail field
-
-    * 1d1. System informs the HR manager that detail field does not exist for employees on HR Book.
-    * 1d2. System does not display specified detail of requested employee.
+    * 2a1. System confirms the sort and keeps the displayed list empty without restoring filtered-out employees.
 
       Use case ends.
-
-* 1e. The request specified multiple details in a single command
-
-    * 1e1. System informs the HR manager that only one detail can be shown at a time.
-    * 1e2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
-* 1f. The request included multiple employee IDs in a single command
-
-    * 1f1. System informs the HR manager that only one employee can be chosen at a time.
-    * 1f2. System does not display specified detail of requested employee.
-
-      Use case ends.
-
 
 **Use case: UC12 - Change an employee's salary**
 
 **MSS**
 
-1. HR manager identifies an employee and requests to change their salary to a specified amount.
-2. System updates the employee's salary and confirms the change by displaying the updated employee information.
+1. HR manager requests to change an employee's salary, and provides the employee's details.
+2. System changes the employee's salary.
+3. System displays the employee with the new salary.
 
    Use case ends.
 
 **Extensions**
 
-* 1a. The HR manager omits information required for the salary change.
+* 1a. The HR manager does not provide one or more required fields.
 
-    * 1a1. System informs the HR manager that required information is missing.
+    * 1a1. System informs the HR manager to provide all required fields.
     * 1a2. System does not change the employee's salary.
 
     Use case ends.
@@ -998,21 +1029,21 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     Use case ends.
 
-* 1c. The HR manager provides unsupported information or specifies the salary more than once.
+* 1c. The HR manager provides more fields than required.
 
-    * 1c1. System informs the HR manager that the request is invalid.
+    * 1c1. System informs the HR manager that there are too many fields.
     * 1c2. System does not change the employee's salary.
 
     Use case ends.
 
-* 1d. The HR manager provides an invalid employee selection.
+* 1d. The HR manager provides an invalid index.
 
-    * 1d1. System informs the HR manager that the employee selection is invalid.
+    * 1d1. System informs the HR manager that the index is invalid.
     * 1d2. System does not change the employee's salary.
 
     Use case ends.
 
-* 2a. System cannot complete the salary change.
+* 2a. An error occurs while saving new salary of employee into storage.
 
     * 2a1. System informs the HR manager that the salary could not be changed.
     * 2a2. System does not change the employee's salary.
@@ -1020,7 +1051,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     Use case ends.
 
 
-{More to be added}
 
 
 ### Non-Functional Requirements
@@ -1047,8 +1077,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Working day**: For the MVP, a Monday through Friday counted against annual leave entitlement; public holidays are
-  not excluded
+* **Working day**: A Monday through Friday counted against annual leave entitlement; public holidays are not excluded
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -1068,7 +1097,7 @@ testers are expected to do more *exploratory* testing.
    1. Download the JAR file and copy it into an empty folder.
 
    1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+      Expected: The GUI opens with a set of sample employees. The window size may not be optimal.
 
 1. Saving window preferences
 
@@ -1077,79 +1106,116 @@ testers are expected to do more *exploratory* testing.
    1. Relaunch the app by double-clicking the JAR file.<br>
        Expected: The most recent window size and location are retained.
 
-1. _{ more test cases …​ }_
 
-### Deleting a person
+### Deleting an employee
 
-1. Deleting a person while all persons are being shown
+1. Deleting an employee while all employees are being shown
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+   1. Prerequisites: List all employees using the `list` command, with multiple employees in the list.
 
    1. Test case: `delete 1`<br>
-      Expected: The first contact and all their leave records are deleted from the list. The status message shows the
-      deleted contact's details.
+      Expected: The first employee and all their leave records are deleted from the list. The status message shows the
+      deleted employee's details.
 
    1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
+      Expected: No employee is deleted. The status message shows error details.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
 
-### Managing employee salaries
+### Managing tasks
 
-1. Updating a salary
+1. Listing an employee's tasks
 
-   1. Prerequisites: Use a separate copy of the app with test data. Run `list` and ensure at least two employees
-      are displayed. Note the first employee's details.
+   1. Prerequisites: Use `list` and choose an employee with at least two tasks,
+      including one pending and one completed task. Note the employee's displayed
+      index.
 
-   2. Test case: `salary 1 s/5000`<br>
-      Expected: The first employee's salary becomes `$5000`. Their other details and all other employees remain
-      unchanged. The status message identifies the updated employee and salary.
+   1. Test case: `task list 1`<br>
+      Expected: The selected employee's tasks are displayed in the order they
+      were added. Pending tasks show `[ ]` and completed tasks show `[x]`.
 
-   3. Test case: `salary 1 s/0`, followed by `salary 1 s/50000`.<br>
-      Expected: Both commands succeed. The employee's salary becomes `$0`, then `$50000`.
+   1. Test case: `task list 0`<br>
+      Expected: No task list is shown. The status message shows invalid command format.
 
-   4. Test case: `salary 1 s/005000`<br>
-      Expected: The employee's salary is displayed as `$5000`.
+2. Adding a task
 
-2. Rejecting invalid salary changes
+   1. Prerequisites: Use `list` and note the index of an employee. Ensure the
+      employee does not already have the task used below.
 
-   1. Prerequisites: Run `list` with at least one employee displayed. Note the employees' salaries.
+   1. Test case: `task add 1 d/Prepare monthly report`<br>
+      Expected: The task is added as pending. The status message confirms the
+      task was added, and `task list 1` shows it.
 
-   2. Test case: `salary 1 s/50001`<br>
-      Expected: No salary is changed. The status message explains the salary constraints.
+   1. Test case: `task add 1 d/  prepare   MONTHLY report  `<br>
+      Expected: The task is rejected as a duplicate because task comparison
+      ignores surrounding whitespace, repeated whitespace, and capitalization.
 
-   3. Other invalid amounts to try: `salary 1 s/-1`, `salary 1 s/abc`, `salary 1 s/1.5`.<br>
-      Expected: No salary is changed. The status message explains the salary constraints.
+   1. Other incorrect add commands to try: `task add`, `task add 0 d/Test`,
+      `task add 1`, and a task description longer than 120 characters.<br>
+      Expected: No task is added. The status message shows invalid command format.
 
-   4. Test case: `salary 0 s/5000`<br>
-      Expected: No salary is changed. The status message reports an invalid command format.
+3. Deleting a task
 
-   5. Test case: `salary INDEX s/5000`, replacing `INDEX` with a positive integer larger than the displayed list size.<br>
-      Expected: No salary is changed. The status message reports an invalid employee index.
+   1. Prerequisites: Use `task list 1` for an employee with at least two tasks.
 
-   6. Test case: `salary 1`<br>
-      Expected: No salary is changed. The status message shows the required command format.
+   1. Test case: `task delete 1 i/1`<br>
+      Expected: The first task is deleted. The remaining tasks keep their
+      relative order and the status message confirms the deleted task.
 
-   7. Test case: `salary 1 s/5000 s/6000`<br>
-      Expected: No salary is changed. The status message reports the repeated salary field.
+   1. Test case: `task delete 1 i/0`<br>
+      Expected: No task is deleted. The status message shows invalid command format.
 
-3. Updating an employee from search results
+   1. Other incorrect delete commands to try: `task delete`,
+      `task delete 1`, and `task delete 1 i/x`.<br>
+      Expected: No task is deleted. The status message shows invalid command format.
 
-   1. Prerequisites: Have at least two employees with different names. Note their salaries and choose an employee
-      who is not first in the full list. Run `find NAME`, replacing `NAME` with a name that matches only that employee.
+4. Marking and unmarking a task
 
-   2. Test case: `salary 1 s/6000`<br>
-      Expected: The employee in the search results receives the updated salary. All employees are displayed
-      afterward, and other employees remain unchanged.
+   1. Prerequisites: Use `task list 1` for an employee with a pending task and
+      note its task index.
 
-4. Retaining a salary after restarting
+   1. Test case: `task mark 1 i/1`<br>
+      Expected: The task becomes completed. `task list 1` displays it with
+      `[x]`.
 
-   1. Prerequisites: Run `list`, then successfully update the first employee using `salary 1 s/5000`.
-      Note the employee's name.
+   1. Test case: Run `task mark 1 i/1` again.<br>
+      Expected: The command succeeds without changing the task's completed
+      state.
 
-   2. Test case: Exit and relaunch the app using the same data file.<br>
-      Expected: The same employee still has a salary of `$5000`.
+   1. Test case: `task unmark 1 i/1`<br>
+      Expected: The task becomes pending. `task list 1` displays it with
+      `[ ]`.
+
+   1. Test case: Run `task unmark 1 i/1` again.<br>
+      Expected: The command succeeds without changing the task's pending state.
+
+   1. Other incorrect mark/unmark commands to try: `task mark 0 i/1`,
+      `task unmark 1 i/0`, and `task mark 1 1`.<br>
+      Expected: No task state changes. The status message shows invalid command format.
+
+5. Operating on tasks after filtering
+
+   1. Prerequisites: Ensure at least two employees exist, and one employee has
+      a distinctive name such as `Alex`.
+
+   1. Test case: `find Alex`, followed by `task add 1 d/Submit access request`<br>
+      Expected: The task is added to the first employee in the filtered list,
+      and the filtered employee list remains displayed.
+
+   1. Test case: Run `task mark 1 i/1`, `task unmark 1 i/1`, or
+      `task delete 1 i/1` after a `find` or `filter` command.<br>
+      Expected: The command operates on the employee and task shown in the
+      current filtered view, which remains in place.
+
+6. Saving task changes
+
+   1. Prerequisites: Add or modify a task, then close the application normally.
+
+   1. Test case: Relaunch the app and run `list`, followed by `task list 1` for
+      the affected employee.<br>
+      Expected: The task, its order, and its completed/pending state are
+      preserved.
 
 ### Managing leave
 
@@ -1202,10 +1268,77 @@ testers are expected to do more *exploratory* testing.
 6. Close and reopen the app after sorting.
    Expected: the stored employee order returns; sorting has not changed employee details or saved order.
 
+### Workforce summary
+
+Use a separate, empty test folder and launch the JAR as described in the
+[User Guide](UserGuide.md#quick-start). Create these fictional records in the order shown:
+
+```text
+clear
+add n/Summary Beta p/90000001 e/beta@example.com a/One le/14 s/3000 t/remote
+add n/Summary Alpha p/90000002 e/alpha@example.com a/Two le/14 s/1000 t/engineering
+task add 2 d/Prepare report
+leave add 2 from/06-01-2025 to/06-01-2025
+leave add 2 from/05-01-2026 to/09-01-2026
+leave add 1 from/04-01-2027 to/05-01-2027
+```
+
+1. Run `summary`, then `/summary`.
+   Expected: both show two employees, one assigned task, one employee with tasks, three leave records,
+   total salary `$4000.00`, average salary `$2000.00`, and one employee in each tag group.
+   The leave count is three records, rather than the eight working days covered by those records.
+2. Run `summary i/2`, `summary e/2`, and `summary i/1 2 e/1`.
+   Expected: total salaries are `$1000.00`, `$3000.00`, and `$1000.00`; leave counts are two, one, and two.
+   `summary i/2 2` produces the same counts as `summary i/2`.
+3. Run `filter t/remote`, then `summary`, then `summary scope/all`.
+   Expected: the default summary shows one employee, `$3000.00`, and one leave record. The full-scope summary
+   shows two employees, `$4000.00`, and three leave records. Only Summary Beta remains displayed.
+4. Run `find NoSuchEmployee`, then `summary`.
+   Expected: zero employees, zero tasks, zero leave records, total salary `$0.00`, and average salary `N/A`.
+   `summary scope/all` still includes both employees. After `list`, `summary e/1 2` also produces zero counts.
+5. Try `summary i/0`, `summary i/`, `summary i/1 i/2`, `summary scope/unknown`, and `summary scope/all i/3`.
+   Expected: a format, duplicate-prefix, or invalid-index error as applicable. The last command reports index 3,
+   the full-scope size of two, and valid indexes `1-2`. Employee data and the current filter stay unchanged.
+6. Run `sort n/asc`, then `list`.
+   Expected: Summary Alpha is displayed first. `summary i/1` and `summary scope/all i/1` both show `$1000.00`,
+   one task, and two leave records. `summary e/1` and `summary scope/all e/1` both show `$3000.00`, zero tasks,
+   and one leave record. Only the scope labels differ between the matching results.
+7. Run `salary 2 s/1000`, then `sort s/asc`, then `list`.
+   Expected: after the earlier name sort, the tied salaries leave Summary Alpha first. Both forms of `i/1`
+   still select Alpha's one task and two leave records; both forms of `e/1` select Beta's zero tasks and one
+   leave record. Run `summary` without selections: total salary is now `$2000.00`, with an average of `$1000.00`.
+8. Run `find Alpha`, then `summary scope/all i/2`, then `summary i/1`.
+   Expected: the full-scope selection includes Beta's one leave record; the displayed selection includes
+   Alpha's two. The displayed list still contains only Alpha. Run `task mark 1 i/1`, then `summary`:
+   the assigned-task count remains one, and `task list 1` shows that task as completed.
+9. Run `leave delete 1`, then `summary`.
+   Expected: Alpha's leave count falls to one. Run `edit 1 n/Summary Alicia`, then `find Alicia`, then `summary`:
+   the count remains one because records are matched by employee ID. Run `delete 1`, then `summary scope/all`:
+   only Beta remains, with one leave record. Alpha's remaining leave record has also been removed.
+10. Close and reopen the app from the same test folder, then run `summary`.
+    Expected: Beta still has one leave record, total salary `$1000.00`, and no tasks. Run `leave delete 3`,
+    then `summary`: the leave count becomes zero. The count is derived from the saved records after restart.
+
+For every summary command above, check that the employee list and saved data are unchanged by the summary itself.
+Run the command again after a change to see updated counts; summaries are not refreshed automatically.
+
 ### Saving data
 
 1. Dealing with missing/corrupted data files
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+   1. Prerequisites: Use a disposable copy of the application and back up `data/addressbook.json`. Close the app
+      before editing the file. Restore the backup between cases.
 
-1. _{ more test cases …​ }_
+   1. Test case: Simulate a maliciously modified data file by replacing its contents with
+      `{"persons":[],"leaves":[null]}`, then relaunch.<br>
+      Expected: The window opens with an empty address book and an error in the usual command results box. It identifies
+      the data file, explains that it could not be loaded, and advises closing the app to correct or restore it before
+      running a command. Closing the app without commands leaves the file unchanged.
+
+   1. Test case: In the previous case, execute `list`.<br>
+      Expected: The saved file is replaced with the empty address book, as explained in the message. The results box
+      displays the command result normally.
+
+   1. Test case: Repeat with malformed JSON, then with a valid data file and with a missing data file.<br>
+      Expected: Malformed JSON produces the same error message and recovery behaviour. Valid data loads normally. A missing
+      file starts with sample data. Neither a valid file nor a missing file produces a data-loading error message.
