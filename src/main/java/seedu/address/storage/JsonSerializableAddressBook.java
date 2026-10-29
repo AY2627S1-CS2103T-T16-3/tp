@@ -30,6 +30,7 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_ORPHANED_LEAVE = "Leave list contains a record for an unknown employee.";
     public static final String MESSAGE_OVERLAPPING_LEAVE = "Leave list contains overlapping records for an employee.";
     public static final String MESSAGE_INVALID_NEXT_LEAVE_ID = "Address book contains an invalid next leave ID.";
+    public static final String MESSAGE_NULL_LEAVE = "Leave list contains a null record.";
 
     // Retain the existing JSON key so saved address books remain compatible.
     @JsonProperty("persons")
@@ -93,6 +94,9 @@ class JsonSerializableAddressBook {
 
         List<Leave> modelLeaves = new ArrayList<>();
         for (JsonAdaptedLeave jsonAdaptedLeave : leaves) {
+            if (jsonAdaptedLeave == null) {
+                throw new IllegalValueException(MESSAGE_NULL_LEAVE);
+            }
             modelLeaves.add(jsonAdaptedLeave.toModelType());
         }
 

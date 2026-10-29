@@ -139,6 +139,17 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+Saved data is treated as untrusted input because files may be edited accidentally or modified maliciously. The
+defensive validation starts with `null` entries inside the saved leave list, preventing these
+entries from causing an uncaught exception during startup. This check specifically covers null leave records.
+On startup, such an entry is rejected with an `IllegalValueException`, which
+`JsonAddressBookStorage` wraps in a `DataLoadingException`. A missing or null leave-list field remains supported for
+legacy files. `MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
+`Ui#setFeedbackToUser`. `UiManager` forwards the message through `MainWindow` to the existing `ResultDisplay`,
+identifying the data file and explaining recovery.
+Neither loading nor closing the app rewrites the address-book file; the next successfully executed command saves the
+current model. A missing file instead starts with sample data and does not show a loading error.
+
 ### Common classes
 
 Classes used by multiple components are in the `seedu.address.commons` package.
@@ -394,6 +405,8 @@ Each saved period counts once regardless of its duration, year, or whether it is
 The result is stored as a `long` in the immutable snapshot and displayed as `Leave records`.
 Empty selections and selections without matching records produce zero. The one-argument factory assumes
 no leave records. Neither factory retains or changes the input lists.
+The existing leave records are the source of truth after restart: the count is recalculated rather than
+saved separately. Changes to leave or employee records are reflected the next time `summary` runs.
 
 `EmployeeSummaryLeaveTest` checks record counting across years, stable IDs after renaming, empty and
 unmatched inputs, null inputs, and snapshot independence. `SummaryLeaveCommandTest` checks both aliases,
@@ -1255,10 +1268,77 @@ testers are expected to do more *exploratory* testing.
 6. Close and reopen the app after sorting.
    Expected: the stored employee order returns; sorting has not changed employee details or saved order.
 
+### Workforce summary
+
+Use a separate, empty test folder and launch the JAR as described in the
+[User Guide](UserGuide.md#quick-start). Create these fictional records in the order shown:
+
+```text
+clear
+add n/Summary Beta p/90000001 e/beta@example.com a/One le/14 s/3000 t/remote
+add n/Summary Alpha p/90000002 e/alpha@example.com a/Two le/14 s/1000 t/engineering
+task add 2 d/Prepare report
+leave add 2 from/06-01-2025 to/06-01-2025
+leave add 2 from/05-01-2026 to/09-01-2026
+leave add 1 from/04-01-2027 to/05-01-2027
+```
+
+1. Run `summary`, then `/summary`.
+   Expected: both show two employees, one assigned task, one employee with tasks, three leave records,
+   total salary `$4000.00`, average salary `$2000.00`, and one employee in each tag group.
+   The leave count is three records, rather than the eight working days covered by those records.
+2. Run `summary i/2`, `summary e/2`, and `summary i/1 2 e/1`.
+   Expected: total salaries are `$1000.00`, `$3000.00`, and `$1000.00`; leave counts are two, one, and two.
+   `summary i/2 2` produces the same counts as `summary i/2`.
+3. Run `filter t/remote`, then `summary`, then `summary scope/all`.
+   Expected: the default summary shows one employee, `$3000.00`, and one leave record. The full-scope summary
+   shows two employees, `$4000.00`, and three leave records. Only Summary Beta remains displayed.
+4. Run `find NoSuchEmployee`, then `summary`.
+   Expected: zero employees, zero tasks, zero leave records, total salary `$0.00`, and average salary `N/A`.
+   `summary scope/all` still includes both employees. After `list`, `summary e/1 2` also produces zero counts.
+5. Try `summary i/0`, `summary i/`, `summary i/1 i/2`, `summary scope/unknown`, and `summary scope/all i/3`.
+   Expected: a format, duplicate-prefix, or invalid-index error as applicable. The last command reports index 3,
+   the full-scope size of two, and valid indexes `1-2`. Employee data and the current filter stay unchanged.
+6. Run `sort n/asc`, then `list`.
+   Expected: Summary Alpha is displayed first. `summary i/1` and `summary scope/all i/1` both show `$1000.00`,
+   one task, and two leave records. `summary e/1` and `summary scope/all e/1` both show `$3000.00`, zero tasks,
+   and one leave record. Only the scope labels differ between the matching results.
+7. Run `salary 2 s/1000`, then `sort s/asc`, then `list`.
+   Expected: after the earlier name sort, the tied salaries leave Summary Alpha first. Both forms of `i/1`
+   still select Alpha's one task and two leave records; both forms of `e/1` select Beta's zero tasks and one
+   leave record. Run `summary` without selections: total salary is now `$2000.00`, with an average of `$1000.00`.
+8. Run `find Alpha`, then `summary scope/all i/2`, then `summary i/1`.
+   Expected: the full-scope selection includes Beta's one leave record; the displayed selection includes
+   Alpha's two. The displayed list still contains only Alpha. Run `task mark 1 i/1`, then `summary`:
+   the assigned-task count remains one, and `task list 1` shows that task as completed.
+9. Run `leave delete 1`, then `summary`.
+   Expected: Alpha's leave count falls to one. Run `edit 1 n/Summary Alicia`, then `find Alicia`, then `summary`:
+   the count remains one because records are matched by employee ID. Run `delete 1`, then `summary scope/all`:
+   only Beta remains, with one leave record. Alpha's remaining leave record has also been removed.
+10. Close and reopen the app from the same test folder, then run `summary`.
+    Expected: Beta still has one leave record, total salary `$1000.00`, and no tasks. Run `leave delete 3`,
+    then `summary`: the leave count becomes zero. The count is derived from the saved records after restart.
+
+For every summary command above, check that the employee list and saved data are unchanged by the summary itself.
+Run the command again after a change to see updated counts; summaries are not refreshed automatically.
+
 ### Saving data
 
 1. Dealing with missing/corrupted data files
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+   1. Prerequisites: Use a disposable copy of the application and back up `data/addressbook.json`. Close the app
+      before editing the file. Restore the backup between cases.
 
-1. _{ more test cases …​ }_
+   1. Test case: Simulate a maliciously modified data file by replacing its contents with
+      `{"persons":[],"leaves":[null]}`, then relaunch.<br>
+      Expected: The window opens with an empty address book and an error in the usual command results box. It identifies
+      the data file, explains that it could not be loaded, and advises closing the app to correct or restore it before
+      running a command. Closing the app without commands leaves the file unchanged.
+
+   1. Test case: In the previous case, execute `list`.<br>
+      Expected: The saved file is replaced with the empty address book, as explained in the message. The results box
+      displays the command result normally.
+
+   1. Test case: Repeat with malformed JSON, then with a valid data file and with a missing data file.<br>
+      Expected: Malformed JSON produces the same error message and recovery behaviour. Valid data loads normally. A missing
+      file starts with sample data. Neither a valid file nor a missing file produces a data-loading error message.

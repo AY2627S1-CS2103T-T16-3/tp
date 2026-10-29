@@ -132,6 +132,7 @@ To select particular employees for the summary:
 * Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
   displayed list. With `scope/all`, they refer to the full employee list in the current sort order;
   run `list` first to view that numbering. Without an active sort, the full list uses stored order.
+  With everyone displayed, both scopes select the same employees even when sort values tie.
   Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
 * Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
   Excluding everyone produces an empty summary. Selections apply only to this invocation.
@@ -174,11 +175,12 @@ Scope: Filtered employees
 * `Leave records` counts saved leave periods belonging to the selected employees. Each period counts once,
   regardless of its length or year. Past, current, and future records are included. This is a count of records,
   not leave days or remaining entitlement. An empty selection or employees without leave records show `0`.
+  For example, one single-day period and one five-day period count as two records, not six days.
 * Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
   An employee tagged with both `Engineering` and `engineering` counts once in that group.
   Employees with several tags count in each group, so tag counts can overlap.
 * Identical task descriptions assigned to different employees count as separate assignments.
-  Task counts do not indicate completion, deadlines, effort, or productivity.
+  Both pending and completed tasks count. Task counts do not indicate deadlines, effort, or productivity.
 * Salary figures include zero salaries. An empty selection shows zero counts, a total salary of `$0.00`,
   and an average of `N/A`. Amounts use two decimal places; averages round half up.
   These are recorded amounts, not payroll, tax, benefits, or payments.
@@ -538,9 +540,11 @@ HR Book data is saved automatically as a JSON file `[JAR file location]/data/add
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, HR Book starts with empty data at the next run. The invalid file remains on
-disk until you run a command (HR Book saves after every command). Still, we recommend backing up the file before
-editing it.<br>
+If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
+usual command results box. Manually inserted `null` leave records are treated as invalid data. The saved file remains
+unchanged until you run a successful command, which replaces it with the current data. To recover your saved data, close HR Book without
+running a command, correct the file or restore a valid backup, then reopen the app. We recommend backing up the file
+before editing it.<br>
 Furthermore, certain edits can cause HR Book to behave in unexpected ways (e.g., if a value entered is outside of the
 acceptable range or a leave refers to a missing employee). Therefore, edit the data file only if you are confident that
 you can update it correctly.

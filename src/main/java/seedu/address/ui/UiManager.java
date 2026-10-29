@@ -54,6 +54,11 @@ public class UiManager implements Ui {
         }
     }
 
+    @Override
+    public void setFeedbackToUser(String feedbackToUser) {
+        mainWindow.setFeedbackToUser(feedbackToUser);
+    }
+
     private Image getImage(String imagePath) {
         return new Image(MainApp.class.getResourceAsStream(imagePath));
     }

@@ -171,6 +171,11 @@ public class MainWindow extends UiPart<Stage> {
         return employeeListPanel;
     }
 
+    /** Displays feedback in the existing command result box. */
+    public void setFeedbackToUser(String feedbackToUser) {
+        resultDisplay.setFeedbackToUser(feedbackToUser);
+    }
+
     /**
      * Executes the command and returns the result.
      *
