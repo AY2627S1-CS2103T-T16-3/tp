@@ -213,6 +213,34 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_summaryAfterRepeatedSortsWithTies_preservesFilterAndSavedData() throws Exception {
+        logic.execute("add n/Carol p/91234561 e/carol@example.com a/One le/14 s/1000 t/finance");
+        logic.execute("add n/Bob p/91234562 e/bob@example.com a/Two le/14 s/1000 t/remote");
+        logic.execute("add n/Alice p/91234563 e/alice@example.com a/Three le/14 s/1000 t/engineering");
+        logic.execute("sort n/asc");
+        logic.execute("sort s/asc");
+        logic.execute("list");
+        Path dataFile = temporaryFolder.resolve("addressBook.json");
+        String savedData = Files.readString(dataFile);
+        AddressBook before = new AddressBook(model.getAddressBook());
+
+        for (String alias : List.of("summary", "/summary")) {
+            for (String selection : List.of("i/1", "e/1")) {
+                String filtered = logic.execute(alias + " " + selection).getFeedbackToUser();
+                String all = logic.execute(alias + " scope/all " + selection).getFeedbackToUser();
+                assertEquals(filtered.replace("Scope: Filtered employees", "Scope: All employees"), all);
+            }
+        }
+
+        logic.execute("find Alice Carol");
+        List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+        assertSummaryValue(logic.execute("summary scope/all i/2").getFeedbackToUser(), "remote", "1");
+        assertEquals(displayed, model.getFilteredEmployeeList());
+        assertEquals(before, model.getAddressBook());
+        assertEquals(savedData, Files.readString(dataFile));
+    }
+
+    @Test
     public void execute_summaryAliases_summarizeDisplayedEmployeesWithoutChangingFilterOrSavedData() throws Exception {
         Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering").build();
         Employee bob = new EmployeeBuilder().withName("Bob").withTags().build();

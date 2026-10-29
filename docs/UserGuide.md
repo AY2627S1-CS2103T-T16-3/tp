@@ -130,7 +130,8 @@ To select particular employees for the summary:
   Supply each prefix at most once; an empty list or any index outside the selected scope is rejected.
   For an out-of-range index, the error shows that index, the selected scope, and its valid index range.
 * Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
-  displayed list. With `scope/all`, they refer to the full employee list; run `list` first to view that numbering.
+  displayed list. With `scope/all`, they refer to the full employee list in the current sort order;
+  run `list` first to view that numbering. Without an active sort, the full list uses stored order.
   Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
 * Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
   Excluding everyone produces an empty summary. Selections apply only to this invocation.
@@ -297,7 +298,7 @@ Format: `sort FIELD/ORDER`
 * Fields: `n/` (name), `p/` (phone), `e/` (email), `a/` (address), `s/` (salary), or `le/` (annual leave entitlement).
 * Order: `asc` for ascending or `des` for descending. Supply exactly one field and order.
 * Salary, phone numbers, and annual leave entitlement sort numerically. Text sorts alphabetically, ignoring case.
-* Employees with equal values retain their original address book order.
+* When values tie, `summary scope/all` uses the same employee order as `list`. Earlier sorts can affect this order.
 * Sorting changes the display only; employee details and the stored address book order stay unchanged.
 * The chosen sort stays active when you filter, find, edit, or list employees. `list` shows all employees in that order. Another `sort` replaces it; restarting the app restores the stored order.
 * Index commands such as `edit`, `salary`, and `delete` use the positions in the sorted displayed list.

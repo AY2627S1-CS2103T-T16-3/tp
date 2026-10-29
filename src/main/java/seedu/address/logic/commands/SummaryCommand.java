@@ -67,7 +67,7 @@ public class SummaryCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         List<Employee> employees = scope == Scope.ALL
-                ? model.getAddressBook().getEmployeeList() : model.getFilteredEmployeeList();
+                ? model.getAllEmployeesInDisplayOrder() : model.getFilteredEmployeeList();
         EmployeeSummary summary = EmployeeSummary.fromEmployees(selectEmployees(employees),
                 model.getAddressBook().getLeaveList());
         return new CommandResult(formatSummary(summary), CommandResult.DisplayFormat.TABLE);

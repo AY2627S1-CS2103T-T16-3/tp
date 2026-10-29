@@ -67,6 +67,27 @@ public class SummaryLeaveCommandTest {
     }
 
     @Test
+    public void execute_allScopeAfterRepeatedSorts_countsLeavesUsingFullDisplayOrder() throws Exception {
+        Model model = modelWithLeaves();
+        parser.parseCommand("sort n/des").execute(model);
+        parser.parseCommand("sort s/asc").execute(model);
+        parser.parseCommand("list").execute(model);
+        assertEquals(List.of("Carol", "Bob", "Alice"), model.getFilteredEmployeeList().stream()
+                .map(employee -> employee.getName().fullName).toList());
+
+        assertLeaveCount(model, "summary i/1", "0");
+        assertLeaveCount(model, "summary scope/all i/1", "0");
+        assertLeaveCount(model, "summary e/1", "3");
+        assertLeaveCount(model, "summary scope/all e/1", "3");
+
+        parser.parseCommand("find Bob").execute(model);
+        assertLeaveCount(model, "summary i/1", "1");
+        assertLeaveCount(model, "summary scope/all i/3", "2");
+        assertEquals(List.of("Bob"), model.getFilteredEmployeeList().stream()
+                .map(employee -> employee.getName().fullName).toList());
+    }
+
+    @Test
     public void execute_emptySelection_returnsZeroWithoutIncludingHiddenEmployees() throws Exception {
         Model model = modelWithLeaves();
         model.updateFilteredEmployeeList(employee -> false);
