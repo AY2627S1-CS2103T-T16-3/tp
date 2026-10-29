@@ -67,6 +67,15 @@ public class EmailTest {
     }
 
     @Test
+    public void isValidEmail_lengthLimit() {
+        String emailAtLimit = "a".repeat(Email.MAX_LENGTH - "@example.com".length()) + "@example.com";
+        assertTrue(Email.isValidEmail(emailAtLimit));
+        assertFalse(Email.isValidEmail("a" + emailAtLimit));
+        assertFalse(Email.isValidEmail("a.".repeat(3000) + "a@example.com"));
+        assertFalse(Email.isValidEmail("a@" + "example.".repeat(3000) + "com"));
+    }
+
+    @Test
     public void equals() {
         Email email = new Email("valid@email");
 

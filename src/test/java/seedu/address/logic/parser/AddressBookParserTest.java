@@ -33,6 +33,7 @@ import seedu.address.logic.commands.SalaryCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.UnmarkTaskCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.employee.Email;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.NameContainsKeywordsPredicate;
 import seedu.address.model.employee.Salary;
@@ -115,6 +116,13 @@ public class AddressBookParserTest {
         FindCommand command = (FindCommand) parser.parseCommand(
                 FindCommand.COMMAND_WORD + " " + keywords.stream().collect(Collectors.joining(" ")));
         assertEquals(new FindCommand(new NameContainsKeywordsPredicate(keywords)), command);
+    }
+
+    @Test
+    public void parseCommand_filterOversizedEmail_throwsParseException() {
+        String longEmail = "a.".repeat(3000) + "a@example.com";
+        assertThrows(ParseException.class, Email.MESSAGE_CONSTRAINTS, () ->
+                parser.parseCommand("filter e/" + longEmail));
     }
 
     @Test
