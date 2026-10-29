@@ -16,7 +16,7 @@ public class FilterCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Match all supplied filters. Provide at least one.\n"
             + "Fields: n/NAME p/PHONE e/EMAIL a/ADDRESS t/TAG task/DETAILS s/SALARY le/DAYS\n"
-            + "Text Fields: Partial Matches Allowed; Tags: Whole match Required (case-insensitive). "
+            + "Name, Phone, Email, Tasks: Partial Matches Allowed; Tags: Whole match Required (case-insensitive).\n"
             + "Only t/ or task/ fields may be repeated.\n"
             + "Salary (0-50000) and leave (0-365) fields only: supports exact, <, <=, >, >=, "
             + "and inclusive range MIN-MAX.\n"
