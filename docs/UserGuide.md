@@ -219,6 +219,8 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
   enough leave is deleted or the entitlement is increased, no further leave can be added for that year.
+  This is intentional: changing entitlement does not rewrite historical leave records. If a recorded leave was a
+  mistake, delete that leave record separately.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
 * To remove all of an employee's tags, enter `t/` without a tag after it.
 
@@ -332,7 +334,7 @@ Format: `leave add INDEX from/START_DATE to/END_DATE`
   past and future dates are allowed for record keeping. Both dates are included in the leave period.
 * The start date must be on or before the end date, and both dates must be in the same calendar year.
 * Only Mondays to Fridays count against the employee's entitlement. Saturdays and Sundays are excluded.
-* Public holidays are not excluded in the MVP. A public holiday that falls from Monday to Friday counts as a working
+* Public holidays are not excluded. A public holiday that falls from Monday to Friday counts as a working
   leave day.
 * A period containing no weekday is rejected.
 * Leave periods for the same employee cannot overlap, including on a weekend or boundary date. Leave periods belonging
