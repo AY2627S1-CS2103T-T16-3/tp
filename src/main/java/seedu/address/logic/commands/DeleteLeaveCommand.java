@@ -19,6 +19,7 @@ public class DeleteLeaveCommand extends Command {
     public static final String MESSAGE_USAGE = "leave " + SUBCOMMAND_WORD
             + ": Deletes the leave record identified by its leave ID.\n"
             + "  Parameters: LEAVE_ID (must be a positive integer)\n"
+            + "  Run leave list to view available leave IDs.\n"
             + "  Example: leave " + SUBCOMMAND_WORD + " 1";
     public static final String MESSAGE_SUCCESS =
             "Deleted leave: ID %1$s for %2$s; period %3$s; %4$d day(s) remaining in %5$d.";

@@ -23,8 +23,9 @@ public class FilterCommand extends Command {
             + "Text: partial match; tags: whole match (case-insensitive). Repeat only t/ or task/.\n"
             + "Values must follow field rules: names allow letters, digits and spaces; tags are alphanumeric; "
             + "phones need at least 3 digits; emails must be valid; tasks allow up to 120 characters.\n"
-            + "Only salary (0-50000) and leave (0-365) support exact values, < or >. No leading zeros; 0 is valid.\n"
-            + "Example: filter task/report s/<5000 le/>14";
+            + "Only salary (0-50000) and leave (0-365) support exact values, <, <=, >, >=, "
+            + "and inclusive ranges MIN-MAX. No leading zeros; 0 is valid.\n"
+            + "Example: filter task/report s/3000-5000 le/>=14";
 
     private final EmployeeMatchesCriteriaPredicate predicate;
 

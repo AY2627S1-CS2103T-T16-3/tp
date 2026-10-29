@@ -262,6 +262,26 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_sameSalaryCommand_preservesFilteredModelAndStoredData() throws Exception {
+        logic.execute("add n/Alice p/91234567 e/alice@example.com a/123 Main Street le/14 s/1000");
+        logic.execute("add n/Bob p/92345678 e/bob@example.com a/456 Main Street le/14 s/2000");
+        logic.execute("find Bob");
+        List<Employee> originalEmployees = List.copyOf(model.getAddressBook().getEmployeeList());
+        List<Employee> originalFilteredEmployees = List.copyOf(model.getFilteredEmployeeList());
+        Path storagePath = temporaryFolder.resolve("addressBook.json");
+        String originalStoredData = Files.readString(storagePath);
+
+        CommandResult result = logic.execute("salary 1 s/002000");
+
+        assertEquals("Bob's salary is already $2000. No changes made.", result.getFeedbackToUser());
+        assertEquals(originalEmployees, model.getAddressBook().getEmployeeList());
+        assertEquals(originalFilteredEmployees, model.getFilteredEmployeeList());
+        assertEquals(originalStoredData, Files.readString(storagePath));
+        ReadOnlyAddressBook saved = new JsonAddressBookStorage(storagePath).readAddressBook().orElseThrow();
+        assertEquals(originalEmployees, saved.getEmployeeList());
+    }
+
+    @Test
     public void execute_salaryCommand_updatesModelAndStorage() throws Exception {
         // Original employee
         Employee charlie = new EmployeeBuilder()
@@ -284,7 +304,7 @@ public class LogicManagerTest {
         // Expected feedback for tested command
         CommandResult expectedFeedback = new CommandResult(
                 String.format(SalaryCommand.MESSAGE_SUCCESS,
-                        expected.getSalary(), Messages.format(expected)));
+                        expected.getName(), charlie.getSalary(), expected.getSalary()));
 
         // Asserts that command feedback is correct
         assertEquals(expectedFeedback, logic.execute("salary 1 s/005000"));

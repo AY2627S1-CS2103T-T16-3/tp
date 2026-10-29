@@ -165,12 +165,35 @@ The `salary INDEX s/SALARY` command replaces the salary of the employee identifi
 At execution, the command follows these steps:
 
 1. Retrieves the currently filtered employee list through `Model#getFilteredEmployeeList` and checks that the index is within its bounds.
-2. Selects the employee and calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
-3. Replaces the original employee through `Model#setEmployee`.
-4. Resets the employee filter to show all employees and returns a success message containing the updated employee's details.
+2. Compares the selected employee's salary with the requested `Salary`. If they are equal, returns feedback stating that the salary is already set and no changes were made, without replacing the employee or changing the displayed view. Leading zeros do not affect equality.
+3. If the salary differs, calls `Employee#withSalary` to create a replacement employee. The employee's internal ID and all other fields, including tasks and leave entitlement, are preserved.
+4. Replaces the original employee through `Model#setEmployee`.
+5. Resets the employee filter to show all employees, retaining the active sort, and returns feedback containing the employee's name and the old and new salaries.
 
-This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The updated salary is saved with the rest of the employee data after the command runs.
+This approach preserves the immutability of `Employee` and keeps salary validation within the `Salary` value object. The usual application-wide save still runs after command execution, including when the salary is unchanged.
 
+### Filtering employees
+
+`filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
+supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
+and repeated scalar fields, and uses `ParserUtil` to validate numeric thresholds. Salary thresholds
+must be whole numbers from 0 to 50000; annual leave entitlement thresholds must be whole numbers
+from 0 to 365. Leading zeros are normalized before constructing the predicate.
+
+Both numeric fields accept exact values (no operator), `<`, `<=`, `>`, and `>=`. The parser checks
+for the two-character inclusive operators before splitting the operator from its amount. It rejects
+missing thresholds and malformed operators such as `=`, `=<`, `=>`, or `<==` through the existing
+field validation errors. `EmployeeMatchesCriteriaPredicate#matchesAmount` likewise checks inclusive
+operators first, compares integer values, and includes equality only for `<=` and `>=` (or an exact
+match). Leave filtering uses annual entitlement, irrespective of leave already taken.
+
+`FilterCommand#execute` updates the model's filtered employee list and reports the number of matches.
+For example, `filter s/<=4000 le/>=14` includes employees earning exactly 4000 with exactly 14 days
+of entitlement, provided they satisfy both criteria. Employee records are unchanged.
+
+`FilterCommandParserTest` covers all operators, normalized values, valid limits, and invalid input.
+`FilterCommandTest` exercises parsing through execution, checking equality at inclusive thresholds,
+strict comparisons, limits (0/50000 salary and 0/365 days), and combinations with other criteria.
 ### Task management
 
 Users can keep track of tasks for each employee. The `Task` class stores the description and completion status.
@@ -353,7 +376,8 @@ that take no parameters.
 `leave add INDEX from/START_DATE to/END_DATE` follows this flow:
 
 1. `AddLeaveCommandParser` parses a displayed employee index and two `DD-MM-YYYY` dates into an `Index` and immutable
-   `LeavePeriod`.
+   `LeavePeriod`. Dates use exactly four year digits and accept valid past and future dates in years `0001` to `9999`;
+   year `0000` is rejected.
 2. `AddLeaveCommand` resolves the index against `Model#getFilteredEmployeeList`. This lets a user run `find` or
    `filter` before selecting an employee without exposing the employee's internal ID.
 3. `AddressBook#addLeave` finds the employee through its internal `EmployeeId`, rejects an overlapping period, and
@@ -362,7 +386,7 @@ that take no parameters.
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
 
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
-at least one such day. Public holidays are deliberately not modelled for the MVP, so a public holiday on a weekday is
+at least one such day. Public holidays are not excluded, so a public holiday on a weekday is
 charged as a working leave day. Overlap detection uses every calendar date in the inclusive range, not only charged
 weekdays.
 
@@ -858,10 +882,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 2a. The leave ID is invalid or no matching record exists.
+* 2a. The leave ID is malformed, zero, or negative.
 
-    * 2a1. System informs the HR manager that the leave record cannot be found.
+    * 2a1. System informs the HR manager that the command is invalid and displays the correct usage.
     * 2a2. System leaves all employee and leave information unchanged.
+
+      Use case ends.
+
+* 2b. The leave ID is a valid positive integer, but no matching record exists.
+
+    * 2b1. System informs the HR manager that no leave record was found with that ID.
+    * 2b2. System leaves all employee and leave information unchanged.
 
       Use case ends.
 
@@ -993,8 +1024,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Working day**: For the MVP, a Monday through Friday counted against annual leave entitlement; public holidays are
-  not excluded
+* **Working day**: A Monday through Friday counted against annual leave entitlement; public holidays are not excluded
 
 --------------------------------------------------------------------------------------------------------------------
 
