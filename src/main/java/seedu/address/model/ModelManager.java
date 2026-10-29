@@ -47,6 +47,19 @@ public class ModelManager implements Model {
         this(new AddressBook(), new UserPrefs());
     }
 
+    @Override
+    public ModelSnapshot createSnapshot() {
+        return new ModelSnapshot(addressBook, filteredEmployees.getPredicate(), sortedEmployees.getComparator());
+    }
+
+    @Override
+    public void restoreSnapshot(ModelSnapshot snapshot) {
+        requireNonNull(snapshot);
+        addressBook.restoreValidatedData(snapshot.addressBook);
+        filteredEmployees.setPredicate(snapshot.predicate);
+        sortedEmployees.setComparator(snapshot.comparator);
+    }
+
     //=========== UserPrefs ==================================================================================
 
     @Override

@@ -147,6 +147,45 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 ## **Implementation**
 
+### Save failures and model rollback
+
+After parsing a command, `LogicManager` captures a `ModelSnapshot` before execution. The model snapshot copies
+the address book (including leave records and next-ID counters) and retains the employee filter and comparator.
+If saving throws `IOException` or `AccessDeniedException`, Logic restores the snapshot through `Model` and
+reports the existing save error. Restoration updates the existing observable collections, preserving UI bindings.
+Snapshots rely on employee and leave values being immutable and on display predicates/comparators remaining unchanged.
+
+`JsonAddressBookStorage` writes JSON directly to the destination using the original storage workflow.
+Rollback restores memory only: a failed write can leave the destination incomplete or containing rejected data.
+A later successful save in the same session writes the restored model, but restarting before that save does
+not guarantee recovery. There are no backups or power-loss guarantees. Existing startup behavior opens an empty
+address book after a data-loading error; a later save can overwrite the unreadable file.
+
+`AddressBookSnapshotTest` covers independent copies, exhausted ID counters, and retained observable lists.
+`ModelManagerTest` covers snapshot restoration and `LogicManagerTest` covers rollback after save errors.
+Storage tests inject failures before writing and after a partial direct write. They verify model restoration
+and that a later successful command saves only accepted changes.
+
+#### Limits of the current save structure
+
+* **Concurrency:** There is no cross-process lock or conflict detection. Multiple app instances or external edits
+  can overwrite one another. Commands are assumed to execute serially.
+* **Rollback scope:** The snapshot covers address-book data and employee display rules, not user preferences,
+  GUI selection/scroll state, or external side effects. Model listeners can observe changes before save succeeds
+  and notifications during restoration. This is not an isolated transaction across the UI and disk.
+* **Exception scope:** Rollback handles save-time `IOException` (including access-denied errors). Runtime errors,
+  memory exhaustion, partially mutating commands that throw before saving, or failure inside restoration are
+  outside this guarantee. Even a failed save may already have changed the disk file.
+* **Cost and snapshot assumptions:** Every parsed command takes a full snapshot, and successful commands still
+  save the entire JSON file, including read-only commands such as help/list. Snapshot creation and restoration
+  copy validated collections
+  without repeating duplicate or leave-overlap checks. Copying is linear in the number of records; loading
+  external data still performs full validation. Saving and observable-list updates remain synchronous.
+  Shared employee/leave values must remain immutable, and
+  stored predicate/comparator objects must not be mutated after snapshot capture.
+
+See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) for the tested cases and exclusions.
+
 This section describes some noteworthy details on how certain features are implemented.
 
 ### Employee identifier allocation
