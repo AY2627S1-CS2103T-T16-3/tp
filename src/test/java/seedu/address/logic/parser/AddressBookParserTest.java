@@ -64,6 +64,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_listLeave() throws Exception {
         assertTrue(parser.parseCommand("leave list") instanceof ListLeaveCommand);
+        assertTrue(parser.parseCommand("leave list extra") instanceof ListLeaveCommand);
     }
 
     @Test
@@ -86,11 +87,11 @@ public class AddressBookParserTest {
 
     @Test
     public void parseCommand_taskCommands() throws Exception {
-        assertTrue(parser.parseCommand("list-tasks 1") instanceof ListTasksCommand);
-        assertTrue(parser.parseCommand("add-task 1 d/Prepare report") instanceof AddTaskCommand);
-        assertTrue(parser.parseCommand("delete-task 1 i/1") instanceof DeleteTaskCommand);
-        assertTrue(parser.parseCommand("mark-task 1 i/1") instanceof MarkTaskCommand);
-        assertTrue(parser.parseCommand("unmark-task 1 i/1") instanceof UnmarkTaskCommand);
+        assertTrue(parser.parseCommand("task list 1") instanceof ListTasksCommand);
+        assertTrue(parser.parseCommand("task add 1 d/Prepare report") instanceof AddTaskCommand);
+        assertTrue(parser.parseCommand("task delete 1 i/1") instanceof DeleteTaskCommand);
+        assertTrue(parser.parseCommand("task mark 1 i/1") instanceof MarkTaskCommand);
+        assertTrue(parser.parseCommand("task unmark 1 i/1") instanceof UnmarkTaskCommand);
     }
 
     @Test
@@ -188,6 +189,21 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_salaryDuplicatePrefix_throwsParseException() {
         assertThrows(ParseException.class, () -> parser.parseCommand("salary 1 s/5000 s/6000"));
+    }
+
+    @Test
+    public void parseCommand_salaryUnsupportedField_throwsUnsupportedFieldMessage() {
+        assertThrows(ParseException.class, "Unsupported field. The salary command only accepts s/.", () ->
+                parser.parseCommand("salary 1 s/5000 n/Charlie"));
+    }
+
+    @Test
+    public void parseCommand_invalidSalaryCommands_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, SalaryCommand.MESSAGE_USAGE);
+        for (String command : List.of("salary /r", "salary 8333", "salary 2 2",
+                "salary /s /s /s /s 1", "salary /s 1 /s 2 /s 3", "salary /s2")) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(command));
+        }
     }
 
 }
