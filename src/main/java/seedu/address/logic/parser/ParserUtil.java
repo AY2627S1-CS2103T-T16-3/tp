@@ -31,12 +31,13 @@ public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final String MESSAGE_INVALID_START_DATE =
-            "Start date must be a valid date in dd-MM-yyyy format.";
+            "Start date must be a valid date from year 0001 to 9999 in DD-MM-YYYY format.";
     public static final String MESSAGE_INVALID_END_DATE =
-            "End date must be a valid date in dd-MM-yyyy format.";
+            "End date must be a valid date from year 0001 to 9999 in DD-MM-YYYY format.";
 
     private static final DateTimeFormatter LEAVE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-uuuu",
             Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT);
+    private static final String LEAVE_DATE_PATTERN = "[0-9]{2}-[0-9]{2}-[0-9]{4}";
 
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
@@ -95,8 +96,16 @@ public class ParserUtil {
 
     private static LocalDate parseLeaveDate(String date, String errorMessage) throws ParseException {
         requireNonNull(date);
+        String trimmedDate = date.trim();
+        if (!trimmedDate.matches(LEAVE_DATE_PATTERN)) {
+            throw new ParseException(errorMessage);
+        }
         try {
-            return LocalDate.parse(date.trim(), LEAVE_DATE_FORMATTER);
+            LocalDate parsedDate = LocalDate.parse(trimmedDate, LEAVE_DATE_FORMATTER);
+            if (parsedDate.getYear() == 0) {
+                throw new ParseException(errorMessage);
+            }
+            return parsedDate;
         } catch (DateTimeParseException e) {
             throw new ParseException(errorMessage);
         }

@@ -354,7 +354,8 @@ that take no parameters.
 `leave add INDEX from/START_DATE to/END_DATE` follows this flow:
 
 1. `AddLeaveCommandParser` parses a displayed employee index and two `DD-MM-YYYY` dates into an `Index` and immutable
-   `LeavePeriod`.
+   `LeavePeriod`. Dates use exactly four year digits and accept valid past and future dates in years `0001` to `9999`;
+   year `0000` is rejected.
 2. `AddLeaveCommand` resolves the index against `Model#getFilteredEmployeeList`. This lets a user run `find` or
    `filter` before selecting an employee without exposing the employee's internal ID.
 3. `AddressBook#addLeave` finds the employee through its internal `EmployeeId`, rejects an overlapping period, and
