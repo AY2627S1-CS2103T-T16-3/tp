@@ -1123,6 +1123,79 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
 
+### Managing employee salaries
+
+Use a separate copy of the application with test data. Before each test, note the selected employee's name and
+current salary. Recheck displayed indexes after commands that change the list.
+
+1. Updating a salary
+
+   1. Prerequisites: Run `list`. Choose an employee whose salary differs from the test amount and note their
+      displayed index.
+
+   2. Test case: `salary INDEX s/5000`, replacing `INDEX` with the selected employee's index.<br>
+      Expected: Their monthly salary becomes `$5000`. Feedback identifies the employee and their previous and new
+      salaries. Their other details and other employees remain unchanged.
+
+   3. Repeat with `s/0` and `s/50000`, rechecking the employee's index before each command.<br>
+      Expected: Both boundary amounts are accepted.
+
+   4. Test case: Set the employee's salary to a different amount, then use `s/005000`.<br>
+      Expected: Their salary is stored as `5000` and displayed as `Monthly salary: $5000`.
+
+2. Rejecting invalid requests
+
+   1. Prerequisites: Run `list` with at least one employee displayed. Note the existing salaries.
+
+   2. Test cases: `salary 1 s/50001`, `salary 1 s/-1`, `salary 1 s/abc`, and `salary 1 s/1.5`.<br>
+      Expected: Each command reports the salary constraints. No salary changes.
+
+   3. Test cases: `salary 0 s/5000`, `salary x s/5000`, `salary 1`, and `salary 1 s/`.<br>
+      Expected: Each command reports an invalid command format or salary value. No salary changes.
+
+   4. Test case: `salary INDEX s/5000`, using a positive index larger than the displayed list size.<br>
+      Expected: An invalid employee-index error is shown. No salary changes.
+
+   5. Test case: `salary 1 s/5000 s/6000`.<br>
+      Expected: The repeated salary field is rejected. No salary changes.
+
+   6. Test cases: `salary 1 s/5000 n/Alice` and `salary 1 s/abc n/Alice`.<br>
+      Expected: Both report `Unsupported field. The salary command only accepts s/.` No salary changes.
+
+3. Updating an employee from search results
+
+   1. Prerequisites: Have multiple employees. Run `find NAME` using a name that matches exactly one employee whose
+      salary is not `$6000`.
+
+   2. Test case: `salary 1 s/6000`.<br>
+      Expected: The employee in the search results receives the new salary. All employees are displayed afterward,
+      retaining the active sort. Other employees remain unchanged.
+
+4. Requesting an unchanged salary
+
+   1. Prerequisites: Run `find NAME` to display exactly one employee. Note their salary.
+
+   2. Test case: Run `salary 1 s/AMOUNT` using their current salary, then repeat with leading zeros added to the
+      amount.<br>
+      Expected: Both commands report that the salary is already set and no changes were made. The search results
+      remain displayed.
+
+5. Updating a salary in a sorted list
+
+   1. Prerequisites: Have at least two employees with different salaries below `$50000`. Run `list`, then
+      `sort s/asc`. Note the employee at index 1.
+
+   2. Test case: `salary 1 s/50000`.<br>
+      Expected: The employee previously shown at index 1 receives the new salary and moves to their position in
+      ascending salary order. Other employees' salaries remain unchanged.
+
+6. Retaining a salary after restarting
+
+   1. Prerequisites: Successfully change an employee's salary to `$5000`. Note their name.
+
+   2. Test case: Exit and relaunch the application using the same data file.<br>
+      Expected: The same employee still has a monthly salary of `$5000`.
+
 ### Managing tasks
 
 1. Listing an employee's tasks
