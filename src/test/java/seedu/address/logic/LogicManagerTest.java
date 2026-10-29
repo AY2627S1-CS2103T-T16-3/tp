@@ -275,7 +275,7 @@ public class LogicManagerTest {
 
         for (String command : List.of(
                 "add n/Charlie p/81234567 e/charlie@example.com a/Main Street le/14",
-                "salary 1 s/5000", "delete 1", "add-task 1 d/Report", "leave delete 1",
+                "salary 1 s/5000", "delete 1", "task add 1 d/Report", "leave delete 1",
                 "leave add 1 from/12-10-2026 to/13-10-2026", "list", "sort n/des")) {
             assertThrows(CommandException.class, () -> logic.execute(command));
             assertEquals(before, model.getAddressBook());

@@ -57,7 +57,7 @@ public class JsonAddressBookStorageTest {
         assertEquals(before, model.getAddressBook());
         assertArrayEquals(saved, Files.readAllBytes(destination));
         storage.failure = "";
-        logic.execute("add-task 1 d/Report");
+        logic.execute("task add 1 d/Report");
         ReadOnlyAddressBook reloaded = storage.readAddressBook().orElseThrow();
         assertEquals(model.getAddressBook(), new AddressBook(reloaded));
         assertEquals(before.getEmployeeList().get(0).getSalary(), reloaded.getEmployeeList().get(0).getSalary());
@@ -83,7 +83,7 @@ public class JsonAddressBookStorageTest {
 
         // A later successful command saves the restored model before restarting.
         storage.failure = "";
-        logic.execute("add-task 1 d/Report");
+        logic.execute("task add 1 d/Report");
         AddressBook expected = new AddressBook(before);
         Employee originalEmployee = before.getEmployeeList().get(0);
         expected.setEmployee(originalEmployee, originalEmployee.addTask(new Task("Report")));

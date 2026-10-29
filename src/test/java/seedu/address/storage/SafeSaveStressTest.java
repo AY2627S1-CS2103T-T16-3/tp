@@ -34,9 +34,9 @@ public class SafeSaveStressTest {
     private static final List<String> COMMANDS = List.of(
             "add n/Charlie p/81234567 e/charlie@example.com a/Main Street le/14",
             "edit 1 n/Changed p/82345678", "salary 1 s/5000", "delete 1", "clear",
-            "add-task 1 d/New task", "delete-task 1 i/1", "mark-task 1 i/1", "unmark-task 1 i/2",
+            "task add 1 d/New task", "task delete 1 i/1", "task mark 1 i/1", "task unmark 1 i/2",
             "leave add 1 from/12-10-2026 to/13-10-2026", "leave delete 1", "leave list",
-            "find Bob", "filter t/engineering", "sort n/des", "list", "list-tasks 1",
+            "find Bob", "filter t/engineering", "sort n/des", "list", "task list 1",
             "summary", "/summary scope/all", "help", "exit");
     private static final List<String> VIEWS = List.of("list", "sort n/des", "find Alice");
     private static final List<String> FAILURES = List.of("partial", "write", "denied");
@@ -118,7 +118,7 @@ public class SafeSaveStressTest {
         for (int i = 0; i < 300; i++) {
             String command = switch (i % 5) {
                 case 0 -> "salary 1 s/" + random.nextInt(50001);
-                case 1 -> "add-task 1 d/Task " + i;
+                case 1 -> "task add 1 d/Task " + i;
                 case 2 -> "sort n/" + (random.nextBoolean() ? "asc" : "des");
                 case 3 -> "edit 1 a/Address " + i;
                 default -> "summary scope/all";
@@ -175,7 +175,7 @@ public class SafeSaveStressTest {
         for (String command : List.of("unknown", "salary 1 s/abc", "add")) {
             assertThrows(ParseException.class, () -> fixture.logic.execute(command));
         }
-        for (String command : List.of("delete 999", "delete-task 1 i/99", "leave delete 999",
+        for (String command : List.of("delete 999", "task delete 1 i/99", "leave delete 999",
                 "leave add 1 from/05-10-2026 to/07-10-2026")) {
             assertThrows(CommandException.class, () -> fixture.logic.execute(command));
         }
@@ -264,9 +264,9 @@ public class SafeSaveStressTest {
             logic.execute("add n/Alice p/91234567 e/alice@example.com a/Main Street le/14 t/engineering");
             logic.execute("add n/Bob p/91234568 e/bob@example.com a/Other Street le/14 t/sales");
             for (int i = 1; i <= 2; i++) {
-                logic.execute("add-task " + i + " d/Report");
-                logic.execute("add-task " + i + " d/Review");
-                logic.execute("mark-task " + i + " i/2");
+                logic.execute("task add " + i + " d/Report");
+                logic.execute("task add " + i + " d/Review");
+                logic.execute("task mark " + i + " i/2");
                 logic.execute("leave add " + i + " from/05-10-2026 to/07-10-2026");
             }
         }
