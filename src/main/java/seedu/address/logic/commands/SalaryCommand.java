@@ -18,7 +18,8 @@ import seedu.address.model.employee.Salary;
 public class SalaryCommand extends Command {
 
     public static final String COMMAND_WORD = "salary";
-    public static final String MESSAGE_SUCCESS = "Updated salary to %1$s for employee: %2$s";
+    public static final String MESSAGE_SUCCESS = "Updated %1$s's salary from %2$s to %3$s.";
+    public static final String MESSAGE_NO_CHANGE = "%1$s's salary is already %2$s. No changes made.";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Edits the salary of the employee identified "
@@ -51,20 +52,23 @@ public class SalaryCommand extends Command {
             throw new CommandException(Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_INDEX);
         }
         Employee employeeToEdit = lastShownList.get(index.getZeroBased());
+        if (employeeToEdit.getSalary().equals(salary)) {
+            return new CommandResult(String.format(MESSAGE_NO_CHANGE, employeeToEdit.getName(), salary));
+        }
         Employee editedEmployee = employeeToEdit.withSalary(salary);
 
         model.setEmployee(employeeToEdit, editedEmployee);
         model.updateFilteredEmployeeList(PREDICATE_SHOW_ALL_EMPLOYEES);
 
-        return new CommandResult(generateSuccessMessage(editedEmployee));
+        return new CommandResult(generateSuccessMessage(employeeToEdit));
 
     }
 
     /**
-     * Returns a success message identifying the employee whose salary was updated.
+     * Returns a success message identifying the employee and the old and new salaries.
      */
     private String generateSuccessMessage(Employee employeeToEdit) {
-        return String.format(MESSAGE_SUCCESS, salary, Messages.format(employeeToEdit));
+        return String.format(MESSAGE_SUCCESS, employeeToEdit.getName(), employeeToEdit.getSalary(), salary);
     }
 
     @Override

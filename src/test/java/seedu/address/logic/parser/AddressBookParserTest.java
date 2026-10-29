@@ -191,4 +191,19 @@ public class AddressBookParserTest {
         assertThrows(ParseException.class, () -> parser.parseCommand("salary 1 s/5000 s/6000"));
     }
 
+    @Test
+    public void parseCommand_salaryUnsupportedField_throwsUnsupportedFieldMessage() {
+        assertThrows(ParseException.class, "Unsupported field. The salary command only accepts s/.", () ->
+                parser.parseCommand("salary 1 s/5000 n/Charlie"));
+    }
+
+    @Test
+    public void parseCommand_invalidSalaryCommands_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, SalaryCommand.MESSAGE_USAGE);
+        for (String command : List.of("salary /r", "salary 8333", "salary 2 2",
+                "salary /s /s /s /s 1", "salary /s 1 /s 2 /s 3", "salary /s2")) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(command));
+        }
+    }
+
 }
