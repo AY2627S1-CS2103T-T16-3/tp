@@ -201,19 +201,29 @@ public class SafeSaveStressTest {
 
     @Test
     public void execute_relativeUnicodePath_preservesJsonAndCreatesParents() throws Exception {
-        Path absolute = folder.resolve("nested folder/人事 book.json");
-        Path relative = Path.of("").toAbsolutePath().relativize(absolute);
-        JsonAddressBookStorage storage = new JsonAddressBookStorage(relative);
-        AddressBook book = new AddressBook();
-        book.addEmployee(new EmployeeBuilder().withName("Alice").withAddress("新加坡 Café Street").build());
+        // Keep both paths on the checkout drive; CI's default temp folder may use another drive.
+        Path buildDirectory = Path.of("build").toAbsolutePath();
+        Files.createDirectories(buildDirectory);
+        Path testDirectory = Files.createTempDirectory(buildDirectory, "unicode-path-");
+        Path absolute = testDirectory.resolve("nested folder/人事 book.json");
+        try {
+            Path relative = Path.of("").toAbsolutePath().relativize(absolute);
+            JsonAddressBookStorage storage = new JsonAddressBookStorage(relative);
+            AddressBook book = new AddressBook();
+            book.addEmployee(new EmployeeBuilder().withName("Alice").withAddress("新加坡 Café Street").build());
 
-        storage.saveAddressBook(book);
-        assertEquals(book, storage.readAddressBook().orElseThrow());
-        book.addEmployee(new EmployeeBuilder().withName("Bob").build());
-        storage.saveAddressBook(book);
-        assertEquals(book, storage.readAddressBook().orElseThrow());
-        try (var files = Files.list(absolute.getParent())) {
-            assertEquals(List.of(absolute), files.toList());
+            storage.saveAddressBook(book);
+            assertEquals(book, storage.readAddressBook().orElseThrow());
+            book.addEmployee(new EmployeeBuilder().withName("Bob").build());
+            storage.saveAddressBook(book);
+            assertEquals(book, storage.readAddressBook().orElseThrow());
+            try (var files = Files.list(absolute.getParent())) {
+                assertEquals(List.of(absolute), files.toList());
+            }
+        } finally {
+            Files.deleteIfExists(absolute);
+            Files.deleteIfExists(absolute.getParent());
+            Files.deleteIfExists(testDirectory);
         }
     }
 
