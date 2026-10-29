@@ -14,9 +14,9 @@ public final class ModelSnapshot {
     final Predicate<? super Employee> predicate;
     final Comparator<? super Employee> comparator;
 
-    ModelSnapshot(ReadOnlyAddressBook addressBook, Predicate<? super Employee> predicate,
+    ModelSnapshot(AddressBook addressBook, Predicate<? super Employee> predicate,
             Comparator<? super Employee> comparator) {
-        this.addressBook = new AddressBook(addressBook);
+        this.addressBook = addressBook.copyForSnapshot();
         this.predicate = predicate;
         this.comparator = comparator;
     }

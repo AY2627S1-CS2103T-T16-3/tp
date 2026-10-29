@@ -55,7 +55,7 @@ public class ModelManager implements Model {
     @Override
     public void restoreSnapshot(ModelSnapshot snapshot) {
         requireNonNull(snapshot);
-        addressBook.resetData(snapshot.addressBook);
+        addressBook.restoreValidatedData(snapshot.addressBook);
         filteredEmployees.setPredicate(snapshot.predicate);
         sortedEmployees.setComparator(snapshot.comparator);
     }

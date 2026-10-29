@@ -161,6 +161,7 @@ A later successful save in the same session writes the restored model, but resta
 not guarantee recovery. There are no backups or power-loss guarantees. Existing startup behavior opens an empty
 address book after a data-loading error; a later save can overwrite the unreadable file.
 
+`AddressBookSnapshotTest` covers independent copies, exhausted ID counters, and retained observable lists.
 `ModelManagerTest` covers snapshot restoration and `LogicManagerTest` covers rollback after save errors.
 Storage tests inject failures before writing and after a partial direct write. They verify model restoration
 and that a later successful command saves only accepted changes.
@@ -176,9 +177,11 @@ and that a later successful command saves only accepted changes.
   memory exhaustion, partially mutating commands that throw before saving, or failure inside restoration are
   outside this guarantee. Even a failed save may already have changed the disk file.
 * **Cost and snapshot assumptions:** Every parsed command takes a full snapshot, and successful commands still
-  save the entire JSON file, including read-only commands such as help/list. Snapshot creation invokes existing
-  duplicate and leave validation; employee duplicate checks are quadratic in employee count. This work happens
-  synchronously and can delay the UI for large books. Shared employee/leave values must remain immutable, and
+  save the entire JSON file, including read-only commands such as help/list. Snapshot creation and restoration
+  copy validated collections
+  without repeating duplicate or leave-overlap checks. Copying is linear in the number of records; loading
+  external data still performs full validation. Saving and observable-list updates remain synchronous.
+  Shared employee/leave values must remain immutable, and
   stored predicate/comparator objects must not be mutated after snapshot capture.
 
 See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) for the tested cases and exclusions.
