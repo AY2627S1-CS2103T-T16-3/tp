@@ -551,6 +551,23 @@ The nested parser structure is described under [leave command routing](#leave-co
 4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the ID counter.
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
 
+The following sequence diagram focuses on the overlap and entitlement checks inside Model, followed by record
+creation. It starts at `AddressBook#addLeave`, called through `ModelManager` after the command has resolved a valid
+displayed employee index. Parsing, UI feedback, saving, and getter calls are outside this view. Activation bars and
+helper return arrows are omitted to keep the alternative paths readable.
+
+<img src="images/AddLeaveSequenceDiagram.png" alt="AddressBook rejecting overlapping or excessive leave, or creating and storing a new leave record" width="740" style="max-width: 100%; height: auto;" />
+
+Here, `id` is the selected employee's internal ID, `period` is the validated date range, and `e` is the employee found
+by that ID. `year` and `requested` come from the period; `remaining` is the result of `calculateRemainingLeave`.
+Exception-labelled replies represent propagation to the caller; `AddLeaveCommand` converts those exceptions into
+user-facing errors. Neither rejection changes the leave list or consumes a leave ID.
+
+The success path assumes a leave ID is available. `leaveId` is constructed from the next-ID counter before the
+`Leave` constructor runs; after `add(record)` succeeds, the counter advances. These value-object and counter steps
+are omitted from the diagram. An exhausted counter instead raises `LeaveIdExhaustedException` before record creation,
+which the command also converts into an error. The command recalculates the balance after a successful return.
+
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
 at least one such day. Public holidays are not excluded, so a public holiday on a weekday is
 charged as a working leave day. Overlap detection uses every calendar date in the inclusive range, not only charged

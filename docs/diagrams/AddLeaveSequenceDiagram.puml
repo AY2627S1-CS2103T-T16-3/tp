@@ -1,0 +1,36 @@
+@startuml
+!include style.puml
+skinparam dpi 150
+skinparam ArrowFontStyle plain
+skinparam ParticipantPadding 5
+
+box Model MODEL_COLOR_T1
+participant ":AddressBook" as AddressBook MODEL_COLOR
+participant "leaves:\nUniqueLeaveList" as Leaves MODEL_COLOR
+participant "record:Leave" as Record MODEL_COLOR
+end box
+
+[-> AddressBook : addLeave(id, period)
+AddressBook -> AddressBook : e = findEmployeeById(id)
+AddressBook -> Leaves : hasOverlappingLeave(id, period)
+Leaves --> AddressBook : overlap
+
+alt overlap
+    [<-- AddressBook : OverlappingLeaveException
+else no overlap
+    AddressBook -> AddressBook : remaining = calculateRemainingLeave(e, year)
+    AddressBook -> Leaves : getWorkingDaysUsed(id, year)
+    Leaves --> AddressBook : usedDays
+
+    alt requested > remaining
+        [<-- AddressBook : InsufficientLeaveException
+    else requested <= remaining
+        create Record
+        AddressBook -> Record : new Leave(leaveId, id, period)
+        Record --> AddressBook
+        AddressBook -> Leaves : add(record)
+        Leaves --> AddressBook
+        [<-- AddressBook : record
+    end
+end
+@enduml
