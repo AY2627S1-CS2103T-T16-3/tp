@@ -1,0 +1,27 @@
+@startuml
+!include style.puml
+!pragma layout smetana
+skinparam dpi 150
+skinparam arrowThickness 1.1
+skinparam arrowColor MODEL_COLOR
+skinparam classBackgroundColor MODEL_COLOR
+skinparam ArrowFontStyle plain
+skinparam nodesep 35
+skinparam ranksep 40
+
+Class Employee
+Class EmployeeId
+Class Leave
+Class LeaveId
+Class LeavePeriod
+
+Employee -right-> "0..1" EmployeeId : identity
+Leave -left-> "1" EmployeeId : employeeId
+Leave -down-> "1" LeaveId
+Leave -down-> "1" LeavePeriod
+
+note bottom of Employee
+  Before insertion: ID may be absent.
+  Stored in AddressBook: exactly one ID.
+end note
+@enduml

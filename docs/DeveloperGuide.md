@@ -117,15 +117,47 @@ How the parsing works:
 ### Model component
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<img src="images/ModelClassDiagram.png" width="450" />
+The following partial class diagram shows the model's main interfaces, managers, and stored collections.
+Employee details and leave identity are shown separately below to keep each view readable.
 
+<img src="images/ModelClassDiagram.png" alt="Model overview showing interfaces, preferences, and employee and leave collections" width="600" style="max-width: 100%; height: auto;" />
 
 The `Model` component,
 
-* stores the address book data i.e., all `Employee` objects (which are contained in a `UniqueEmployeeList` object).
+* stores employees in a `UniqueEmployeeList` and leave records in a separate `UniqueLeaveList`, both held by `AddressBook`.
 * sorts employees using a JavaFX `SortedList<Employee>` and wraps it in a `FilteredList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
+
+**Employee details**
+
+This partial class diagram shows the values referenced by an `Employee`. Each employee has one name, phone number,
+email address, postal address, salary, and annual leave entitlement, together with zero or more tags and tasks.
+The employee's internal identifier is omitted here and shown in the leave identity diagram below.
+Ordinary associations show these references without asserting exclusive ownership of the value objects.
+For example, `withSalary` creates a replacement employee while reusing the existing name, contact details, tags,
+and tasks; a snapshot may still retain the previous employee value. The composition diamonds in the overview instead
+show the employee and leave collection objects created and owned by each `AddressBook`.
+
+<img src="images/EmployeeClassDiagram.png" alt="Employee details showing required values and optional collections of tags and tasks" width="300" style="max-width: 100%; height: auto;" />
+
+**Leave identity and records**
+
+This partial class diagram shows how leave records identify their employee without holding an `Employee` reference.
+
+<img src="images/LeaveClassDiagram.png" alt="Employee and leave records referencing EmployeeId, with a leave ID and period for each record" width="640" style="max-width: 100%; height: auto;" />
+
+* `Employee` has `0..1` `EmployeeId` because `Employee.createUnassigned` creates a value before its ID is allocated.
+  Every employee stored in `AddressBook` has exactly one internal ID; the optional multiplicity describes all
+  `Employee` values, including those not yet added to the book.
+* Each `Leave` has exactly one `EmployeeId`, one `LeaveId`, and one `LeavePeriod`. Its employee ID value must match
+  that of an employee in the same address book. Matching uses `EmployeeId.equals`, not object identity, names, or
+  displayed indexes. Multiple leave records may refer to the same employee.
+* Employee replacements preserve their internal ID when details, salary, or tasks change, so leave records continue
+  to identify the same employee. `AddressBook.removeEmployee` removes the employee and asks `UniqueLeaveList` to
+  remove records with the matching ID. This cascade is coordinated by `AddressBook`; it does not introduce a direct
+  reference or call between `Employee` and `Leave`. Loading a save file rejects leave records whose employee ID has
+  no matching employee.
 
 ### Storage component
 

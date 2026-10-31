@@ -1,0 +1,31 @@
+@startuml
+!include style.puml
+!pragma layout smetana
+skinparam dpi 150
+skinparam arrowThickness 1.1
+skinparam arrowColor MODEL_COLOR
+skinparam classBackgroundColor MODEL_COLOR
+skinparam ArrowFontStyle plain
+skinparam nodesep 25
+skinparam ranksep 35
+left to right direction
+
+Class Employee
+Class Name
+Class Phone
+Class Email
+Class Address
+Class Salary
+Class LeaveEntitlement
+Class Tag
+Class Task
+
+Employee --> "1" Name
+Employee --> "1" Phone
+Employee --> "1" Email
+Employee --> "1" Address
+Employee --> "1" Salary
+Employee --> "1" LeaveEntitlement
+Employee --> "0..*" Tag
+Employee --> "0..*" Task
+@enduml
