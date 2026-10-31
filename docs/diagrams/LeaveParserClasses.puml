@@ -1,0 +1,21 @@
+@startuml
+!include style.puml
+skinparam dpi 150
+skinparam arrowThickness 1.1
+skinparam arrowColor LOGIC_COLOR_T4
+skinparam classBackgroundColor LOGIC_COLOR
+skinparam ArrowFontStyle plain
+skinparam nodesep 30
+skinparam ranksep 40
+
+class AddressBookParser
+class LeaveCommandParser
+class AddLeaveCommandParser
+class DeleteLeaveCommandParser
+class ListLeaveCommand
+
+AddressBookParser .down.> LeaveCommandParser : <<create>>
+LeaveCommandParser .down.> AddLeaveCommandParser : <<create>>
+LeaveCommandParser .down.> ListLeaveCommand : <<create>>
+LeaveCommandParser .down.> DeleteLeaveCommandParser : <<create>>
+@enduml
