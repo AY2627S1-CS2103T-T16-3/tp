@@ -578,7 +578,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
 | `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
 | `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
-| `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
+| `* * *`  | HR Officer                 | delete an employee profile and their tasks and leave records                   | remove former employees without retaining orphaned data                                 |
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
@@ -655,7 +655,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1.  HR manager requests to list employees.
 2.  System displays the list of employees.
 3.  HR manager requests to delete a specific employee using the employee's displayed index.
-4.  System deletes the selected employee and all leave records belonging to that employee.
+4.  System deletes the selected employee and all tasks and leave records belonging to that employee.
 5.  System confirms that the employee has been deleted.
 
     Use case ends.
@@ -674,63 +674,40 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 3.
 
-**Use case: UC3 - List employee tasks**
+**Use case: UC3 - Add employee task**
 
 **MSS**
 
-1. HR manager requests for the list of tasks for an employee.
-2. System displays the list of tasks for the employee.
-
-    Use case ends.
-
-**Extensions**
-
-* 1a. The employee does not exist.
-
-    * 1a1. System informs the HR manager that the employee does not exist.
-
-      Use case ends.
-
-* 1b. The employee does not have any task.
-
-    * 1b1. System informs the HR manager that the employee does not have any task.
-
-      Use case ends.
-
-**Use case: UC4 - Add employee task**
-
-**MSS**
-
-1. HR manager specify details of a task to add to an employee.
-2. System adds the task to the employee.
+1. HR manager requests to add a task to an employee and provides the task details.
+2. System adds the task to the employee as pending.
 3. System confirms that the task was added.
 
     Use case ends.
 
 **Extensions**
 
-* 1a. The employee does not exist.
+* 1a. System cannot identify the selected employee.
 
-    * 1a1. System informs the HR manager that the employee does not exist.
+    * 1a1. System informs the HR manager that the employee selection is invalid.
     * 1a2. System does not add the task.
 
       Use case ends.
 
-* 1b. The index of the task to be deleted is invalid.
+* 1b. The provided task details are invalid.
 
-    * 1b1. System informs the HR manager that the task index is invalid.
+    * 1b1. System informs the HR manager that the task details are invalid.
     * 1b2. System does not add the task.
 
       Use case ends.
 
-* 1c. The task already exists.
+* 1c. An equivalent task already exists for the employee.
 
     * 1c1. System informs the HR manager that the task already exists.
     * 1c2. System does not add the task.
 
       Use case ends.
 
-**Use case: UC5 - Delete employee task**
+**Use case: UC4 - Delete employee task**
 
 **MSS**
 
@@ -742,19 +719,23 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 1a. The employee does not exist.
+* 1a. System cannot identify the selected employee.
 
-    * 1a1. System informs the HR manager that the employee does not exist.
-
-      Use case ends.
-
-* 1b. The task does not exist.
-
-    * 1b1. System informs the HR manager that the task does not exist.
+    * 1a1. System informs the HR manager that the employee selection is invalid.
 
       Use case ends.
 
-**Use case: UC6 - Find employees by attribute**
+* 1b. System cannot identify the selected task.
+
+    * 1b1. System informs the HR manager that the task selection is invalid.
+
+      Use case ends.
+
+Marking a task as done or pending follows the same interaction, except that the system changes the selected task's
+completion state instead of deleting it. Listing tasks is a simpler read-only interaction in which the HR manager
+selects an employee and the system displays that employee's tasks or reports that there are none.
+
+**Use case: UC5 - Find employees by attribute**
 
 **MSS**
 
@@ -814,7 +795,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC7 - Filter employees**
+**Use case: UC6 - Filter employees**
 
 **MSS**
 
@@ -867,7 +848,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC8 - Record employee leave**
+**Use case: UC7 - Record employee leave**
 
 **MSS**
 
@@ -943,7 +924,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC9 - List employee leave**
+**Use case: UC8 - List employee leave**
 
 **MSS**
 
@@ -961,7 +942,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC10 - Delete employee leave**
+**Use case: UC9 - Delete employee leave**
 
 **MSS**
 
@@ -987,7 +968,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC11 - Sort employees**
+**Use case: UC10 - Sort employees**
 
 **MSS**
 
@@ -1016,7 +997,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC12 - Change an employee's salary**
+**Use case: UC11 - Change an employee's salary**
 
 **MSS**
 
