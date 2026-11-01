@@ -32,6 +32,7 @@ public class AddCommand extends Command {
             + PREFIX_LEAVE_ENTITLEMENT + "ANNUAL_LEAVE_DAYS "
             + "[" + PREFIX_SALARY + "SALARY] "
             + "[" + PREFIX_TAG + "TAG]...\n"
+            + "To include a known prefix in ADDRESS, escape / as \\/.\n"
             + "Example: " + COMMAND_WORD + " "
             + PREFIX_NAME + "John Doe "
             + PREFIX_PHONE + "98765432 "

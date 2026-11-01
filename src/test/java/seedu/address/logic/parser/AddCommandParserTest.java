@@ -188,6 +188,33 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_escapedPrefixInAddress_success() {
+        Employee expectedEmployee = new EmployeeBuilder(BOB).withoutEmployeeId().withTags().withSalary("0")
+                .withAddress("10 Road c/o Alice").build();
+        String userInput = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
+                + " a/10 Road c\\/o Alice" + LEAVE_ENTITLEMENT_DESC_BOB;
+
+        assertParseSuccess(parser, userInput, new AddCommand(expectedEmployee));
+
+        expectedEmployee = new EmployeeBuilder(BOB).withoutEmployeeId().withTags().withSalary("0")
+                .withAddress("Block p/777").build();
+        userInput = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
+                + " a/Block p\\/777" + LEAVE_ENTITLEMENT_DESC_BOB;
+
+        assertParseSuccess(parser, userInput, new AddCommand(expectedEmployee));
+    }
+
+    @Test
+    public void parse_unknownPrefixInAddress_success() {
+        Employee expectedEmployee = new EmployeeBuilder(BOB).withoutEmployeeId().withTags().withSalary("0")
+                .withAddress("10 Road c/o Alice").build();
+        String userInput = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
+                + " a/10 Road c/o Alice" + LEAVE_ENTITLEMENT_DESC_BOB;
+
+        assertParseSuccess(parser, userInput, new AddCommand(expectedEmployee));
+    }
+
+    @Test
     public void parse_compulsoryFieldMissing_failure() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE);
 
