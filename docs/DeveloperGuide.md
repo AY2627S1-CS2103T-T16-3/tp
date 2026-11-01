@@ -1106,7 +1106,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 --------------------------------------------------------------------------------------------------------------------
 
-## **Appendix: Instructions for manual testing**
+## **Appendix: Instructions for Manual Testing**
 
 Given below are instructions to test the app manually.
 
@@ -1223,97 +1223,60 @@ current salary. Recheck displayed indexes after commands that change the list.
 
 ### Managing tasks
 
-1. Listing an employee's tasks
+Run these tests in order on a disposable copy of the app with fresh sample data.
 
-   1. Prerequisites: Use `list` and choose an employee with at least two tasks,
-      including one pending and one completed task. Note the employee's displayed
-      index.
+1. Creating and listing tasks
 
-   1. Test case: `task list 1`<br>
-      Expected: The selected employee's tasks are displayed in the order they
-      were added. Pending tasks show `[ ]` and completed tasks show `[x]`.
+   1. Test case: Run the following commands:<br>
+      `add n/Task Tester p/91234567 e/tasktester@example.com a/1 Test Road le/14 t/taskmanual`<br>
+      `add n/Zulu Sorter p/92345678 e/zulusorter@example.com a/2 Test Road le/14 t/taskmanual`<br>
+      `find Task Tester`<br>
+      `task list 1`<br>
+      Expected: The results box states that Task Tester has no tasks.
 
-   1. Test case: `task list 0`<br>
-      Expected: No task list is shown. The status message shows invalid command format.
+   1. Test case: Continue with:<br>
+      `task add 1 d/Prepare monthly report`<br>
+      `task add 1 d/Submit access request`<br>
+      `task mark 1 i/2`<br>
+      `task list 1`<br>
+      Expected: Task Tester's filtered view remains displayed. The task list shows
+      `1. [ ] Prepare monthly report` followed by `2. [x] Submit access request`.
 
-2. Adding a task
-
-   1. Prerequisites: Use `list` and note the index of an employee. Ensure the
-      employee does not already have the task used below.
-
-   1. Test case: `task add 1 d/Prepare monthly report`<br>
-      Expected: The task is added as pending. The status message confirms the
-      task was added, and `task list 1` shows it.
+2. Rejecting duplicate details and invalid indexes
 
    1. Test case: `task add 1 d/  prepare   MONTHLY report  `<br>
-      Expected: The task is rejected as a duplicate because task comparison
-      ignores surrounding whitespace, repeated whitespace, and capitalization.
+      Expected: The task is rejected as a duplicate and the two existing tasks remain unchanged.
 
-   1. Other incorrect add commands to try: `task add`, `task add 0 d/Test`,
-      `task add 1`, and a task description longer than 120 characters.<br>
-      Expected: No task is added. The status message shows invalid command format.
+   1. Test case: `task delete 1 i/99`<br>
+      Expected: No task is deleted and the results box reports an invalid task index.
 
-3. Deleting a task
+3. Updating and deleting tasks
 
-   1. Prerequisites: Use `task list 1` for an employee with at least two tasks.
+   1. Test case: Run the following commands:<br>
+      `task mark 1 i/1`<br>
+      `task unmark 1 i/2`<br>
+      `task delete 1 i/1`<br>
+      `task list 1`<br>
+      Expected: The remaining task is displayed as `1. [ ] Submit access request`.
 
-   1. Test case: `task delete 1 i/1`<br>
-      Expected: The first task is deleted. The remaining tasks keep their
-      relative order and the status message confirms the deleted task.
+4. Using the currently displayed employee index
 
-   1. Test case: `task delete 1 i/0`<br>
-      Expected: No task is deleted. The status message shows invalid command format.
+   1. Test case: Run `filter t/taskmanual`, followed by `sort n/des`, and confirm that Zulu Sorter is at index 1.
+      Then run:<br>
+      `task add 1 d/Sorted-view check`<br>
+      `task list 1`<br>
+      Expected: Zulu Sorter receives the task and remains at index 1 in the descending name order. Task Tester's tasks
+      remain unchanged.
 
-   1. Other incorrect delete commands to try: `task delete`,
-      `task delete 1`, and `task delete 1 i/x`.<br>
-      Expected: No task is deleted. The status message shows invalid command format.
+5. Saving task order and completion state
 
-4. Marking and unmarking a task
-
-   1. Prerequisites: Use `task list 1` for an employee with a pending task and
-      note its task index.
-
-   1. Test case: `task mark 1 i/1`<br>
-      Expected: The task becomes completed. `task list 1` displays it with
-      `[x]`.
-
-   1. Test case: Run `task mark 1 i/1` again.<br>
-      Expected: The command succeeds without changing the task's completed
-      state.
-
-   1. Test case: `task unmark 1 i/1`<br>
-      Expected: The task becomes pending. `task list 1` displays it with
-      `[ ]`.
-
-   1. Test case: Run `task unmark 1 i/1` again.<br>
-      Expected: The command succeeds without changing the task's pending state.
-
-   1. Other incorrect mark/unmark commands to try: `task mark 0 i/1`,
-      `task unmark 1 i/0`, and `task mark 1 1`.<br>
-      Expected: No task state changes. The status message shows invalid command format.
-
-5. Operating on tasks after filtering
-
-   1. Prerequisites: Ensure at least two employees exist, and one employee has
-      a distinctive name such as `Alex`.
-
-   1. Test case: `find Alex`, followed by `task add 1 d/Submit access request`<br>
-      Expected: The task is added to the first employee in the filtered list,
-      and the filtered employee list remains displayed.
-
-   1. Test case: Run `task mark 1 i/1`, `task unmark 1 i/1`, or
-      `task delete 1 i/1` after a `find` or `filter` command.<br>
-      Expected: The command operates on the employee and task shown in the
-      current filtered view, which remains in place.
-
-6. Saving task changes
-
-   1. Prerequisites: Add or modify a task, then close the application normally.
-
-   1. Test case: Relaunch the app and run `list`, followed by `task list 1` for
-      the affected employee.<br>
-      Expected: The task, its order, and its completed/pending state are
-      preserved.
+   1. Test case: Run the following commands, then close and relaunch the app:<br>
+      `find Task Tester`<br>
+      `task add 1 d/Archive invoices`<br>
+      `task mark 1 i/2`<br>
+      After relaunching, run `find Task Tester`, followed by `task list 1`.<br>
+      Expected: The task list shows `1. [ ] Submit access request` followed by
+      `2. [x] Archive invoices`.
 
 ### Managing leave
 
