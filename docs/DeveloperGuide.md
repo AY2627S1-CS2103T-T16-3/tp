@@ -582,6 +582,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
+| `* * *`  | HR Officer                 | view employee, task, leave-record, and salary totals for selected employees      | review the workforce without checking each employee separately                           |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
 | `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
@@ -1075,8 +1076,36 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     Use case ends.
 
+**Use case: UC13 - View workforce summary**
 
+**MSS**
 
+1. HR manager requests a summary of the displayed employees or all employees, optionally including or excluding indexes within that scope.
+2. System displays employee, tag, task, and leave-record counts, plus total and average salary for the selected employees.
+
+   Use case ends.
+
+Employee data and the current filter remain unchanged in all flows.
+
+**Extensions**
+
+* 1a. The HR manager provides an invalid scope or malformed selection.
+
+    * 1a1. System reports the input error.
+
+      Use case ends.
+
+* 1b. A provided index is outside the chosen scope.
+
+    * 1b1. System identifies the invalid index and shows the valid index range, or indicates that there are no valid indexes.
+
+      Use case ends.
+
+* 2a. The chosen scope is empty or all its employees are excluded.
+
+    * 2a1. System displays zero counts, a total salary of `$0.00`, and an average salary of `N/A`.
+
+      Use case ends.
 
 ### Non-Functional Requirements
 
