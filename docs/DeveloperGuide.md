@@ -1070,19 +1070,27 @@ selects an employee and the system displays that employee's tasks or reports tha
 
 ### Glossary
 
-* **Employee**: A staff member whose employment, contact, and leave information is managed in HR Book
 * **Displayed index**: A temporary number shown beside an employee in the current list, used to select that employee in
-  commands; it can change after `find`, `filter`, or `list`
+  commands; it can change when the displayed list or its ordering changes
+* **Employee**: A staff member whose employment, contact, salary, leave, and related task information is managed in
+  HR Book
 * **Employee attribute**: A stored field such as an employee's name, phone, email, address, salary, annual leave
-  entitlement, or tag
+  entitlement, tag, or task details
 * **Employee ID**: A private, stable identifier used internally to associate leave with an employee; users do not enter
   it in commands
+* **Equivalent tasks**: Tasks concerning the same employee whose details match after ignoring capitalization,
+  surrounding whitespace, and repeated whitespace
 * **HR Book**: The application used by HR managers to manage employee records and routine administrative work
-* **HR manager**: The primary user of HR Book who manages employee records and leave information
+* **HR manager**: The primary user of HR Book who manages employee records, salaries, leave information, and their own
+  assigned tasks concerning employees
 * **Leave**: A period of absence recorded for an employee and counted against their leave entitlement
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
+* **Task**: A work item assigned to the HR manager concerning a particular employee, consisting of task details and a
+  completion state of pending or completed
+* **Task index**: A temporary, one-based number shown beside a task in one employee's task list and used to select that
+  task; it can change when an earlier task is deleted
 * **Working day**: A Monday through Friday counted against annual leave entitlement; public holidays are not excluded
 
 --------------------------------------------------------------------------------------------------------------------
