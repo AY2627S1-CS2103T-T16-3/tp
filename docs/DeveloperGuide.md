@@ -14,10 +14,6 @@ title: Developer Guide
 * We used [ChatGPT](https://chatgpt.com/) by OpenAI to assist with
   generating and reviewing code, suggesting test cases, and refining documentation.
 
-* [@geengene](https://github.com/geengene) used OpenAI Codex to generate and revise workforce-summary code,
-  tests, documentation, and diagrams, and to implement and test save-failure recovery and application file paths.
-  Codex also assisted with PR reviews, test planning, and debugging.
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
@@ -345,13 +341,33 @@ At execution, the command follows these steps:
 sort, and reports a save error. This restores the running application's state; it does not guarantee recovery of
 the data file. See **Save failures and model rollback** for details.
 
+### Address prefix escaping in add and edit
+
+For the shared prefix and literal-slash rules, see [Filtering employees](#filtering-employees).
+`ParserUtil#verifySupportedPrefixes` rejects unknown unescaped prefixes. Its error asks users to check
+supported prefixes for a possible typo, or escape the slash if the token is literal address or task text.
+`add` and `edit` run this check after validating required fields or the employee index, before parsing values.
+
+Both command parsers pass the raw address value to
+`ParserUtil#parseAddress`. That method calls `ParserUtil#unescapeSlashes`, trims surrounding whitespace,
+and validates the decoded address. The command parsers must not decode the value first: each address
+is decoded exactly once. The helper name is `unescapeSlashes` throughout the parsers.
+
 ### Filtering employees
 
-`ParserUtil#unescapeSlashes` converts `\/` to a literal `/` in address and task text.
-`add` and `edit` decode address escapes in `ParserUtil#parseAddress`; `filter` decodes
-address and task criteria after tokenization and before matching. Escaping a slash prevents
-prefix recognition, so `a/10 Road c\/o` represents the address `10 Road c/o`. Unknown unescaped
-prefixes remain invalid for `filter`. Other field validation rules still apply.
+The shared escaping rules are described in the [User Guide](UserGuide.html#escaping-prefix-like-text).
+`AddCommandParser`, `EditCommandParser`, `AddTaskCommandParser`, and `FilterCommandParser` all use
+`ParserUtil#verifySupportedPrefixes` with their own supported prefixes. `task add` allows `d/`;
+`filter` derives its allowed prefixes from its field map. This keeps prefix detection and error hints
+consistent without duplicating regular-expression checks.
+Unescaped letter-plus-slash tokens at the start of input or after whitespace are treated as prefixes;
+unknown prefixes are rejected. Writing `\/` keeps the slash literal during prefix detection.
+`ParserUtil#unescapeSlashes` then replaces each escaped slash with `/` before storage or matching.
+
+`FilterCommandParser` decodes address and task criteria after
+argument tokenization, then validates those decoded values. Address criteria are checked directly with
+`Address#isValidAddress`, rather than passed to `ParserUtil#parseAddress`, to avoid decoding twice.
+`AddTaskCommandParser` uses the same `ParserUtil#unescapeSlashes` helper for task descriptions.
 
 `filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
 supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria

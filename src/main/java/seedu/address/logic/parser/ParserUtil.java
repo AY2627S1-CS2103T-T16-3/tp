@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
@@ -29,11 +31,17 @@ import seedu.address.model.tag.Tag;
  */
 public class ParserUtil {
 
+    public static final String MESSAGE_UNSUPPORTED_PREFIX =
+            "Unsupported prefix: %s. Check the command's supported prefixes.\n"
+            + "If this is literal address or task text, escape the slash as %s.";
+
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final String MESSAGE_INVALID_START_DATE =
             "Start date must be a valid date from year 0001 to 9999 in DD-MM-YYYY format.";
     public static final String MESSAGE_INVALID_END_DATE =
             "End date must be a valid date from year 0001 to 9999 in DD-MM-YYYY format.";
+
+    private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<!\\S)[A-Za-z]+/");
 
     private static final DateTimeFormatter LEAVE_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-uuuu",
             Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT);
@@ -226,6 +234,22 @@ public class ParserUtil {
             return new Task(details);
         } catch (IllegalArgumentException exception) {
             throw new ParseException(Task.MESSAGE_CONSTRAINTS, exception);
+        }
+    }
+
+    /**
+     * Rejects unescaped, whitespace-delimited prefixes that the command does not support.
+     * Escaped slashes remain literal text for subsequent field parsing.
+     */
+    public static void verifySupportedPrefixes(String args, Prefix... prefixes) throws ParseException {
+        requireNonNull(args);
+        Set<Prefix> supported = Set.of(prefixes);
+        Matcher matcher = PREFIX_PATTERN.matcher(args);
+        while (matcher.find()) {
+            String prefix = matcher.group();
+            if (!supported.contains(new Prefix(prefix))) {
+                throw new ParseException(String.format(MESSAGE_UNSUPPORTED_PREFIX, prefix, prefix.replace("/", "\\/")));
+            }
         }
     }
 

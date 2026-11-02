@@ -104,8 +104,7 @@ Rejection messages identify each conflicting contact and its existing owner, for
 `Phone number 90000002 is already used by Bob.` If both contacts conflict, both are reported.
 For older saved files, see [Editing the data file](#editing-the-data-file).
 
-* To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
-  `p\/777` to store `p/777` as part of the address.
+* For literal prefix-like text in addresses, follow the [escaping rules under `filter`](#escaping-prefix-like-text).
 
 `NAME` must not be blank and may contain only English letters (`A`-`Z`, `a`-`z`), digits (`0`-`9`), and spaces.
 Hyphens, apostrophes, accented letters, and characters from other writing systems are not accepted.
@@ -237,8 +236,7 @@ Use `salary INDEX s/SALARY` to change salary.
   their details unchanged.
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
-  `p\/777` to store `p/777` as part of the address.
+* For literal prefix-like text in addresses, follow the [escaping rules under `filter`](#escaping-prefix-like-text).
 * When changing the name, `NAME` must follow the restrictions described under [`add`](#adding-an-employee-add).
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
@@ -299,7 +297,25 @@ All text matching ignores case.
 | Task (`task/`) | Non-blank text, up to 120 characters | Contains the query: `task/report` matches a task containing `report`. |
 
 Text queries must not start with `<`, `>`, `=`, or `!=`. For example, `n/>Alice` returns a comparator error.
-To prevent task text from being mistaken for a field prefix, replace `/` with `\/` in the task description.
+
+#### Escaping prefix-like text
+
+These rules apply to addresses in `add`, `edit`, and `filter`, and task descriptions in `task add` and `filter`.
+
+* Text consisting of letters followed by `/` at the start of input or after whitespace can be interpreted as a
+  command prefix. Escape the slash as `\/` when that text is intended literally, including unknown prefixes.
+* Recognised unescaped prefixes remain command fields and must follow that command's field rules.
+  Unknown unescaped prefixes are rejected. All four commands ask you to check supported prefixes for a typo
+  or escape the slash if the text is literal.
+* The escape backslash is removed before storing or matching address or task text. Other field validation
+  rules still apply.
+
+| Enter | Literal text stored or searched |
+| --- | --- |
+| `a/10 Road c\/o` | `10 Road c/o` |
+| `a/Block p\/777` | `Block p/777` |
+| `task/Review p\/details` (in `filter`) | `Review p/details` |
+| `d/Review d\/DETAILS` (in `task add`) | `Review d/DETAILS` |
 
 #### Salary and annual leave entitlement filters
 
@@ -591,7 +607,7 @@ Format: `task add EMPLOYEE_INDEX d/DETAILS`
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
 * `DETAILS` must not be blank, and it must not exceed 120 characters.
-* To avoid conflict with prefixes, replace `/` with `\/` in the task description.
+* For literal prefix-like task text, follow the [escaping rules under `filter`](#escaping-prefix-like-text).
 * A task that already exists for the employee cannot be added again.
   * Task comparisons ignore leading/trailing whitespace, repeated whitespace, and capitalization.
   * For example, `Prepare report` and `prepare REPORT` are treated as duplicates.

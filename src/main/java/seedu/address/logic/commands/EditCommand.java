@@ -47,7 +47,7 @@ public class EditCommand extends Command {
             + "[" + PREFIX_ADDRESS + "ADDRESS] "
             + "[" + PREFIX_LEAVE_ENTITLEMENT + "ANNUAL_LEAVE_DAYS] "
             + "[" + PREFIX_TAG + "TAG]...\n"
-            + "Use \\/ in address text for a literal slash, e.g. a/10 Road c\\/o.\n"
+            + "To include any prefix-like text in ADDRESS, escape / as \\/, e.g. a/10 Road c\\/o.\n"
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_PHONE + "91234567 "
             + PREFIX_EMAIL + "johndoe@example.com";
