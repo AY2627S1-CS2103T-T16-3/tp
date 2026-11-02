@@ -117,9 +117,12 @@ public class SummaryLeaveCommandTest {
 
     private static Model modelWithLeaves() {
         Model model = new ModelManager();
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withEmployeeId(1).build());
-        model.addEmployee(new EmployeeBuilder().withName("Bob").withEmployeeId(2).build());
-        model.addEmployee(new EmployeeBuilder().withName("Carol").withEmployeeId(3).build());
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withEmployeeId(1).build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withEmployeeId(2).build());
+        model.addEmployee(new EmployeeBuilder().withName("Carol")
+                .withPhone("81000004").withEmail("carol@example.com").withEmployeeId(3).build());
         model.addLeave(new EmployeeId(1), new LeavePeriod(LocalDate.of(2025, 1, 6), LocalDate.of(2025, 1, 6)));
         model.addLeave(new EmployeeId(1), new LeavePeriod(LocalDate.of(2026, 1, 5), LocalDate.of(2026, 1, 9)));
         model.addLeave(new EmployeeId(2), new LeavePeriod(LocalDate.of(2027, 1, 4), LocalDate.of(2027, 1, 5)));

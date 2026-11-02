@@ -17,6 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javafx.stage.Stage;
+import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.logic.LogicManager;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -47,6 +48,24 @@ public class MainAppTest {
         storage = new StorageManager(new JsonAddressBookStorage(dataFile),
                 new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json")));
         app.storage = storage;
+    }
+
+    @Test
+    public void init_homeFolder_persistsAndReloadsDataAndPreferences() throws Exception {
+        app = new MainApp(temporaryFolder);
+        app.init();
+        assertEquals(temporaryFolder.resolve("preferences.json"), app.storage.getUserPrefsFilePath());
+        assertEquals(temporaryFolder.resolve("data/hrbook.json"), app.storage.getAddressBookFilePath());
+        app.logic.execute("clear");
+        app.logic.execute("add n/Home Test p/90000001 e/home@example.com a/One le/14");
+        GuiSettings settings = new GuiSettings(900, 700, 100, 120);
+        app.model.setGuiSettings(settings);
+        app.stop();
+
+        MainApp restarted = new MainApp(temporaryFolder);
+        restarted.init();
+        assertEquals(app.model.getAddressBook(), restarted.model.getAddressBook());
+        assertEquals(settings, restarted.model.getGuiSettings());
     }
 
     @Test

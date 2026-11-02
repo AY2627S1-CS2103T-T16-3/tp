@@ -130,7 +130,9 @@ public class SummaryCommandTest {
     }
 
     private Employee employee(String name, String... tags) {
-        return new EmployeeBuilder().withName(name).withTags(tags).build();
+        return new EmployeeBuilder().withName(name)
+                .withPhone(Integer.toString(81000000 + Math.floorMod(name.hashCode(), 10000000)))
+                .withEmail(name + "@example.com").withTags(tags).build();
     }
 
 }
