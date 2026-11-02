@@ -627,9 +627,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 1d. The provided name belongs to an existing employee.
+* 1d. The provided phone number or email address is already used by an existing employee.
 
-    * 1d1. System informs the HR manager that the provided name belongs to an existing employee.
+    * 1d1. System informs the HR manager that another employee already uses the phone number or email address.
     * 1d2. System does not add the employee.
 
       Use case ends.
@@ -1126,8 +1126,8 @@ testers are expected to do more *exploratory* testing.
 
 ### Adding an employee
 
-Use a separate copy of the application with test data. Run `list` and
-ensure no employees named `Alice Tan`, `Bob Lim`, or `alice tan` exist.
+Use a separate copy of the application with test data. Run `list` and ensure the names,
+phone numbers, and email addresses below are not already in use.
 Run the following test cases in order.
 
 1. Adding an employee with valid details
@@ -1137,32 +1137,46 @@ Run the following test cases in order.
       Expected: The employee appears in the employee list. The status message begins with
       `New employee added:` and shows the employee's details.
 
-2. Adding an employee with an existing name but different details
+2. Adding an employee with the same name but different contact details
 
    1. Test case:
       `add n/Alice Tan p/98765432 e/anotheralice@example.com a/456 Jurong Road le/20`<br>
+      Expected: The employee is added because names may be shared.
+      Both employees named Alice Tan remain in the list.
+
+3. Adding an employee with an existing phone number
+
+   1. Test case:
+      `add n/Bob Lim p/91234567 e/bob@example.com a/789 Bedok Road le/14`<br>
       Expected: The command is rejected with
-      `This employee already exists in the address book.`
-      No employee is added and the existing employee's details remain unchanged.
+      `Another employee already uses this phone number or email address (email is case-insensitive).`
+      No employee is added and existing records remain unchanged.
 
-3. Adding an employee with a different name but matching contact details
-
-   1. Test case:
-      `add n/Bob Lim p/91234567 e/alice@example.com a/123 Clementi Road le/14`<br>
-      Expected: The employee is added because duplicate detection uses
-      names only. Matching phone numbers and email addresses are allowed.
-
-4. Adding an employee whose name differs only in letter case
+4. Adding an employee with an existing email address
 
    1. Test case:
-      `add n/alice tan p/91234567 e/alice@example.com a/123 Clementi Road le/14`<br>
-      Expected: The employee is added because name comparison is
-      case-sensitive. `Alice Tan` and `alice tan` are treated as different names.
+      `add n/Bob Lim p/92345678 e/alice@example.com a/789 Bedok Road le/14`<br>
+      Expected: The command is rejected with the same contact-conflict message.
+      No employee is added and existing records remain unchanged.
 
-5. Cleanup
+   2. Repeat with:
+      `add n/Bob Lim p/92345678 e/ALICE@example.com a/789 Bedok Road le/14`<br>
+      Expected: The command is rejected because email comparison ignores case.
 
-   1. Run `list` and delete each employee created above using `delete INDEX`.
-      Check the displayed indexes again after each deletion because they may change.
+5. Adding an employee whose contact details conflict with a hidden employee
+
+   1. Run `find Alice` so that the two Alice Tan records are displayed, then run `find Bob`.
+      The Alice Tan records should now be hidden.
+
+   2. Repeat the phone-conflict command from test 3 and the first email-conflict command from test 4.<br>
+      Expected: Both commands are rejected even though Alice is hidden.
+      Duplicate checks include all stored employees. Existing records remain unchanged.
+
+6. Cleanup
+
+   1. Run `list` and delete the two Alice Tan records created above using `delete INDEX`.
+      Identify them by their phone numbers and email addresses.
+      Recheck displayed indexes after each deletion because they may change.
 
 ### Deleting an employee
 

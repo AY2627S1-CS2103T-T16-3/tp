@@ -94,8 +94,10 @@ Annual leave entitlement is compulsory. It must be a whole number from `0` to `3
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
 stored as `14`. The value after removing leading zeros must still be within the allowed range.
 
-Duplicate detection uses the employee’s name only and is case-sensitive. An employee cannot be added
-if their name exactly matches an existing employee’s name, even if their other details differ.
+Employees may share the same name, but each employee must have a unique phone number and email address.
+Adding an employee is rejected if either contact detail is already used by another employee, including one
+hidden by a search or filter. Email comparison ignores case. Phone numbers are compared as digit strings
+after surrounding spaces are removed.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -223,7 +225,11 @@ Use `salary INDEX s/SALARY` to change salary.
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
 
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
-* An employee cannot be renamed to exactly match another employee’s name. Name comparison is case-sensitive.
+* An employee may be renamed to match another employee's name.
+* An employee's phone number or email address cannot be changed to one used by another employee, including
+  one hidden by a search or filter. Email comparison ignores case.
+* The selected employee may retain their existing phone number and email address. A rejected edit leaves
+  their details unchanged.
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
