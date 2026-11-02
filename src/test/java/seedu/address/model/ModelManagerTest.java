@@ -75,6 +75,37 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void restoreSnapshot_tiedSortValues_restoresHiddenEmployeesAndOriginalSort() {
+        Employee alice = new EmployeeBuilder().withName("Alice").withEmployeeId(1).withSalary("1000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob").withEmployeeId(2).withSalary("1000").build();
+        Employee carol = new EmployeeBuilder().withName("Carol").withEmployeeId(3).withSalary("1000").build();
+        AddressBook book = new AddressBookBuilder().withEmployee(carol).withEmployee(bob).withEmployee(alice).build();
+        modelManager = new ModelManager(book, new UserPrefs());
+        modelManager.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName));
+        modelManager.sortFilteredEmployeeList(Comparator.comparingInt(employee ->
+                Integer.parseInt(employee.getSalary().salary)));
+        modelManager.updateFilteredEmployeeList(employee -> !employee.equals(bob));
+        var displayed = modelManager.getFilteredEmployeeList();
+        ModelSnapshot snapshot = modelManager.createSnapshot();
+
+        modelManager.deleteEmployee(alice);
+        modelManager.sortFilteredEmployeeList(
+                Comparator.comparing((Employee employee) -> employee.getName().fullName).reversed());
+        modelManager.restoreSnapshot(snapshot);
+
+        assertSame(displayed, modelManager.getFilteredEmployeeList());
+        assertEquals(List.of(alice, carol), displayed);
+        assertEquals(book, modelManager.getAddressBook());
+        modelManager.updateFilteredEmployeeList(PREDICATE_SHOW_ALL_EMPLOYEES);
+        assertEquals(List.of(alice, bob, carol), displayed);
+        Employee cheaperCarol = new EmployeeBuilder(carol).withSalary("500").build();
+        modelManager.setEmployee(carol, cheaperCarol);
+        assertEquals(List.of(cheaperCarol, alice, bob), displayed);
+        modelManager.restoreSnapshot(snapshot);
+        assertEquals(List.of(alice, carol), displayed);
+    }
+
+    @Test
     public void constructor() {
         assertEquals(new UserPrefs(), modelManager.getUserPrefs());
         assertEquals(new GuiSettings(), modelManager.getGuiSettings());

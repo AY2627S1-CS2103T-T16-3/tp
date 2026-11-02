@@ -91,41 +91,123 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <img src="images/LogicClassDiagram.png" width="550"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+The sequence diagram below shows a successful `execute("delete 1")` call, including command parsing,
+snapshot capture, and execution. The `Employee deletion cascade` reference frame expands the work inside
+`Model#deleteEmployee` in the [employee deletion cascade](#employee-deletion-cascade) diagram. Here, `e` is the first
+employee in the displayed list. Repeated command text is abbreviated with `...`, and unlabelled arrows into newly introduced
+participant boxes are constructor calls. Formatting helpers, parser disposal, and the storage save between the
+command result and the final return are omitted; see [save failures and model rollback](#save-failures-and-model-rollback).
 
-![Interactions Inside the Logic Component for the `delete 1` Command](images/DeleteSequenceDiagram.png)
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
-</div>
+<img src="images/DeleteSequenceDiagram.png" alt="Successful delete command parsing, snapshot capture, and execution with Model treated as a black box" width="740" style="max-width: 100%; height: auto;" />
 
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete an employee).<br>
-   Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. The command reads the currently displayed employees from `Model`, validates the requested index, and passes the
+   selected `Employee` to `Model#deleteEmployee`. The model removes that employee and their leave records.
+1. The command returns a success `CommandResult` to `LogicManager`. `LogicManager` saves the updated address book
+   before returning the result to the caller. The diagram shows this successful path only; a save failure instead
+   restores the snapshot and reports an error.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
-<img src="images/ParserClasses.png" width="600"/>
+<img src="images/ParserClasses.png" alt="Generic command-parser pattern and shared argument-parsing helpers" width="740" style="max-width: 100%; height: auto;" />
 
 How the parsing works:
-* When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
-* All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
+* For commands such as `add` and `delete`, `AddressBookParser` creates an `XYZCommandParser` (`XYZ` is a placeholder
+  for a specific command, such as `AddCommandParser`). That parser uses the shared helpers to create an
+  `XYZCommand`, which `AddressBookParser` returns as a `Command`.
+* `XYZCommandParser` and `XYZCommand` are placeholders for command-specific classes. This partial diagram shows
+  the direct parser-to-command pattern and shared helpers, not every parser or every helper dependency.
+* Command-group parsers also implement `Parser`, but may delegate to another parser. The leave-specific view
+  below shows this additional routing step without duplicating the concrete classes in the generic overview.
+
+#### Leave command routing
+
+This partial class diagram shows only the creation dependencies that distinguish the nested leave dispatcher.
+The final creation of `AddLeaveCommand` and `DeleteLeaveCommand` by their argument parsers follows the generic
+parser-to-command pattern above and is omitted here. Parser-interface realizations and shared helpers are also
+omitted. Each `create` dependency identifies which class instantiates its target; it is not a stored reference.
+
+<img src="images/LeaveParserClasses.png" alt="AddressBookParser creating the leave dispatcher, which creates add/delete argument parsers or ListLeaveCommand" width="740" style="max-width: 100%; height: auto;" />
+
+* `AddressBookParser` separates the `leave` command word and passes the remaining input to `LeaveCommandParser`.
+* For `add`, `LeaveCommandParser` creates `AddLeaveCommandParser`, which validates the index syntax and date range
+  before creating `AddLeaveCommand`. The command checks that the employee index exists when it executes.
+* For `delete`, it creates `DeleteLeaveCommandParser`, which validates the public leave ID before creating
+  `DeleteLeaveCommand`.
+* For `list`, it creates `ListLeaveCommand` directly; there is no `ListLeaveCommandParser`. The subcommand must be
+  spelled exactly, but arguments after it are ignored like those of other commands that take no parameters.
+* Missing or unknown subcommands produce a `ParseException` with the available leave-command formats. Invalid
+  add/delete arguments are rejected by their parsers. Commands are returned through the two routing layers to
+  `LogicManager` for execution. See [leave management](#leave-management) for their execution behavior.
 
 ### Model component
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<img src="images/ModelClassDiagram.png" width="450" />
+The following partial class diagram shows the model's main interfaces, managers, and stored collections.
+Employee details and leave identity are shown separately below to keep each view readable.
 
+<img src="images/ModelClassDiagram.png" alt="Model overview showing interfaces, preferences, and employee and leave collections" width="600" style="max-width: 100%; height: auto;" />
 
 The `Model` component,
 
-* stores the address book data i.e., all `Employee` objects (which are contained in a `UniqueEmployeeList` object).
+* stores employees in a `UniqueEmployeeList` and leave records in a separate `UniqueLeaveList`, both held by `AddressBook`.
 * sorts employees using a JavaFX `SortedList<Employee>` and wraps it in a `FilteredList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
+
+**Employee details**
+
+The detail diagrams below use composition to express ownership within employee and leave records.
+
+This partial class diagram shows the details owned by an `Employee`. Each employee has one name, phone number,
+email address, postal address, salary, and annual leave entitlement, together with zero or more tags and tasks.
+The employee's internal identifier is omitted here and shown in the leave identity diagram below.
+
+<img src="images/EmployeeClassDiagram.png" alt="Employee composing its required details and optional tags and tasks" width="300" style="max-width: 100%; height: auto;" />
+
+**Leave identity and records**
+
+This partial class diagram shows how leave records identify their employee without holding an `Employee` reference.
+An employee owns its assigned `EmployeeId`, and a leave record owns its `LeaveId`.
+The ordinary association from `Leave` to `EmployeeId` links the leave to its employee.
+`Leave` also has an ordinary association to `LeavePeriod` because separate leave records can share the same immutable
+period object.
+
+<img src="images/LeaveClassDiagram.png" alt="Employee composing its EmployeeId, and Leave composing its LeaveId while referencing the employee identity and an immutable LeavePeriod" width="640" style="max-width: 100%; height: auto;" />
+
+* `Employee` has `0..1` `EmployeeId` because `Employee.createUnassigned` creates an instance before its ID is allocated.
+  Every employee stored in `AddressBook` has exactly one internal ID; the optional multiplicity describes all
+  `Employee` instances, including those not yet added to the book.
+* Each `Leave` has exactly one `EmployeeId`, one `LeaveId`, and one `LeavePeriod`. A leave belongs to the employee
+  whose assigned `EmployeeId` contains the same integer identifier as the leave's `EmployeeId`.
+  For example, two distinct `EmployeeId` objects containing `7` identify the same employee in that address book.
+  The comparison uses `EmployeeId.equals`, not Java object identity, names, or displayed indexes.
+  Multiple leave records may refer to the same employee.
+* Employee replacements preserve their internal ID when details, salary, or tasks change, so leave records continue
+  to identify the same employee. Loading a save file rejects leave records whose employee ID has no matching employee.
+
+#### Employee deletion cascade
+
+The following sequence diagram shows the interactions inside Model after the delete command has selected a valid
+employee from the displayed list. Here, `e` is that employee and `id` is its assigned `EmployeeId`. Access to that ID
+is omitted from the diagram. This expands the `Employee deletion cascade` reference frame in the
+[Logic component](#logic-component) diagram. Its `m:Model` participant is the `m:ModelManager` instance shown here.
+The caller is `DeleteCommand`; snapshot capture and saving are outside this view.
+
+<img src="images/DeleteEmployeeCascadeSequenceDiagram.png" alt="AddressBook removing the selected employee and all leave records with the matching employee ID" width="740" style="max-width: 100%; height: auto;" />
+
+1. `ModelManager#deleteEmployee` delegates to `AddressBook#removeEmployee`.
+2. `AddressBook` obtains the employee's ID and removes the employee from `UniqueEmployeeList`.
+3. It calls `UniqueLeaveList#removeAllFor` with that ID. Every record with an equal `EmployeeId` value is removed;
+   other employees' leave is retained. Having no matching leave records is valid.
+
+`AddressBook` coordinates both removals; `Employee` does not invoke `Leave`. Object-destruction markers are omitted
+because removal from a collection does not necessarily make an object unreachable; the snapshot may still refer to it.
+The next successful save contains neither the employee nor their leave. A failed save instead restores both
+collections from the snapshot, as described under [save failures and model rollback](#save-failures-and-model-rollback).
 
 ### Storage component
 
@@ -459,9 +541,8 @@ and recomputation after a salary command.
 ### Leave management
 
 The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
-`AddressBookParser` passes the remaining input to `LeaveCommandParser`, which selects the matching subcommand parser.
-The `list` subcommand must be spelled exactly, while any arguments after it are ignored like those of other commands
-that take no parameters.
+
+The nested parser structure is described under [leave command routing](#leave-command-routing).
 
 #### Recording leave
 
@@ -476,6 +557,26 @@ that take no parameters.
    checks the requested weekdays against the employee's remaining entitlement for that year.
 4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the ID counter.
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
+
+The following sequence diagram shows successful leave creation inside Model. It starts at `AddressBook#addLeave`,
+called through `ModelManager` after the command has resolved a valid displayed employee index. The request has no
+overlap, fits within the remaining entitlement, and has an available leave ID. Parsing, UI feedback, saving, and
+getter calls are outside this view. The nested activation bar shows that `getWorkingDaysUsed` is called inside
+`calculateRemainingLeave`, before that helper returns the balance.
+
+<img src="images/AddLeaveSequenceDiagram.png" alt="Successful leave creation with the working-day lookup nested inside the remaining-balance calculation" width="740" style="max-width: 100%; height: auto;" />
+
+Here, `id` is the selected employee's internal ID, `period` is the validated date range, and `e` is the employee found
+by that ID. `year` comes from the period; `remaining` is the result of `calculateRemainingLeave`.
+An overlapping period or a request exceeding that balance instead terminates `addLeave` with
+`OverlappingLeaveException` or `InsufficientLeaveException`, respectively. `AddLeaveCommand` converts the exception
+into a user-facing error. Neither rejection changes the leave list or consumes a leave ID. These failure paths are
+omitted from the diagram.
+
+`leaveId` is constructed from `AddressBook.nextLeaveId` before the `Leave` constructor runs; after `add(record)`
+succeeds, `nextLeaveId` advances. These value-object and counter steps are omitted from the diagram.
+An exhausted counter instead raises `LeaveIdExhaustedException` before record creation,
+which the command also converts into an error. The command recalculates the balance after a successful return.
 
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
 at least one such day. Public holidays are not excluded, so a public holiday on a weekday is
@@ -515,10 +616,11 @@ balance calculation automatically excludes the deleted record.
 `AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
 IDs used before `clear` may therefore be assigned again in the fresh address book.
 
-Employee deletion cascades through `AddressBook#removeEmployee`, which removes the employee and all records with the
-same internal `EmployeeId`. During bulk replacement, `removeOrphanedLeaves` provides the equivalent safeguard. Storage
-loading rejects leave records that refer to an unknown employee, overlap another record for the same employee, or use
-invalid identifiers or periods.
+Employee deletion removes all the employee's leave records, following the
+[employee deletion cascade](#employee-deletion-cascade). During bulk replacement, `removeOrphanedLeaves` provides
+the equivalent referential-integrity safeguard. Storage
+loading rejects leave records that refer to an unknown employee, overlap another record for the same employee, or
+use invalid identifiers or periods.
 
 #### Design considerations
 
@@ -572,15 +674,14 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | First time user of HR Book | see usage instructions                                                         | refer to instructions when I forget how to use the App and learn its capabilities        |
 | `* * *`  | HR Officer                 | edit employee contact details and annual leave entitlement                     | keep employee records up to date                                                         |
 | `* * *`  | HR Officer                 | add a new employee profile with an annual leave entitlement                    | record a new hire and enforce their leave allowance                                      |
-| `* * *`  | HR Officer                 | add a task for an employee                                                     | record work that needs to be completed                                                   |
-| `* * *`  | HR Officer                 | list the tasks for an employee                                                 | review the work related to that employee                                                  |
-| `* * *`  | HR Officer                 | delete a task for an employee                                                  | remove completed or obsolete work                                                        |
-| `* * *`  | HR Officer                 | mark a task as done                                                            | keep track of completed work                                                             |
-| `* * *`  | HR Officer                 | mark a task as pending                                                         | keep track of work that still needs to be completed                                       |
+| `* * *`  | HR Officer                 | record a task assigned to me concerning an employee                            | remember work I need to complete concerning that employee                                |
+| `* * *`  | HR Officer                 | view tasks assigned to me concerning an employee                               | review work related to that employee                                                     |
+| `* * *`  | HR Officer                 | delete a task assigned to me concerning an employee                            | remove obsolete or unnecessary work                                                      |
+| `* * *`  | HR Officer                 | mark a task assigned to me as completed or pending                             | keep its completion state accurate                                                       |
 | `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
 | `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
 | `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
-| `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
+| `* * *`  | HR Officer                 | delete an employee profile and their tasks and leave records                   | remove former employees without retaining orphaned data                                 |
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
@@ -657,7 +758,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1.  HR manager requests to list employees.
 2.  System displays the list of employees.
 3.  HR manager requests to delete a specific employee using the employee's displayed index.
-4.  System deletes the selected employee and all leave records belonging to that employee.
+4.  System deletes the selected employee and all tasks and leave records belonging to that employee.
 5.  System confirms that the employee has been deleted.
 
     Use case ends.
@@ -676,63 +777,40 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 3.
 
-**Use case: UC3 - List employee tasks**
+**Use case: UC3 - Add employee task**
 
 **MSS**
 
-1. HR manager requests for the list of tasks for an employee.
-2. System displays the list of tasks for the employee.
-
-    Use case ends.
-
-**Extensions**
-
-* 1a. The employee does not exist.
-
-    * 1a1. System informs the HR manager that the employee does not exist.
-
-      Use case ends.
-
-* 1b. The employee does not have any task.
-
-    * 1b1. System informs the HR manager that the employee does not have any task.
-
-      Use case ends.
-
-**Use case: UC4 - Add employee task**
-
-**MSS**
-
-1. HR manager specify details of a task to add to an employee.
-2. System adds the task to the employee.
+1. HR manager requests to add a task to an employee and provides the task details.
+2. System adds the task to the employee as pending.
 3. System confirms that the task was added.
 
     Use case ends.
 
 **Extensions**
 
-* 1a. The employee does not exist.
+* 1a. System cannot identify the selected employee.
 
-    * 1a1. System informs the HR manager that the employee does not exist.
+    * 1a1. System informs the HR manager that the employee selection is invalid.
     * 1a2. System does not add the task.
 
       Use case ends.
 
-* 1b. The index of the task to be deleted is invalid.
+* 1b. The provided task details are invalid.
 
-    * 1b1. System informs the HR manager that the task index is invalid.
+    * 1b1. System informs the HR manager that the task details are invalid.
     * 1b2. System does not add the task.
 
       Use case ends.
 
-* 1c. The task already exists.
+* 1c. An equivalent task already exists for the employee.
 
     * 1c1. System informs the HR manager that the task already exists.
     * 1c2. System does not add the task.
 
       Use case ends.
 
-**Use case: UC5 - Delete employee task**
+**Use case: UC4 - Delete employee task**
 
 **MSS**
 
@@ -744,19 +822,19 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 1a. The employee does not exist.
+* 1a. System cannot identify the selected employee.
 
-    * 1a1. System informs the HR manager that the employee does not exist.
-
-      Use case ends.
-
-* 1b. The task does not exist.
-
-    * 1b1. System informs the HR manager that the task does not exist.
+    * 1a1. System informs the HR manager that the employee selection is invalid.
 
       Use case ends.
 
-**Use case: UC6 - Find employees by name**
+* 1b. System cannot identify the selected task.
+
+    * 1b1. System informs the HR manager that the task selection is invalid.
+
+      Use case ends.
+
+**Use case: UC5 - Find employees by name**
 
 **MSS**
 
@@ -781,7 +859,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC7 - Filter employees**
+**Use case: UC6 - Filter employees**
 
 **MSS**
 
@@ -834,7 +912,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC8 - Record employee leave**
+**Use case: UC7 - Record employee leave**
 
 **MSS**
 
@@ -910,7 +988,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC9 - List employee leave**
+**Use case: UC8 - List employee leave**
 
 **MSS**
 
@@ -928,7 +1006,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC10 - Delete employee leave**
+**Use case: UC9 - Delete employee leave**
 
 **MSS**
 
@@ -954,7 +1032,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC11 - Sort employees**
+**Use case: UC10 - Sort employees**
 
 **MSS**
 
@@ -983,7 +1061,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC12 - Change an employee's salary**
+**Use case: UC11 - Change an employee's salary**
 
 **MSS**
 
@@ -1056,24 +1134,32 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Glossary
 
-* **Employee**: A staff member whose employment, contact, and leave information is managed in HR Book
 * **Displayed index**: A temporary number shown beside an employee in the current list, used to select that employee in
-  commands; it can change after `find`, `filter`, or `list`
+  commands; it can change when the displayed list or its ordering changes
+* **Employee**: A staff member whose employment, contact, salary, leave, and related task information is managed in
+  HR Book
 * **Employee attribute**: A stored field such as an employee's name, phone, email, address, salary, annual leave
-  entitlement, or tag
+  entitlement, tag, or task details
 * **Employee ID**: A private, stable identifier used internally to associate leave with an employee; users do not enter
   it in commands
+* **Equivalent tasks**: Tasks concerning the same employee whose details match after ignoring capitalization,
+  surrounding whitespace, and repeated whitespace
 * **HR Book**: The application used by HR managers to manage employee records and routine administrative work
-* **HR manager**: The primary user of HR Book who manages employee records and leave information
+* **HR manager**: The primary user of HR Book who manages employee records, salaries, leave information, and their own
+  assigned tasks concerning employees
 * **Leave**: A period of absence recorded for an employee and counted against their leave entitlement
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
+* **Task**: A work item assigned to the HR manager concerning a particular employee, consisting of task details and a
+  completion state of pending or completed
+* **Task index**: A temporary, one-based number shown beside a task in one employee's task list and used to select that
+  task; it can change when an earlier task is deleted
 * **Working day**: A Monday through Friday counted against annual leave entitlement; public holidays are not excluded
 
 --------------------------------------------------------------------------------------------------------------------
 
-## **Appendix: Instructions for manual testing**
+## **Appendix: Instructions for Manual Testing**
 
 Given below are instructions to test the app manually.
 
@@ -1190,97 +1276,60 @@ current salary. Recheck displayed indexes after commands that change the list.
 
 ### Managing tasks
 
-1. Listing an employee's tasks
+Run these tests in order on a disposable copy of the app with fresh sample data.
 
-   1. Prerequisites: Use `list` and choose an employee with at least two tasks,
-      including one pending and one completed task. Note the employee's displayed
-      index.
+1. Creating and listing tasks
 
-   1. Test case: `task list 1`<br>
-      Expected: The selected employee's tasks are displayed in the order they
-      were added. Pending tasks show `[ ]` and completed tasks show `[x]`.
+   1. Test case: Run the following commands:<br>
+      `add n/Task Tester p/91234567 e/tasktester@example.com a/1 Test Road le/14 t/taskmanual`<br>
+      `add n/Zulu Sorter p/92345678 e/zulusorter@example.com a/2 Test Road le/14 t/taskmanual`<br>
+      `find Task Tester`<br>
+      `task list 1`<br>
+      Expected: The results box states that Task Tester has no tasks.
 
-   1. Test case: `task list 0`<br>
-      Expected: No task list is shown. The status message shows invalid command format.
+   1. Test case: Continue with:<br>
+      `task add 1 d/Prepare monthly report`<br>
+      `task add 1 d/Submit access request`<br>
+      `task mark 1 i/2`<br>
+      `task list 1`<br>
+      Expected: Task Tester's filtered view remains displayed. The task list shows
+      `1. [ ] Prepare monthly report` followed by `2. [x] Submit access request`.
 
-2. Adding a task
-
-   1. Prerequisites: Use `list` and note the index of an employee. Ensure the
-      employee does not already have the task used below.
-
-   1. Test case: `task add 1 d/Prepare monthly report`<br>
-      Expected: The task is added as pending. The status message confirms the
-      task was added, and `task list 1` shows it.
+2. Rejecting duplicate details and invalid indexes
 
    1. Test case: `task add 1 d/  prepare   MONTHLY report  `<br>
-      Expected: The task is rejected as a duplicate because task comparison
-      ignores surrounding whitespace, repeated whitespace, and capitalization.
+      Expected: The task is rejected as a duplicate and the two existing tasks remain unchanged.
 
-   1. Other incorrect add commands to try: `task add`, `task add 0 d/Test`,
-      `task add 1`, and a task description longer than 120 characters.<br>
-      Expected: No task is added. The status message shows invalid command format.
+   1. Test case: `task delete 1 i/99`<br>
+      Expected: No task is deleted and the results box reports an invalid task index.
 
-3. Deleting a task
+3. Updating and deleting tasks
 
-   1. Prerequisites: Use `task list 1` for an employee with at least two tasks.
+   1. Test case: Run the following commands:<br>
+      `task mark 1 i/1`<br>
+      `task unmark 1 i/2`<br>
+      `task delete 1 i/1`<br>
+      `task list 1`<br>
+      Expected: The remaining task is displayed as `1. [ ] Submit access request`.
 
-   1. Test case: `task delete 1 i/1`<br>
-      Expected: The first task is deleted. The remaining tasks keep their
-      relative order and the status message confirms the deleted task.
+4. Using the currently displayed employee index
 
-   1. Test case: `task delete 1 i/0`<br>
-      Expected: No task is deleted. The status message shows invalid command format.
+   1. Test case: Run `filter t/taskmanual`, followed by `sort n/des`, and confirm that Zulu Sorter is at index 1.
+      Then run:<br>
+      `task add 1 d/Sorted-view check`<br>
+      `task list 1`<br>
+      Expected: Zulu Sorter receives the task and remains at index 1 in the descending name order. Task Tester's tasks
+      remain unchanged.
 
-   1. Other incorrect delete commands to try: `task delete`,
-      `task delete 1`, and `task delete 1 i/x`.<br>
-      Expected: No task is deleted. The status message shows invalid command format.
+5. Saving task order and completion state
 
-4. Marking and unmarking a task
-
-   1. Prerequisites: Use `task list 1` for an employee with a pending task and
-      note its task index.
-
-   1. Test case: `task mark 1 i/1`<br>
-      Expected: The task becomes completed. `task list 1` displays it with
-      `[x]`.
-
-   1. Test case: Run `task mark 1 i/1` again.<br>
-      Expected: The command succeeds without changing the task's completed
-      state.
-
-   1. Test case: `task unmark 1 i/1`<br>
-      Expected: The task becomes pending. `task list 1` displays it with
-      `[ ]`.
-
-   1. Test case: Run `task unmark 1 i/1` again.<br>
-      Expected: The command succeeds without changing the task's pending state.
-
-   1. Other incorrect mark/unmark commands to try: `task mark 0 i/1`,
-      `task unmark 1 i/0`, and `task mark 1 1`.<br>
-      Expected: No task state changes. The status message shows invalid command format.
-
-5. Operating on tasks after filtering
-
-   1. Prerequisites: Ensure at least two employees exist, and one employee has
-      a distinctive name such as `Alex`.
-
-   1. Test case: `find Alex`, followed by `task add 1 d/Submit access request`<br>
-      Expected: The task is added to the first employee in the filtered list,
-      and the filtered employee list remains displayed.
-
-   1. Test case: Run `task mark 1 i/1`, `task unmark 1 i/1`, or
-      `task delete 1 i/1` after a `find` or `filter` command.<br>
-      Expected: The command operates on the employee and task shown in the
-      current filtered view, which remains in place.
-
-6. Saving task changes
-
-   1. Prerequisites: Add or modify a task, then close the application normally.
-
-   1. Test case: Relaunch the app and run `list`, followed by `task list 1` for
-      the affected employee.<br>
-      Expected: The task, its order, and its completed/pending state are
-      preserved.
+   1. Test case: Run the following commands, then close and relaunch the app:<br>
+      `find Task Tester`<br>
+      `task add 1 d/Archive invoices`<br>
+      `task mark 1 i/2`<br>
+      After relaunching, run `find Task Tester`, followed by `task list 1`.<br>
+      Expected: The task list shows `1. [ ] Submit access request` followed by
+      `2. [x] Archive invoices`.
 
 ### Managing leave
 
