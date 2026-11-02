@@ -32,7 +32,7 @@ information that you can scroll and inspect.
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `list` : Lists all contacts.
+   * `list` : Lists all employees.
 
    * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 le/14` : Adds an
      employee named `John Doe` with 14 days of annual leave entitlement.
@@ -90,7 +90,7 @@ Format: `help`
 
 ### Adding an employee: `add`
 
-Adds an employee to the address book.
+Adds an employee to HR Book.
 
 Employees may share a name, but each must have a unique phone number and email address. An addition is rejected if either contact detail is already in use, including by an employee hidden by a search or filter. Email uniqueness ignores case. Phone numbers are compared as entered, after trimming surrounding spaces.
 
@@ -127,7 +127,7 @@ Examples:
 
 ### Listing all employees: `list`
 
-Shows a list of all employees in the address book.
+Shows a list of all employees in HR Book.
 
 Format: `list`
 
@@ -198,7 +198,7 @@ Scroll within the result panel or drag its lower divider to see the full tables.
 
 ### Changing an employee's salary: `salary`
 
-Changes the monthly salary of an existing employee in the address book.
+Changes the monthly salary of an existing employee in HR Book.
 
 Format: `salary INDEX s/SALARY`
 
@@ -217,7 +217,7 @@ Examples:
 
 ### Editing an employee: `edit`
 
-Edits an existing employee in the address book.
+Edits an existing employee in HR Book.
 
 Names may be shared. A phone number or email cannot be changed to one used by another employee, including an employee hidden by a search or filter. Email uniqueness ignores case. You can keep your selected employee's existing contact details. A rejected edit leaves the employee unchanged.
 
@@ -279,7 +279,7 @@ Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAIL
 * Supply at least one non-empty criterion. Invalid values return the corresponding field's error message.
 * Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
 * Repeat `t/` to require every specified tag. Repeat `task/` to require a matching task for each query; the same task or different tasks may satisfy the queries.
-* Each command searches the entire address book, including employees hidden by an earlier search.
+* Each command searches all stored employees, including those hidden by an earlier search.
 * Filtering does not modify employee details. Use `list` to show all employees again.
 
 #### Text filters
@@ -367,7 +367,7 @@ Format: `sort FIELD/ORDER`
 * Order: `asc` for ascending or `des` for descending. Supply exactly one field and order.
 * Salary, phone numbers, and annual leave entitlement sort numerically. Text sorts alphabetically, ignoring case.
 * When values tie, `summary scope/all` uses the same employee order as `list`. Earlier sorts can affect this order.
-* Sorting changes the display only; employee details and the stored address book order stay unchanged.
+* Sorting changes the display only; employee details and their stored order stay unchanged.
 * The chosen sort stays active when you filter, find, edit, or list employees. `list` shows all employees in that order. Another `sort` replaces it; restarting the app restores the stored order.
 * Index commands such as `edit`, `salary`, and `delete` use the positions in the sorted displayed list.
 * Sorting an empty list is allowed.
@@ -379,7 +379,7 @@ Examples:
 
 ### Deleting an employee: `delete`
 
-Deletes the specified employee from the address book.
+Deletes the specified employee from HR Book.
 
 Format: `delete INDEX`
 
@@ -390,7 +390,7 @@ Format: `delete INDEX`
   missing employee.
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd employee in the address book.
+* `list` followed by `delete 2` deletes the 2nd employee in HR Book.
 * `find Betsy` followed by `delete 1` deletes the 1st employee in the results of the `find` command.
 
 ### Managing employee leave
@@ -553,8 +553,8 @@ Rules:
 * `LEAVE_ID` must be a positive integer displayed by `leave list`; it is not an employee list index.
 * Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
   balance is recalculated from the records that remain.
-* Leave IDs removed using `leave delete` are not reused while the current address book remains in use. The `clear`
-  command starts a fresh address book and resets the ID sequence.
+* Leave IDs removed using `leave delete` are not reused while the current HR Book data remains in use. The `clear`
+  command starts a fresh data set and resets the ID sequence.
 
 ### Listing tasks on an employee: `task list`
 
@@ -658,7 +658,7 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all employee and leave records from HR Book and starts a fresh address book. This also resets HR Book's
+Clears all employee and leave records from HR Book and starts a fresh data set. This also resets HR Book's
 identifier sequences, so leave IDs used before `clear` may be assigned again.
 
 Format: `clear`

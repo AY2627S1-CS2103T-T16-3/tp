@@ -97,7 +97,7 @@ public class AppPathsTest {
         assertTrue(output.contains("HOME=" + home), output);
         assertTrue(output.contains("DATA=" + home.resolve("data/hrbook.json")), output);
         assertTrue(output.contains("PREFS=" + home.resolve("preferences.json")), output);
-        assertTrue(Files.exists(home.resolve("addressbook.log.0")), output);
+        assertTrue(Files.exists(home.resolve("hrbook.log.0")), output);
         try (var files = Files.list(launch)) {
             assertEquals(0, files.count(), output);
         }
@@ -112,7 +112,7 @@ public class AppPathsTest {
 
         assertTrue(output.contains("HOME=" + home), output);
         assertTrue(output.contains("DATA=" + home.resolve("data/hrbook.json")), output);
-        assertTrue(Files.exists(home.resolve("addressbook.log.0")), output);
+        assertTrue(Files.exists(home.resolve("hrbook.log.0")), output);
         try (var files = Files.list(launch)) {
             assertEquals(0, files.count(), output);
         }
@@ -121,7 +121,7 @@ public class AppPathsTest {
     @Test
     public void packagedLaunch_unwritableLogFile_keepsConsoleLoggingWithoutStartupCrash() throws Exception {
         Path home = Files.createDirectory(temporaryFolder.resolve("blocked-log")).toRealPath();
-        Files.createDirectory(home.resolve("addressbook.log.0"));
+        Files.createDirectory(home.resolve("hrbook.log.0"));
         Path launch = Files.createDirectory(temporaryFolder.resolve("elsewhere"));
 
         String output = runProbe(createProbeJar(home), launch);

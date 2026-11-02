@@ -234,7 +234,7 @@ When running unpackaged classes from an IDE or Gradle, the working folder remain
 The resolver rejects absolute filenames and paths that climb out of the home folder.
 `MainApp` uses it for both JSON files. `LogsCenter` uses it before creating the first log file and escapes
 literal percent signs for `FileHandler`. If the log file cannot be opened, logging continues on the console.
-Existing filenames are retained; files outside the JAR's home folder are not imported automatically.
+Files outside the JAR's home folder are not imported automatically.
 
 Saved address-book data is treated as untrusted input because files may be edited accidentally or modified maliciously.
 Before deserializing the file, `JsonAddressBookStorage` scans its JSON tokens and rejects every explicit `null` with an
