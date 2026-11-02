@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.JsonUtil;
@@ -92,6 +94,33 @@ public class JsonAddressBookNullValidationTest {
 
         assertEquals(new AddressBook(), storage.readAddressBook().orElseThrow());
         assertEquals(json, Files.readString(file));
+    }
+
+    @Test
+    public void readAddressBook_nonBooleanTaskStatus_rejectsAndPreservesFile() throws Exception {
+        for (var invalidStatus : List.of(IntNode.valueOf(2), TextNode.valueOf("true"))) {
+            ObjectNode root = JsonUtil.fromJsonString(validJson, ObjectNode.class);
+            ObjectNode task = (ObjectNode) root.at("/persons/0/tasks/0");
+            task.set("isDone", invalidStatus);
+            String json = root.toString();
+            Files.writeString(file, json);
+
+            DataLoadingException exception = assertThrows(DataLoadingException.class, storage::readAddressBook, json);
+            assertEquals(JsonAddressBookStorage.MESSAGE_INVALID_TASK_STATUS, exception.getCause().getMessage());
+            assertEquals(json, Files.readString(file));
+        }
+    }
+
+    @Test
+    public void readAddressBook_trueTaskStatus_loadsNormally() throws Exception {
+        ObjectNode root = JsonUtil.fromJsonString(validJson, ObjectNode.class);
+        ObjectNode task = (ObjectNode) root.at("/persons/0/tasks/0");
+        task.put("isDone", true);
+        Files.writeString(file, root.toString());
+
+        ReadOnlyAddressBook loaded = storage.readAddressBook().orElseThrow();
+
+        assertTrue(loaded.getEmployeeList().getFirst().getTasks().getFirst().isDone());
     }
 
     @Test
