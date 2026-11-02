@@ -1194,10 +1194,12 @@ current salary. Recheck displayed indexes after commands that change the list.
       Expected: Their monthly salary becomes `$5000`. Feedback identifies the employee and their previous and new
       salaries. Their other details and other employees remain unchanged.
 
-   3. Repeat with `s/0` and `s/50000`, rechecking the employee's index before each command.<br>
+   3. Repeat with `salary INDEX s/0` and `salary INDEX s/50000`, replacing `INDEX` with the selected employee's
+      current displayed index before each command.<br>
       Expected: Both boundary amounts are accepted.
 
-   4. Test case: Set the employee's salary to a different amount, then use `s/005000`.<br>
+   4. Test case: Set the employee's salary to an amount other than `$5000`, then run `salary INDEX s/005000`,
+      replacing `INDEX` with their current displayed index.<br>
       Expected: Their salary is stored as `5000` and displayed as `Monthly salary: $5000`.
 
 2. Rejecting invalid requests
