@@ -197,6 +197,25 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_escapedPrefixInAddress_success() {
+        EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder()
+                .withAddress("10 Road c/o Alice").build();
+
+        assertParseSuccess(parser, "1 a/10 Road c\\/o Alice", new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor));
+
+        descriptor = new EditEmployeeDescriptorBuilder().withAddress("Block p/777").build();
+        assertParseSuccess(parser, "1 a/Block p\\/777", new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor));
+    }
+
+    @Test
+    public void parse_unknownPrefixInAddress_success() {
+        EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder()
+                .withAddress("10 Road c/o Alice").build();
+
+        assertParseSuccess(parser, "1 a/10 Road c/o Alice", new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor));
+    }
+
+    @Test
     public void parse_multipleRepeatedFields_failure() {
         // More extensive testing of duplicate parameter detections is done in
         // AddCommandParserTest#parse_repeatedNonTagValue_failure()
