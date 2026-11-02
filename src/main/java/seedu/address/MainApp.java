@@ -1,8 +1,9 @@
 package seedu.address;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -10,6 +11,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.AppPaths;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
 import seedu.address.logic.LogicManager;
@@ -40,24 +42,33 @@ public class MainApp extends Application {
             + " the file or restore a valid backup before reopening.";
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
-    private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
-    private static final Path ADDRESS_BOOK_FILE_PATH = Paths.get("data", "addressbook.json");
 
     protected Ui ui;
     protected Logic logic;
     protected Storage storage;
     protected Model model;
 
+    private final Path homeDirectory;
     private boolean dataLoadingFailed;
+
+    /** Creates an application whose files are kept beside the running JAR. */
+    public MainApp() {
+        this(AppPaths.getHomeDirectory());
+    }
+
+    MainApp(Path homeDirectory) {
+        this.homeDirectory = requireNonNull(homeDirectory).toAbsolutePath().normalize();
+    }
 
     @Override
     public void init() throws Exception {
         logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(homeDirectory.resolve("preferences.json"));
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage =
+                new JsonAddressBookStorage(homeDirectory.resolve("data/addressbook.json"));
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);

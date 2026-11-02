@@ -30,6 +30,7 @@ run {
 
 test {
     useJUnitPlatform()
+    testLogging.exceptionFormat = 'full'
     finalizedBy jacocoTestReport
 }
 

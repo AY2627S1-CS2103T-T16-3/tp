@@ -22,6 +22,11 @@ public class TaskTest {
     }
 
     @Test
+    public void constructor_nonBreakingSpaceOnlyDetails_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new Task("\u00A0"));
+    }
+
+    @Test
     public void constructor_detailsExceedingMaximumLength_throwsIllegalArgumentException() {
         String details = "a".repeat(Task.MAX_DETAILS_LENGTH + 1);
 
@@ -70,6 +75,7 @@ public class TaskTest {
     public void isValidDetails_invalidDetails_returnsFalse() {
         assertFalse(Task.isValidDetails(null));
         assertFalse(Task.isValidDetails("   "));
+        assertFalse(Task.isValidDetails("\u00A0"));
         assertFalse(Task.isValidDetails("a".repeat(Task.MAX_DETAILS_LENGTH + 1)));
     }
 
