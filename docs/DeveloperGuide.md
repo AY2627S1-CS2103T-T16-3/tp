@@ -1175,9 +1175,10 @@ Employee data and the current filter remain unchanged in all flows.
 2.  HR Book should be able to hold up to 1000 employees.
 3.  Users should be able to execute all documented commands from the command box without using the mouse. The mouse
     may still be used to inspect or scroll through results.
-4.  With 1000 employee records stored, the `list` command should display the employee list within 2 seconds of
-    pressing Enter.
-5.  HR Book should be able to carry out its functionality without internet access.
+4.  With up to 1000 employee records stored, each documented command should complete end to end within 2 seconds on
+    average over five runs, measured from pressing Enter until its result is displayed (or the app closes for `exit`).
+5.  HR Book should be able to carry out its functionality without internet access, except for accessing the online
+    User Guide.
 
 
 ### Glossary
