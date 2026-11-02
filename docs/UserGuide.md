@@ -92,11 +92,17 @@ Format: `help`
 
 Adds an employee to HR Book.
 
-Employees may share a name, but each must have a unique phone number and email address. An addition is rejected if either contact detail is already in use, including by an employee hidden by a search or filter. Email uniqueness ignores case. Phone numbers are compared as entered, after trimming surrounding spaces.
-
-Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it.
-
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
+
+Employees may share the same name, but each employee must have a unique phone number and email address.
+Adding an employee is rejected if either contact detail is already used by another employee, including one
+hidden by a search or filter. Email comparison ignores case. Phone numbers are compared as digit strings
+after surrounding spaces are removed.
+
+For example, `090000002` and `90000002` are different phone values; numbers are not compared numerically.
+Rejection messages identify each conflicting contact and its existing owner, for example:
+`Phone number 90000002 is already used by Bob.` If both contacts conflict, both are reported.
+For older saved files, see [Editing the data file](#editing-the-data-file).
 
 * To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
   `p\/777` to store `p/777` as part of the address.
@@ -111,11 +117,6 @@ Employee cards display salary with a monthly label, for example `Monthly salary:
 Annual leave entitlement is compulsory. It must be a whole number from `0` to `365`. A value of `0` is valid for an
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
 stored as `14`. The value after removing leading zeros must still be within the allowed range.
-
-Employees may share the same name, but each employee must have a unique phone number and email address.
-Adding an employee is rejected if either contact detail is already used by another employee, including one
-hidden by a search or filter. Email comparison ignores case. Phone numbers are compared as digit strings
-after surrounding spaces are removed.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
@@ -219,12 +220,14 @@ Examples:
 
 Edits an existing employee in HR Book.
 
-Names may be shared. A phone number or email cannot be changed to one used by another employee, including an employee hidden by a search or filter. Email uniqueness ignores case. You can keep your selected employee's existing contact details. A rejected edit leaves the employee unchanged.
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
+
+Contact conflicts are checked against all other employees, including hidden employees. Errors identify the
+conflicting phone number or email and its existing owner. Phone comparison uses digit strings after trimming
+surrounding spaces; email comparison ignores case.
 
 Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
-
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
 
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
 * An employee may be renamed to match another employee's name.
@@ -685,6 +688,11 @@ Older save files without salary values load with a salary of `0`.
 
 HR Book data is saved automatically as a JSON file `[JAR file location]/data/hrbook.json`. The file contains
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
+
+**Contact uniqueness:** Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it. Email comparison ignores case. Phone numbers are compared as digit strings after trimming surrounding spaces, so `090000002` and `90000002` are different values.
+
+If an older version saved files in another folder, close HR Book and copy `data/addressbook.json` and
+`preferences.json` into the same relative locations beside the JAR before starting the updated app.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the

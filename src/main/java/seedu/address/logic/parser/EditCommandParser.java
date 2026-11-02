@@ -64,8 +64,7 @@ public class EditCommandParser implements Parser<EditCommand> {
             editEmployeeDescriptor.setEmail(ParserUtil.parseEmail(argMultimap.getValue(PREFIX_EMAIL).get()));
         }
         if (argMultimap.getValue(PREFIX_ADDRESS).isPresent()) {
-            editEmployeeDescriptor.setAddress(ParserUtil.parseAddress(
-                    ParserUtil.unescapeText(argMultimap.getValue(PREFIX_ADDRESS).get())));
+            editEmployeeDescriptor.setAddress(ParserUtil.parseAddress(argMultimap.getValue(PREFIX_ADDRESS).get()));
         }
         if (argMultimap.getValue(PREFIX_LEAVE_ENTITLEMENT).isPresent()) {
             editEmployeeDescriptor.setLeaveEntitlement(ParserUtil.parseLeaveEntitlement(

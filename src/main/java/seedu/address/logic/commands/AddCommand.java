@@ -32,7 +32,7 @@ public class AddCommand extends Command {
             + PREFIX_LEAVE_ENTITLEMENT + "ANNUAL_LEAVE_DAYS "
             + "[" + PREFIX_SALARY + "SALARY] "
             + "[" + PREFIX_TAG + "TAG]...\n"
-            + "To include a known prefix in ADDRESS, escape / as \\/.\n"
+            + "Use \\/ in address text for a literal slash, e.g. a/10 Road c\\/o.\n"
             + "Example: " + COMMAND_WORD + " "
             + PREFIX_NAME + "John Doe "
             + PREFIX_PHONE + "98765432 "
@@ -44,8 +44,6 @@ public class AddCommand extends Command {
             + PREFIX_TAG + "owesMoney";
 
     public static final String MESSAGE_SUCCESS = "New employee added: %1$s";
-    public static final String MESSAGE_DUPLICATE_EMPLOYEE =
-            "Another employee already uses this phone number or email address (email is case-insensitive).";
     public static final String MESSAGE_EMPLOYEE_ID_EXHAUSTED =
             "No more employee IDs are available. The employee was not added.";
 
@@ -63,8 +61,9 @@ public class AddCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
 
-        if (model.hasEmployee(toAdd)) {
-            throw new CommandException(MESSAGE_DUPLICATE_EMPLOYEE);
+        String conflicts = Messages.getContactConflictMessage(toAdd, model.getAddressBook().getEmployeeList());
+        if (!conflicts.isEmpty()) {
+            throw new CommandException(conflicts);
         }
 
         try {

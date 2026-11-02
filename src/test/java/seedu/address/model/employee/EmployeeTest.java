@@ -144,30 +144,30 @@ public class EmployeeTest {
     }
 
     @Test
-    public void isSameEmployee() {
+    public void hasContactConflictWith() {
         // same object -> returns true
-        assertTrue(ALICE.isSameEmployee(ALICE));
+        assertTrue(ALICE.hasContactConflictWith(ALICE));
 
         // null -> returns false
-        assertFalse(ALICE.isSameEmployee(null));
+        assertFalse(ALICE.hasContactConflictWith(null));
 
         // same name, different contact details -> returns false
         Employee editedAlice = new EmployeeBuilder(ALICE).withPhone(VALID_PHONE_BOB).withEmail(VALID_EMAIL_BOB)
                 .withAddress(VALID_ADDRESS_BOB).withTags(VALID_TAG_HUSBAND).build();
-        assertFalse(ALICE.isSameEmployee(editedAlice));
+        assertFalse(ALICE.hasContactConflictWith(editedAlice));
 
         // different name, same contact details -> returns true
         editedAlice = new EmployeeBuilder(ALICE).withName(VALID_NAME_BOB).build();
-        assertTrue(ALICE.isSameEmployee(editedAlice));
+        assertTrue(ALICE.hasContactConflictWith(editedAlice));
 
         // name differs in case, same contact details -> returns true
         Employee editedBob = new EmployeeBuilder(BOB).withName(VALID_NAME_BOB.toLowerCase()).build();
-        assertTrue(BOB.isSameEmployee(editedBob));
+        assertTrue(BOB.hasContactConflictWith(editedBob));
 
         // name has trailing spaces, same contact details -> returns true
         String nameWithTrailingSpaces = VALID_NAME_BOB + " ";
         editedBob = new EmployeeBuilder(BOB).withName(nameWithTrailingSpaces).build();
-        assertTrue(BOB.isSameEmployee(editedBob));
+        assertTrue(BOB.hasContactConflictWith(editedBob));
     }
 
     @Test
@@ -225,13 +225,13 @@ public class EmployeeTest {
         editedAlice = ALICE.addTask(new Task("Prepare report"));
         assertFalse(ALICE.equals(editedAlice));
 
-        // different salary does not affect employee identity
+        // different salary does not affect contact conflicts
         editedAlice = new EmployeeBuilder(ALICE).withSalary("5000").build();
-        assertTrue(ALICE.isSameEmployee(editedAlice));
+        assertTrue(ALICE.hasContactConflictWith(editedAlice));
 
-        // different tasks do not affect employee identity
+        // different tasks do not affect contact conflicts
         editedAlice = ALICE.addTask(new Task("Prepare report"));
-        assertTrue(ALICE.isSameEmployee(editedAlice));
+        assertTrue(ALICE.hasContactConflictWith(editedAlice));
     }
 
     @Test

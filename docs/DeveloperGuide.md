@@ -300,7 +300,10 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Employee contact uniqueness
 
-Employees may share names, but cannot share a phone number or email address. `Employee#isSameEmployee`
+`Messages#getContactConflictMessage` reports every conflicting contact value and its existing employee
+name. Both add and edit use this formatter; edit excludes its own target before checking conflicts.
+
+Employees may share names, but cannot share a phone number or email address. `Employee#hasContactConflictWith`
 checks for either contact conflict; email comparison ignores case and phone comparison uses the trimmed
 stored digit string. This conflict relation is not transitive and is separate from internal employee IDs
 and `Employee#equals`. `UniqueEmployeeList` enforces it when adding, replacing, and loading employees.
@@ -343,6 +346,12 @@ sort, and reports a save error. This restores the running application's state; i
 the data file. See **Save failures and model rollback** for details.
 
 ### Filtering employees
+
+`ParserUtil#unescapeSlashes` converts `\/` to a literal `/` in address and task text.
+`add` and `edit` decode address escapes in `ParserUtil#parseAddress`; `filter` decodes
+address and task criteria after tokenization and before matching. Escaping a slash prevents
+prefix recognition, so `a/10 Road c\/o` represents the address `10 Road c/o`. Unknown unescaped
+prefixes remain invalid for `filter`. Other field validation rules still apply.
 
 `filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
 supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria

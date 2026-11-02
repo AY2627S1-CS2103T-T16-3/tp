@@ -13,15 +13,14 @@ import seedu.address.model.employee.exceptions.EmployeeNotFoundException;
 
 /**
  * A list of employees that enforces uniqueness between its elements and does not allow nulls.
- * An employee is considered unique by comparing using {@code Employee#isSameEmployee(Employee)}. As such,
- * adding and updating of employees uses Employee#isSameEmployee(Employee) for equality so as to ensure that
- * the employee being added or updated is unique in terms of identity in the UniqueEmployeeList. However,
- * the removal of an employee uses Employee#equals(Object) so as to ensure that the employee with exactly
- * the same fields will be removed.
+ * Adding and updating employees rejects shared phone numbers or email addresses using
+ * {@link Employee#hasContactConflictWith(Employee)}. Names may be shared. Contact conflicts are separate
+ * from internal employee identity and object equality. Removal uses {@link Employee#equals(Object)}
+ * to select the exact stored record.
  *
  * Supports a minimal set of list operations.
  *
- * @see Employee#isSameEmployee(Employee)
+ * @see Employee#hasContactConflictWith(Employee)
  */
 public class UniqueEmployeeList implements Iterable<Employee> {
 
@@ -30,11 +29,11 @@ public class UniqueEmployeeList implements Iterable<Employee> {
             FXCollections.unmodifiableObservableList(internalList);
 
     /**
-     * Returns true if the list contains an equivalent employee as the given argument.
+     * Returns true if a stored employee shares the given employee's phone number or email address.
      */
     public boolean contains(Employee toCheck) {
         requireNonNull(toCheck);
-        return internalList.stream().anyMatch(toCheck::isSameEmployee);
+        return internalList.stream().anyMatch(toCheck::hasContactConflictWith);
     }
 
     /**
@@ -52,7 +51,7 @@ public class UniqueEmployeeList implements Iterable<Employee> {
     /**
      * Replaces the employee {@code target} in the list with {@code editedEmployee}.
      * {@code target} must exist in the list.
-     * The employee identity of {@code editedEmployee} must not be the same as another existing employee in the list.
+     * The contact details of {@code editedEmployee} must not conflict with another employee in the list.
      */
     public void setEmployee(Employee target, Employee editedEmployee) {
         requireAllNonNull(target, editedEmployee);
@@ -63,7 +62,7 @@ public class UniqueEmployeeList implements Iterable<Employee> {
         }
 
         if (internalList.stream().anyMatch(employee -> !employee.equals(target)
-                && employee.isSameEmployee(editedEmployee))) {
+                && employee.hasContactConflictWith(editedEmployee))) {
             throw new DuplicateEmployeeException();
         }
 
@@ -141,7 +140,7 @@ public class UniqueEmployeeList implements Iterable<Employee> {
     private boolean employeesAreUnique(List<Employee> employees) {
         for (int i = 0; i < employees.size() - 1; i++) {
             for (int j = i + 1; j < employees.size(); j++) {
-                if (employees.get(i).isSameEmployee(employees.get(j))) {
+                if (employees.get(i).hasContactConflictWith(employees.get(j))) {
                     return false;
                 }
             }

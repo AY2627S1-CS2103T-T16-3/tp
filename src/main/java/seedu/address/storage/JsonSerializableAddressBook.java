@@ -86,7 +86,7 @@ class JsonSerializableAddressBook {
         List<Employee> modelEmployees = new ArrayList<>();
         for (JsonAdaptedEmployee jsonAdaptedEmployee : employees) {
             Employee employee = jsonAdaptedEmployee.toModelType();
-            if (modelEmployees.stream().anyMatch(employee::isSameEmployee)) {
+            if (modelEmployees.stream().anyMatch(employee::hasContactConflictWith)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_EMPLOYEE);
             }
             modelEmployees.add(employee);

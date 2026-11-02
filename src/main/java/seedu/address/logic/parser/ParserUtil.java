@@ -149,7 +149,7 @@ public class ParserUtil {
      */
     public static Address parseAddress(String address) throws ParseException {
         requireNonNull(address);
-        String trimmedAddress = address.trim();
+        String trimmedAddress = unescapeSlashes(address).trim();
         if (!Address.isValidAddress(trimmedAddress)) {
             throw new ParseException(Address.MESSAGE_CONSTRAINTS);
         }
@@ -229,8 +229,13 @@ public class ParserUtil {
         }
     }
 
-    /** Replaces escaped slashes in text with literal slashes. */
-    public static String unescapeText(String text) {
+    /**
+     * Replaces escaped slashes in address or task text with literal slashes.
+     *
+     * @param text Text containing zero or more escaped slashes.
+     * @return Text with each {@code \/} replaced by {@code /}.
+     */
+    public static String unescapeSlashes(String text) {
         requireNonNull(text);
         return text.replace("\\/", "/");
     }
