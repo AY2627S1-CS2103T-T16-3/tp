@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Predicate;
 
 import seedu.address.model.employee.Employee;
@@ -13,11 +14,13 @@ public final class ModelSnapshot {
     final AddressBook addressBook;
     final Predicate<? super Employee> predicate;
     final Comparator<? super Employee> comparator;
+    final List<Employee> displayOrder;
 
     ModelSnapshot(AddressBook addressBook, Predicate<? super Employee> predicate,
-            Comparator<? super Employee> comparator) {
+            Comparator<? super Employee> comparator, List<Employee> displayOrder) {
         this.addressBook = addressBook.copyForSnapshot();
         this.predicate = predicate;
         this.comparator = comparator;
+        this.displayOrder = List.copyOf(displayOrder);
     }
 }

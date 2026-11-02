@@ -354,6 +354,50 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_saveFailureWithTies_retryDeletesOriginalEmployee() throws Exception {
+        for (IOException failure : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            for (String selection : List.of("list", "find Alice Carol")) {
+                model = new ModelManager();
+                setUp();
+                logic.execute("add n/Carol p/90000001 e/carol@example.com a/One le/14 s/1000");
+                logic.execute("add n/Bob p/90000002 e/bob@example.com a/Two le/14 s/1000");
+                logic.execute("add n/Alice p/90000003 e/alice@example.com a/Three le/14 s/1000");
+                logic.execute("sort n/asc");
+                logic.execute("sort s/asc");
+                logic.execute(selection);
+                AddressBook before = new AddressBook(model.getAddressBook());
+                List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+                List<Employee> allEmployees = model.getAllEmployeesInDisplayOrder();
+                Path dataFile = temporaryFolder.resolve("addressBook.json");
+                String savedData = Files.readString(dataFile);
+                JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(dataFile) {
+                    @Override
+                    public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                        throw failure;
+                    }
+                };
+                Logic failingLogic = new LogicManager(model, new StorageManager(failingStorage,
+                        new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+
+                for (String command : List.of("delete 1", "sort n/des", "salary 1 s/2000", "clear")) {
+                    assertThrows(CommandException.class, () -> failingLogic.execute(command));
+                    assertEquals(before, model.getAddressBook());
+                    assertEquals(displayed, model.getFilteredEmployeeList());
+                    assertEquals(allEmployees, model.getAllEmployeesInDisplayOrder());
+                    assertEquals(savedData, Files.readString(dataFile));
+                }
+
+                logic.execute("delete 1");
+                assertEquals(List.of("Carol", "Bob"), model.getAddressBook().getEmployeeList().stream()
+                        .map(employee -> employee.getName().fullName).toList());
+                assertEquals(displayed.subList(1, displayed.size()), model.getFilteredEmployeeList());
+                assertEquals(model.getAddressBook(),
+                        new JsonAddressBookStorage(dataFile).readAddressBook().orElseThrow());
+            }
+        }
+    }
+
+    @Test
     public void getFilteredEmployeeList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredEmployeeList().remove(0));
     }

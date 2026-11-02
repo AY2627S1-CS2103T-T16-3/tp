@@ -25,6 +25,7 @@ import seedu.address.model.ReadOnlyAddressBook;
 public class JsonAddressBookStorage {
 
     public static final String MESSAGE_NULL_VALUE = "Address book data must not contain null values.";
+    public static final String MESSAGE_INVALID_TASK_STATUS = "Task completion state must be true or false.";
 
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
 
@@ -63,7 +64,7 @@ public class JsonAddressBookStorage {
 
         try {
             String json = FileUtil.readFromFile(filePath);
-            rejectNullValues(json);
+            validateJsonValues(json);
             JsonSerializableAddressBook jsonAddressBook = JsonUtil.fromJsonString(json,
                     JsonSerializableAddressBook.class);
             return Optional.of(jsonAddressBook.toModelType());
@@ -73,12 +74,19 @@ public class JsonAddressBookStorage {
         }
     }
 
-    /** Rejects explicit JSON nulls before deserialization can replace them with defaults. */
-    private static void rejectNullValues(String json) throws IOException, IllegalValueException {
+    /** Validates values that Jackson could otherwise silently convert during deserialization. */
+    private static void validateJsonValues(String json) throws IOException, IllegalValueException {
         try (JsonParser parser = new JsonFactory().createParser(json)) {
-            while (parser.nextToken() != null) {
-                if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
+            JsonToken token;
+            while ((token = parser.nextToken()) != null) {
+                if (token == JsonToken.VALUE_NULL) {
                     throw new IllegalValueException(MESSAGE_NULL_VALUE);
+                }
+                if ("isDone".equals(parser.getCurrentName())
+                        && token != JsonToken.FIELD_NAME
+                        && token != JsonToken.VALUE_TRUE
+                        && token != JsonToken.VALUE_FALSE) {
+                    throw new IllegalValueException(MESSAGE_INVALID_TASK_STATUS);
                 }
             }
         }
