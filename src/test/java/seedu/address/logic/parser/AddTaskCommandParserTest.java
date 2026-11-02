@@ -36,6 +36,8 @@ public class AddTaskCommandParserTest {
                 new AddTaskCommand(Index.fromOneBased(1), new Task("Document d/DETAILS syntax")));
         assertParseSuccess(parser, "1 d/Review d\\/DETAILS and d\\/EXAMPLE",
                 new AddTaskCommand(Index.fromOneBased(1), new Task("Review d/DETAILS and d/EXAMPLE")));
+        assertParseSuccess(parser, "1 d/Confirm salary s\\/5000",
+                new AddTaskCommand(Index.fromOneBased(1), new Task("Confirm salary s/5000")));
     }
 
     @Test
@@ -62,8 +64,10 @@ public class AddTaskCommandParserTest {
     }
 
     @Test
-    public void parse_taskTextWithTaskPrefix_keepsItAsText() {
-        assertParseSuccess(parser, "1 d/Prepare t/report",
-                new AddTaskCommand(Index.fromOneBased(1), new Task("Prepare t/report")));
+    public void parse_unsupportedPrefix_throwsParseException() {
+        assertParseFailure(parser, "1 d/Prepare t/report", "Unsupported prefix in task details: t/\n"
+                + "To use it as task text, escape the slash as t\\/.");
+        assertParseFailure(parser, "1 d/jwisbdjd s/5000", "Unsupported prefix in task details: s/\n"
+                + "To use it as task text, escape the slash as s\\/.");
     }
 }
