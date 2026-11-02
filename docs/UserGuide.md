@@ -23,6 +23,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
    Choose a folder where the app is allowed to create files.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar hr-book.jar`.<br>
+   On Windows, using `cd` first also avoids Java launcher errors with non-English characters in the full JAR path.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 

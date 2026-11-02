@@ -88,7 +88,7 @@ public class AppPathsTest {
 
     @Test
     public void packagedLaunch_specialCharacters_keepsPathsAndLogsBesideJar() throws Exception {
-        Path home = Files.createDirectory(temporaryFolder.resolve("HR Book #1 José 李明 %h %t %u %g")).toRealPath();
+        Path home = Files.createDirectory(temporaryFolder.resolve("HR Book #1 %h %t %u %g")).toRealPath();
         Path launch = Files.createDirectory(temporaryFolder.resolve("elsewhere"));
         Path jar = createProbeJar(home);
 
@@ -97,6 +97,21 @@ public class AppPathsTest {
         assertTrue(output.contains("HOME=" + home), output);
         assertTrue(output.contains("DATA=" + home.resolve("data/addressbook.json")), output);
         assertTrue(output.contains("PREFS=" + home.resolve("preferences.json")), output);
+        assertTrue(Files.exists(home.resolve("addressbook.log.0")), output);
+        try (var files = Files.list(launch)) {
+            assertEquals(0, files.count(), output);
+        }
+    }
+
+    @Test
+    public void packagedLaunch_unicodeHome_usesJarFolderRatherThanLaunchSubfolder() throws Exception {
+        Path home = Files.createDirectory(temporaryFolder.resolve("José 李明")).toRealPath();
+        Path launch = Files.createDirectory(home.resolve("launch"));
+
+        String output = runProbe(createProbeJar(home), launch);
+
+        assertTrue(output.contains("HOME=" + home), output);
+        assertTrue(output.contains("DATA=" + home.resolve("data/addressbook.json")), output);
         assertTrue(Files.exists(home.resolve("addressbook.log.0")), output);
         try (var files = Files.list(launch)) {
             assertEquals(0, files.count(), output);
@@ -144,7 +159,9 @@ public class AppPathsTest {
                 .filter(argument -> argument.startsWith("-javaagent:") && argument.contains("jacoco"))
                 .map(this::absoluteCoverageAgent)
                 .forEach(command::add);
-        command.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8", "-jar", jar.toString()));
+        // A relative path avoids Windows launcher conversion of Unicode characters before Java code runs.
+        command.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8",
+                "-jar", launch.toRealPath().relativize(jar.toRealPath()).toString()));
         Process process = new ProcessBuilder(command)
                 .directory(launch.toFile()).redirectErrorStream(true).start();
         try {
