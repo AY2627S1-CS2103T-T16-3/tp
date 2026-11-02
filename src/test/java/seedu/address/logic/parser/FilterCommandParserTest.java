@@ -52,9 +52,13 @@ public class FilterCommandParserTest {
 
     @Test
     public void parse_unknownPrefix_throwsParseException() {
-        assertInvalidFormat("x/Alice");
-        assertInvalidFormat("n/Alice x/value");
-        assertInvalidFormat("phone/91235321");
+        String message = "Unsupported prefix: x/. Check the command's supported prefixes.\n"
+                + "If this is literal address or task text, escape the slash as x\\/.";
+        assertParseFailure(parser, "x/Alice", message);
+        assertParseFailure(parser, "n/Alice x/value", message);
+        assertParseFailure(parser, "phone/91235321",
+                "Unsupported prefix: phone/. Check the command's supported prefixes.\n"
+                        + "If this is literal address or task text, escape the slash as phone\\/.");
     }
 
     @Test

@@ -31,8 +31,9 @@ import seedu.address.model.tag.Tag;
  */
 public class ParserUtil {
 
-    public static final String MESSAGE_UNSUPPORTED_PREFIX = "Unsupported prefix: %s\n"
-            + "To use it as literal text, escape the slash as %s.";
+    public static final String MESSAGE_UNSUPPORTED_PREFIX =
+            "Unsupported prefix: %s. Check the command's supported prefixes.\n"
+            + "If this is literal address or task text, escape the slash as %s.";
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final String MESSAGE_INVALID_START_DATE =

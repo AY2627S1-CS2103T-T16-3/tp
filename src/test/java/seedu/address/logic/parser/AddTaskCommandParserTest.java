@@ -65,9 +65,11 @@ public class AddTaskCommandParserTest {
 
     @Test
     public void parse_unsupportedPrefix_throwsParseException() {
-        assertParseFailure(parser, "1 d/Prepare t/report", "Unsupported prefix in task details: t/\n"
-                + "To use it as task text, escape the slash as t\\/.");
-        assertParseFailure(parser, "1 d/jwisbdjd s/5000", "Unsupported prefix in task details: s/\n"
-                + "To use it as task text, escape the slash as s\\/.");
+        assertParseFailure(parser, "1 d/Prepare t/report",
+                "Unsupported prefix: t/. Check the command's supported prefixes.\n"
+                + "If this is literal address or task text, escape the slash as t\\/.");
+        assertParseFailure(parser, "1 d/jwisbdjd s/5000",
+                "Unsupported prefix: s/. Check the command's supported prefixes.\n"
+                + "If this is literal address or task text, escape the slash as s\\/.");
     }
 }

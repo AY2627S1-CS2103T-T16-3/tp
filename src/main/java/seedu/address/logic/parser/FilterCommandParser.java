@@ -31,7 +31,6 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             PREFIX_ADDRESS, Field.ADDRESS, PREFIX_TAG, Field.TAG,
             PREFIX_TASK, Field.TASK, PREFIX_SALARY, Field.SALARY,
             PREFIX_LEAVE_ENTITLEMENT, Field.LEAVE_ENTITLEMENT);
-    private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<!\\S)[A-Za-z]+/");
 
     private static final Pattern RANGE_PATTERN = Pattern.compile("(\\d+)\\s*-\\s*(\\d+)");
 
@@ -39,12 +38,7 @@ public class FilterCommandParser implements Parser<FilterCommand> {
     public FilterCommand parse(String args) throws ParseException {
         // The shared tokenizer recognizes prefixes preceded by a space.
         String normalizedArgs = " " + args.replaceAll("\\s", " ");
-        Matcher matcher = PREFIX_PATTERN.matcher(normalizedArgs);
-        while (matcher.find()) {
-            if (!FIELDS.containsKey(new Prefix(matcher.group()))) {
-                throw invalidFormat();
-            }
-        }
+        ParserUtil.verifySupportedPrefixes(normalizedArgs, FIELDS.keySet().toArray(Prefix[]::new));
 
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(normalizedArgs,
                 PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG, PREFIX_TASK, PREFIX_SALARY,

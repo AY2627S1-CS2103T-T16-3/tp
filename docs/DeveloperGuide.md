@@ -340,14 +340,32 @@ the data file. See **Save failures and model rollback** for details.
 
 ### Address prefix escaping in add and edit
 
-`ParserUtil#verifySupportedPrefixes` rejects unknown, unescaped tokens consisting of letters followed
-by `/` at the start of input or after whitespace. `add` and `edit` run this check after validating
-required fields or the employee index, before parsing field values. Supported prefixes remain command
-fields. Literal prefix-like address text must escape the slash, for example `a/10 Road c\/o` for
-`10 Road c/o` or `a/Block p\/777` for `Block p/777`. The error message suggests the escaped form.
-Address text is decoded once using `ParserUtil#unescapeText` before address validation.
+For the shared prefix and literal-slash rules, see [Filtering employees](#filtering-employees).
+`ParserUtil#verifySupportedPrefixes` rejects unknown unescaped prefixes. Its error asks users to check
+supported prefixes for a possible typo, or escape the slash if the token is literal address or task text.
+`add` and `edit` run this check after validating required fields or the employee index, before parsing values.
+
+With the filter-escaping changes integrated, both command parsers pass the raw address value to
+`ParserUtil#parseAddress`. That method calls `ParserUtil#unescapeSlashes`, trims surrounding whitespace,
+and validates the decoded address. The command parsers must not decode the value first: each address
+is decoded exactly once. The integrated helper name is `unescapeSlashes` throughout the parsers.
 
 ### Filtering employees
+
+The shared escaping rules are described in the [User Guide](UserGuide.html#escaping-prefix-like-text).
+`AddCommandParser`, `EditCommandParser`, `AddTaskCommandParser`, and `FilterCommandParser` all use
+`ParserUtil#verifySupportedPrefixes` with their own supported prefixes. `task add` allows `d/`;
+`filter` derives its allowed prefixes from its field map. This keeps prefix detection and error hints
+consistent without duplicating regular-expression checks.
+Unescaped letter-plus-slash tokens at the start of input or after whitespace are treated as prefixes;
+unknown prefixes are rejected. Writing `\/` keeps the slash literal during prefix detection.
+`ParserUtil#unescapeSlashes` then replaces each escaped slash with `/` before storage or matching.
+
+In the integrated implementation, `FilterCommandParser` decodes address and task criteria after
+argument tokenization, then validates those decoded values. Address criteria are checked directly with
+`Address#isValidAddress`, rather than passed to `ParserUtil#parseAddress`, to avoid decoding twice.
+`AddTaskCommandParser` uses the same `ParserUtil#unescapeSlashes` helper for task descriptions.
+
 
 `filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
 supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
