@@ -584,7 +584,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
 | `* *`    | HR Officer                 | have local storage for employee contact and details                            | retain employee information between application sessions                       |
-| `* *`    | HR Officer                 | have automatic local backups for employee contact and details                  | back up employee information locally                                                     |
+| `* *`    | HR Officer                 | have employee data saved automatically after each successfully executed command | retain my changes between sessions without saving manually                              |
 | `*`      | Experienced HR Officer     | tag employees together                                                         | easily group employees based on similar tags                                             |
 
 ### Use cases
