@@ -94,6 +94,9 @@ Annual leave entitlement is compulsory. It must be a whole number from `0` to `3
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
 stored as `14`. The value after removing leading zeros must still be within the allowed range.
 
+Duplicate detection uses the employee’s name only and is case-sensitive. An employee cannot be added 
+if their name exactly matches an existing employee’s name, even if their other details differ
+
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
 </div>
