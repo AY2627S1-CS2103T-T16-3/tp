@@ -691,9 +691,6 @@ employees, leave records, and the next internal identifiers. Editing it manually
 
 **Contact uniqueness:** Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it. Email comparison ignores case. Phone numbers are compared as digit strings after trimming surrounding spaces, so `090000002` and `90000002` are different values.
 
-If an older version saved files in another folder, close HR Book and copy `data/addressbook.json` and
-`preferences.json` into the same relative locations beside the JAR before starting the updated app.
-
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
 usual command results box. Any explicit JSON `null` anywhere in the HR Book data file is invalid, including employee
