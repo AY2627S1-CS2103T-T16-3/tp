@@ -60,8 +60,10 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 * Items followed by `…`​ can appear zero or more times.<br>
   For example, `[t/TAG]…​` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-* Parameters can be in any order.<br>
+* Parameters with prefixes can generally be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+  Unprefixed parameters, such as `INDEX`, must remain in the position shown in the command format. Any exceptions are
+  stated in the relevant command section.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `leave list`, `exit`, and
   `clear`, are ignored.<br>
@@ -399,7 +401,7 @@ Format: `task list EMPLOYEE_INDEX`
 * Tasks are displayed in the order in which they were added.
 * Pending tasks are displayed with `[ ]`, while completed tasks are displayed with `[x]`.
 * `TASK_INDEX` refers to the number displayed next to the task.
-* The current filtered employee list is preserved after the command.
+* The active filter and sort order remain in effect after the command.
 
 Example:
 
@@ -419,13 +421,12 @@ Format: `task add EMPLOYEE_INDEX d/DETAILS`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `DETAILS` must not be empty, and it must not exceed 120 characters.
-* To avoid conflict with flags, replace `/` with `\/` in task description.
+* `DETAILS` must not be blank, and it must not exceed 120 characters.
+* To avoid conflict with prefixes, replace `/` with `\/` in the task description.
 * A task that already exists for the employee cannot be added again.
-  Task comparisons ignore leading/trailing whitespace, repeated whitespace,
-  and capitalization. For example, `Prepare report` and `  prepare   REPORT  `
-  are treated as duplicates.
-* The current filtered employee list is preserved after the command.
+  * Task comparisons ignore leading/trailing whitespace, repeated whitespace, and capitalization.
+  * For example, `Prepare report` and `prepare REPORT` are treated as duplicates.
+* The active filter and sort order remain in effect after the command.
 
 Examples:
 
@@ -442,9 +443,9 @@ Format: `task delete EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `TASK_INDEX` refers to the task's index in that employee's task list and
-  must be a positive integer.
-* The current filtered employee list is preserved after the command.
+* `TASK_INDEX` refers to the number shown by `task list EMPLOYEE_INDEX` and must be a positive integer.
+* The active filter and sort order remain in effect after the command.
+  * If the deleted task matched an active task-based filter, the employee may no longer be displayed.
 
 Examples:
 
@@ -461,10 +462,9 @@ Format: `task mark EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `TASK_INDEX` refers to the task's index in that employee's task list and
-  must be a positive integer.
+* `TASK_INDEX` refers to the number shown by `task list EMPLOYEE_INDEX` and must be a positive integer.
 * The `i/` prefix is required for the task index.
-* The current filtered employee list is preserved after the command.
+* The active filter and sort order remain in effect after the command.
 * Marking an already completed task succeeds without changing its state.
 
 Examples:
@@ -480,10 +480,9 @@ Format: `task unmark EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `TASK_INDEX` refers to the task's index in that employee's task list and
-  must be a positive integer.
+* `TASK_INDEX` refers to the number shown by `task list EMPLOYEE_INDEX` and must be a positive integer.
 * The `i/` prefix is required for the task index.
-* The current filtered employee list is preserved after the command.
+* The active filter and sort order remain in effect after the command.
 * Unmarking an already pending task succeeds without changing its state.
 
 Examples:
