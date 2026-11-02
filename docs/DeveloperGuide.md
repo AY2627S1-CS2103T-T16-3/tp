@@ -634,9 +634,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 1e. The provided email address or contact number belongs to an existing employee.
+* 1e. The provided name belongs to an existing employee.
 
-    * 1e1. System informs the HR manager that the provided email address or contact number belongs to an existing employee.
+    * 1e1. System informs the HR manager that the provided name belongs to an existing employee.
     * 1e2. System does not add the employee.
 
       Use case ends.
