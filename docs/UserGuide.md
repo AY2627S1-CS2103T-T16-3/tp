@@ -254,43 +254,92 @@ Examples:
 
 ### Filtering employees by any field: `filter`
 
-Lists employees who match all supplied criteria.
+Lists employees who match **all** supplied criteria (`AND`).
 
 Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`
 
-* Supply at least one non-empty criterion. Every value must satisfy its field's validation rules; invalid input returns the corresponding field's error message.
-* Names allow only alphanumeric characters and spaces. Phone queries require at least 3 digits and no other characters. Emails must be complete valid addresses (for example, `alice@example.com`); fragments such as `@example.com` are rejected. Addresses may contain any non-blank text. Tags must be alphanumeric without spaces. Task details must be non-blank and at most 120 characters.
-* Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
-* Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* To avoid conflict with flags, replace `/` with `\/` in task description.
-* Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Use `s/<=4000` for at most 4000 or `s/>=4000` for at least 4000. `<` and `>` exclude the specified amount; `<=` and `>=` include it. Amounts must be whole numbers from 0 to 50000. Leading zeros are not allowed: `s/003000` is rejected; use `s/3000`. The `=` operator is not supported; omit the operator for an exact match.
-* Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Use `le/<=14` for at most 14 days or `le/>=14` for at least 14 days. `<` and `>` exclude the threshold; `<=` and `>=` include it. Days must be whole numbers from 0 to 365. Leading zeros are not allowed: `le/014` is rejected; use `le/14`. The `=` operator is not supported; omit the operator for an exact match.
-* Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
-* All supplied criteria must match (`AND`). Repeated `t/` criteria require every specified tag; repeated `task/` criteria require a matching task for each query. Different queries may match different tasks or the same task.
-* Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
-* Range filtering is supported **only for salary (`s/`) and annual leave entitlement (`le/`)**. These fields support `<`, `<=`, `>`, `>=`, and inclusive ranges written as `MIN-MAX`. Both endpoints are included; the minimum must not exceed the maximum. Spaces around an operator or range separator are allowed. Salary endpoints must be from 0 to 50000, leave endpoints from 0 to 365. Phone queries use partial matching.
-* Comparators are supported only for salary (`s/`) and annual leave entitlement (`le/`). Name, phone, email, address, tag, and task filters must not start with `<`, `>`, `=`, or `!=`; for example, `n/>Alice` is rejected with a comparator error. These fields use text matching.
-* **Leading zeroes are not allowed in salary (`s/`) or annual leave entitlement (`le/`) filters.** This applies to exact values, comparison amounts, and both range endpoints. For example, `filter s/003000`, `filter le/>014`, and `filter s/03000-5000` are rejected; use `filter s/3000`, `filter le/>14`, and `filter s/3000-5000` instead. A single `0` is valid. This restriction does not apply to phone searches.
-* Every filter searches the entire address book, including employees hidden by an earlier search.
-* Use `list` to show all employees again. Filtering does not modify employee details.
+#### General rules
 
-Examples:
-* `filter p/91235321` lists employees whose phone number contains `91235321`.
-* `filter e/alice@example.com` lists employees whose email contains the valid address `alice@example.com`.
-* `filter n/Alice a/Jurong` lists employees whose name contains `Alice` and whose address contains `Jurong`.
-* `filter t/friends t/owesMoney` lists employees with both tags.
-* `filter task/report task/review` lists employees with tasks matching both descriptions.
-* `filter task/report s/3000` lists employees with a matching task and salary 3000.
-* `filter le/14` lists employees with an annual leave entitlement of exactly 14 days.
-* `filter le/<14` lists employees with an annual leave entitlement below 14 days.
-* `filter n/Alice s/<4000 le/>10` lists employees whose name contains `Alice`, salary is below 4000, and annual leave entitlement is above 10 days.
-* `filter s/<4000` lists employees earning less than 4000.
-* `filter s/>4000` lists employees earning more than 4000.
-* `filter s/<=4000` lists employees earning 4000 or less.
-* `filter s/>=4000` lists employees earning 4000 or more.
-* `filter s/<=4000 le/>=14` lists employees earning at most 4000 with at least 14 days of annual leave entitlement.
-* `filter n/Alice p/912 s/<4000` lists employees whose name contains `Alice`, whose phone number contains `912`, and whose salary is less than 4000.
-* `filter s/3000-5000 le/14-21` lists employees earning 3000 through 5000 with 14 through 21 days of entitlement, including both endpoints.
+* Supply at least one non-empty criterion. Invalid values return the corresponding field's error message.
+* Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
+* Repeat `t/` to require every specified tag. Repeat `task/` to require a matching task for each query; the same task or different tasks may satisfy the queries.
+* Each command searches the entire address book, including employees hidden by an earlier search.
+* Filtering does not modify employee details. Use `list` to show all employees again.
+
+#### Text filters
+
+All text matching ignores case.
+
+| Field | Valid query | Matching rule |
+| --- | --- | --- |
+| Name (`n/`) | Alphanumeric characters and spaces | Contains the query: `n/ali` matches `Alice Pauline`. |
+| Phone (`p/`) | At least 3 digits; digits only | Contains the query: `p/912` matches a number containing `912`. Leading zeroes are allowed. |
+| Email (`e/`) | A complete valid email, such as `alice@example.com`; fragments such as `@example.com` are rejected | Contains the query. |
+| Address (`a/`) | Any non-blank text | Contains the query. |
+| Tag (`t/`) | Alphanumeric characters; no spaces | Matches the whole tag: `t/friend` does not match `friends`. |
+| Task (`task/`) | Non-blank text, up to 120 characters | Contains the query: `task/report` matches a task containing `report`. |
+
+Text queries must not start with `<`, `>`, `=`, or `!=`. For example, `n/>Alice` returns a comparator error.
+To prevent task text from being mistaken for a field prefix, replace `/` with `\/` in the task description.
+
+#### Salary and annual leave entitlement filters
+
+Only salary and annual leave entitlement support comparisons and ranges.
+
+| Field | Allowed values |
+| --- | --- |
+| Salary (`s/`) | Whole numbers from 0 to 50000 |
+| Annual leave entitlement (`le/`) | Whole numbers from 0 to 365; filters annual entitlement, not remaining leave or leave dates |
+
+Both fields support the following formats:
+
+| Format | Meaning | Salary example | Leave example |
+| --- | --- | --- | --- |
+| `VALUE` | Exactly the value; omit `=` | `s/4000` | `le/14` |
+| `<VALUE` | Less than; excludes the value | `s/<4000` | `le/<14` |
+| `<=VALUE` | At most; includes the value | `s/<=4000` | `le/<=14` |
+| `>VALUE` | Greater than; excludes the value | `s/>4000` | `le/>14` |
+| `>=VALUE` | At least; includes the value | `s/>=4000` | `le/>=14` |
+| `MIN-MAX` | Inclusive range; minimum must not exceed maximum | `s/3000-5000` | `le/14-21` |
+
+* Spaces around comparison operators and range separators are allowed. Both range endpoints must satisfy the field's allowed values.
+* The `=` operator is not supported. Use `s/4000` or `le/14` for an exact match.
+* **Leading zeroes are not allowed**, including in comparison amounts and either range endpoint. A single `0` is valid. This restriction does not apply to phone queries.
+
+| Rejected input | Use instead |
+| --- | --- |
+| `filter s/003000` | `filter s/3000` |
+| `le/014` | `le/14` |
+| `filter le/>014` | `filter le/>14` |
+| `filter s/03000-5000` | `filter s/3000-5000` |
+
+#### Examples
+
+**Text and combined criteria**
+
+| Command | Employees matched |
+| --- | --- |
+| `filter p/91235321` | Phone number contains `91235321`. |
+| `filter e/alice@example.com` | Email contains the valid address `alice@example.com`. |
+| `filter n/Alice a/Jurong` | Name contains `Alice` and address contains `Jurong`. |
+| `filter t/friends t/owesMoney` | Has both tags. |
+| `filter task/report task/review` | Has tasks matching both descriptions. |
+| `filter task/report s/3000` | Has a task containing `report` and salary of 3000. |
+| `filter n/Alice s/<4000 le/>10` | Name contains `Alice`, salary is below 4000, and annual entitlement exceeds 10 days. |
+| `filter n/Alice p/912 s/<4000` | Name contains `Alice`, phone contains `912`, and salary is below 4000. |
+
+**Numeric criteria**
+
+| Command | Employees matched |
+| --- | --- |
+| `filter le/14` | Annual entitlement is exactly 14 days. |
+| `filter le/<14` | Annual entitlement is below 14 days. |
+| `filter s/<4000` | Salary is below 4000. |
+| `filter s/>4000` | Salary is above 4000. |
+| `filter s/<=4000` | Salary is at most 4000. |
+| `filter s/>=4000` | Salary is at least 4000. |
+| `filter s/<=4000 le/>=14` | Salary is at most 4000 and annual entitlement is at least 14 days. |
+| `filter s/3000-5000 le/14-21` | Salary is 3000–5000 and annual entitlement is 14–21 days, including all endpoints. |
 
 ### Sorting the displayed employees: `sort`
 
