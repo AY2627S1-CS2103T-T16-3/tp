@@ -613,31 +613,24 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 1b. The HR manager provides an invalid field.
+* 1b. The HR manager repeats a field that may only be specified once.
 
-    * 1b1. System informs the HR manager that the field does not exist.
+    * 1b1. System informs the HR manager that the field cannot be repeated.
     * 1b2. System does not add the employee.
 
       Use case ends.
 
-* 1c. The HR manager provides more fields than required.
+* 1c. One or more provided employee details are invalid.
 
-    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c1. System informs the HR manager that the details are invalid.
     * 1c2. System does not add the employee.
 
       Use case ends.
 
-* 1d. One or more provided employee details are invalid.
+* 1d. The provided name belongs to an existing employee.
 
-    * 1d1. System informs the HR manager that the details are invalid.
+    * 1d1. System informs the HR manager that the provided name belongs to an existing employee.
     * 1d2. System does not add the employee.
-
-      Use case ends.
-
-* 1e. The provided name belongs to an existing employee.
-
-    * 1e1. System informs the HR manager that the provided name belongs to an existing employee.
-    * 1e2. System does not add the employee.
 
       Use case ends.
 
