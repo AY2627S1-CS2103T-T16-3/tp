@@ -114,6 +114,8 @@ Shows employee and tag counts, task assignments, leave records, and total/averag
 
 Format: `summary [scope/all|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`)
 
+The `|` means "or": use either `scope/all` or `scope/filtered`, or omit the scope.
+
 | Option | Meaning |
 | --- | --- |
 | `scope/filtered` (default) | Summarize the currently displayed employees, including results of `find` or `filter`. |
@@ -577,6 +579,6 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Delete task**       | `task delete EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `task delete 1 i/1` |
 | **Mark task**         | `task mark EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `task mark 1 i/1` |
 | **Unmark task**       | `task unmark EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `task unmark 1 i/1` |
-| **Workforce summary** | `summary [scope/all\|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`) |
+| **Workforce summary** | <code>summary [scope/all&#124;scope/filtered] [i/INDEX...] [e/INDEX...]</code> (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |
