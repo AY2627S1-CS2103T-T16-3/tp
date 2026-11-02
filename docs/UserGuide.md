@@ -60,8 +60,10 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 * Items followed by `…`​ can appear zero or more times.<br>
   For example, `[t/TAG]…​` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-* Parameters can be in any order.<br>
+* Parameters with prefixes can generally be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+  Unprefixed parameters, such as `INDEX`, must remain in the position shown in the command format. Any exceptions are
+  stated in the relevant command section.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `leave list`, `exit`, and
   `clear`, are ignored.<br>
@@ -113,38 +115,30 @@ Format: `list`
 
 ### Viewing the workforce summary: `summary`
 
-Shows employee counts by tag, task-assignment counts, leave-record counts, and recorded salary statistics
-in the selected scope.
+Shows employee and tag counts, task assignments, leave records, and total/average salary.
 
 Format: `summary [scope/all|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`)
 
-Omit the scope or use `scope/filtered` to summarize the currently displayed employees after `find`
-or `filter`. For example, run `filter t/engineering` then `summary`. Use `summary scope/all` to summarize
-all stored employees while keeping the current filter active.
-Values are case-sensitive and must immediately follow `scope/`; surrounding whitespace is allowed.
-Empty, unknown, repeated parameters and extra text are rejected, e.g. `summary t/engineering`.
+The `|` means "or": use either `scope/all` or `scope/filtered`, or omit the scope.
 
-To select particular employees for the summary:
+| Option | Meaning |
+| --- | --- |
+| `scope/filtered` (default) | Summarize the currently displayed employees, including results of `find` or `filter`. |
+| `scope/all` | Summarize all employees in the current sort order. |
+| `i/INDEX...` | Include only the listed indexes. |
+| `e/INDEX...` | Exclude the listed indexes. |
 
-* Use `i/` to include only the listed indexes, e.g. `summary i/1 3` summarizes employees 1 and 3.
-* Use `e/` to exclude the listed indexes, e.g. `summary e/2 4` summarizes everyone except employees 2 and 4.
-* You can combine them: `summary i/1 2 3 e/2` summarizes employees 1 and 3. Exclusions take precedence.
-* Indexes must be positive integers separated by whitespace. Repeated indexes count only once.
-  Supply each prefix at most once; an empty list or any index outside the selected scope is rejected.
-  For an out-of-range index, the error shows that index, the selected scope, and its valid index range.
-* Indexes refer to positions in the selected scope, not employee IDs. By default they refer to the currently
-  displayed list. With `scope/all`, they refer to the full employee list in the current sort order;
-  run `list` first to view that numbering. Without an active sort, the full list uses stored order.
-  With everyone displayed, both scopes select the same employees even when sort values tie.
-  Put the optional scope before `i/` and `e/`; the two index prefixes may appear in either order.
-* Every statistic uses the resulting selection. The output shows the included/excluded indexes in ascending order.
-  Excluding everyone produces an empty summary. Selections apply only to this invocation.
+Indexes refer to positions in the selected scope. Run `list` to view the numbering used by `scope/all`.
 
-Without a parameter the summary includes **only the currently displayed employees**. Run `list` first
-to display and summarize everyone, or use `summary scope/all` without changing the displayed list.
-The output labels its scope explicitly. An empty filtered result produces zero counts, not a fallback
-to the full book. Neither scope changes employee records or the current filter. Run the command again
-after changes to see fresh counts; with no active filter, both scopes include the same employees.
+* Put the optional scope first and use each option at most once. Scope values are case-sensitive.
+* Indexes must be positive integers within the selected scope, separated by spaces. Repeated indexes count once;
+  empty or out-of-range index lists are rejected.
+* Exclusions win when an index appears in both `i/` and `e/`. Every statistic uses the same selection.
+
+Examples:
+
+* `summary i/1 2 3 e/2` summarizes displayed employees 1 and 3.
+* `summary scope/all e/1` summarizes everyone except the first employee in the full sorted list.
 
 Example output:
 
@@ -173,26 +167,16 @@ Scope: Filtered employees
 +-------------+-----------+
 ```
 
-* The first table shows headcount, employees without tags, assigned tasks, employees with tasks,
-  saved leave records, and total/average recorded salary. The tag table appears only when there are tags.
-* `Leave records` counts saved leave periods belonging to the selected employees. Each period counts once,
-  regardless of its length or year. Past, current, and future records are included. This is a count of records,
-  not leave days or remaining entitlement. An empty selection or employees without leave records show `0`.
-  For example, one single-day period and one five-day period count as two records, not six days.
-* Tags are grouped case-insensitively, displayed in lowercase, and sorted alphabetically.
-  An employee tagged with both `Engineering` and `engineering` counts once in that group.
-  Employees with several tags count in each group, so tag counts can overlap.
-* Identical task descriptions assigned to different employees count as separate assignments.
-  Both pending and completed tasks count. Task counts do not indicate deadlines, effort, or productivity.
-* Salary figures include zero salaries. An empty selection shows zero counts, a total salary of `$0.00`,
-  and an average of `N/A`. Amounts use two decimal places; averages round half up.
-  These are recorded amounts, not payroll, tax, benefits, or payments.
-* These figures describe stored records, not attendance or active employment. Tags are not interpreted
-  as structured departments; leave balances and reminders are not included.
+* **Leave records:** each saved period counts once, regardless of duration or year. Includes past, current,
+  and future records; this is not a count of leave days or remaining entitlement.
+* **Tasks:** pending and completed tasks both count. The same description assigned to two employees counts twice.
+* **Tags:** grouped without regard to case and shown in lowercase alphabetical order. Each employee counts once
+  per group but may belong to several groups. The tag table is omitted when there are no tags.
+* **Salary:** zero salaries are included. Averages round half up to two decimal places. An empty selection shows
+  zero counts, total salary `$0.00`, and average `N/A`.
 
-The tables use a monospaced font with right-aligned values. Columns expand to fit long tags and large amounts.
-Scroll within the result area or drag the divider below it to see more rows; wide tables can be scrolled horizontally.
-Run the command again after employee, task, leave, or salary changes to refresh the figures.
+The command preserves employee data and the current filter. Run it again after changes to refresh the figures.
+Scroll within the result panel or drag its lower divider to see the full tables.
 
 ### Changing an employee's salary: `salary`
 
@@ -422,7 +406,7 @@ Format: `task list EMPLOYEE_INDEX`
 * Tasks are displayed in the order in which they were added.
 * Pending tasks are displayed with `[ ]`, while completed tasks are displayed with `[x]`.
 * `TASK_INDEX` refers to the number displayed next to the task.
-* The current filtered employee list is preserved after the command.
+* The active filter and sort order remain in effect after the command.
 
 Example:
 
@@ -442,14 +426,12 @@ Format: `task add EMPLOYEE_INDEX d/DETAILS`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `DETAILS` must not be empty, and it must not exceed 120 characters.
-* Prefix-like text that is not escaped, such as `s/5000`, is rejected. To use it as part of a task description,
-  replace `/` with `\/`, for example `s\/5000`.
+* `DETAILS` must not be blank, and it must not exceed 120 characters.
+* To avoid conflict with prefixes, replace `/` with `\/` in the task description.
 * A task that already exists for the employee cannot be added again.
-  Task comparisons ignore leading/trailing whitespace, repeated whitespace,
-  and capitalization. For example, `Prepare report` and `  prepare   REPORT  `
-  are treated as duplicates.
-* The current filtered employee list is preserved after the command.
+  * Task comparisons ignore leading/trailing whitespace, repeated whitespace, and capitalization.
+  * For example, `Prepare report` and `prepare REPORT` are treated as duplicates.
+* The active filter and sort order remain in effect after the command.
 
 Examples:
 
@@ -466,9 +448,9 @@ Format: `task delete EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `TASK_INDEX` refers to the task's index in that employee's task list and
-  must be a positive integer.
-* The current filtered employee list is preserved after the command.
+* `TASK_INDEX` refers to the number shown by `task list EMPLOYEE_INDEX` and must be a positive integer.
+* The active filter and sort order remain in effect after the command.
+  * If the deleted task matched an active task-based filter, the employee may no longer be displayed.
 
 Examples:
 
@@ -485,10 +467,9 @@ Format: `task mark EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `TASK_INDEX` refers to the task's index in that employee's task list and
-  must be a positive integer.
+* `TASK_INDEX` refers to the number shown by `task list EMPLOYEE_INDEX` and must be a positive integer.
 * The `i/` prefix is required for the task index.
-* The current filtered employee list is preserved after the command.
+* The active filter and sort order remain in effect after the command.
 * Marking an already completed task succeeds without changing its state.
 
 Examples:
@@ -504,10 +485,9 @@ Format: `task unmark EMPLOYEE_INDEX i/TASK_INDEX`
 
 * `EMPLOYEE_INDEX` refers to the employee's index in the currently displayed
   employee list and must be a positive integer.
-* `TASK_INDEX` refers to the task's index in that employee's task list and
-  must be a positive integer.
+* `TASK_INDEX` refers to the number shown by `task list EMPLOYEE_INDEX` and must be a positive integer.
 * The `i/` prefix is required for the task index.
-* The current filtered employee list is preserved after the command.
+* The active filter and sort order remain in effect after the command.
 * Unmarking an already pending task succeeds without changing its state.
 
 Examples:
@@ -603,6 +583,6 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Delete task**       | `task delete EMPLOYEE_INDEX i/TASK_INDEX`<br>e.g., `task delete 1 i/1` |
 | **Mark task**         | `task mark EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `task mark 1 i/1` |
 | **Unmark task**       | `task unmark EMPLOYEE_INDEX i/TASK_INDEX`<br> e.g., `task unmark 1 i/1` |
-| **Workforce summary** | `summary [scope/all\|scope/filtered] [i/INDEX...] [e/INDEX...]` (alias: `/summary`) |
+| **Workforce summary** | <code>summary [scope/all&#124;scope/filtered] [i/INDEX...] [e/INDEX...]</code> (alias: `/summary`) |
 | **Help**              | `help` |
 | **Exit**              | `exit` |
