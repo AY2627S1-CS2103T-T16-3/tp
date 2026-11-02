@@ -11,6 +11,10 @@ title: Developer Guide
 
 * _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
 
+* [@geengene](https://github.com/geengene) used OpenAI Codex to generate and revise workforce-summary code,
+  tests, documentation, and diagrams, and to implement and test save-failure recovery and application file paths.
+  Codex also assisted with PR reviews, test planning, and debugging.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
@@ -220,6 +224,14 @@ The `Storage` component,
   reads them back into corresponding model objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+
+`AppPaths` resolves data, preferences, and logs relative to the running JAR's parent folder, using its code-source
+URI rather than the launch folder. Converting the URI to a `Path` preserves spaces and Unicode filenames.
+When running unpackaged classes from an IDE or Gradle, the working folder remains the development home.
+The resolver rejects absolute filenames and paths that climb out of the home folder.
+`MainApp` uses it for both JSON files. `LogsCenter` uses it before creating the first log file and escapes
+literal percent signs for `FileHandler`. If the log file cannot be opened, logging continues on the console.
+Existing filenames are retained; files outside the JAR's home folder are not imported automatically.
 
 Saved address-book data is treated as untrusted input because files may be edited accidentally or modified maliciously.
 Before deserializing the file, `JsonAddressBookStorage` scans its JSON tokens and rejects every explicit `null` with an
