@@ -430,18 +430,22 @@ Dashed arrows indicate usage (`use`) or creation (`create`) dependencies; only m
 
 <img src="images/SummaryClassDiagram.png" alt="Summary command class dependencies" width="680" />
 
-`AddressBookParser` routes both spellings to `SummaryCommandParser`. The parser accepts an optional
+`AddressBookParser` routes the `summary` command and its `/summary` alias to `SummaryCommandParser`.
+The parser accepts an optional
 `scope/all` or `scope/filtered` followed by optional `i/` and `e/` whitespace-separated index lists.
 `ArgumentTokenizer` separates the two prefixes, and `ParserUtil.parseIndex` validates positive integers.
 Each prefix may occur once; repeated indexes are deduplicated. Malformed inputs report usage errors,
 while repeated prefixes use the shared duplicate-prefix error.
-The command stores a `SummaryCommand.Scope` enum and immutable inclusion/exclusion index sets, not employee snapshots.
-At execution time the command reads
+The command stores a `SummaryCommand.Scope` enum and immutable inclusion/exclusion index sets.
+It resolves employees when it executes so it uses the latest employee data, filter, and sort order.
+Indexes are resolved against the current list, rather than an outdated list captured during parsing.
+The command reads
 `model.getFilteredEmployeeList()` for the default/filtered scope, or
-`model.getAllEmployeesInDisplayOrder()` for explicit `scope/all`. The latter returns a snapshot of all employees
-by copying the shared `SortedList` before filtering. Both scopes therefore use the same ordering for tied
+`model.getAllEmployeesInDisplayOrder()` for explicit `scope/all`. The latter returns an immutable copy of the full
+employee list in display order by copying the shared `SortedList` before filtering.
+It changes neither the active filter nor the underlying stored order. Both scopes use the same ordering for tied
 values, including after repeated sorts. Without an active sort, the full list follows stored order.
-Creating the snapshot does not change stored records or the filter. Indexes refer to positions in this collection.
+Indexes refer to positions in the chosen employee list.
 Every supplied index is checked against its current size; out-of-range indexes throw `CommandException`.
 An empty inclusion set selects everyone, and exclusions take precedence over inclusions. The resulting collection is
 passed to `EmployeeSummary.fromEmployees` together with `model.getAddressBook().getLeaveList()`, so all
@@ -455,38 +459,26 @@ right-aligned values. The tag table is omitted when there are no tags. Explanato
 the `table` CSS pseudo-class for a monospaced font. Ordinary feedback and errors restore the normal font.
 No new window or storage fields are needed.
 
-`EmployeeSummary.fromEmployees` owns aggregation independently of presentation:
+`EmployeeSummary.fromEmployees` calculates the totals, while `SummaryFormatter` formats the tables.
+Keeping these separate lets developers change the presentation without changing or repeating the calculations.
+The resulting `EmployeeSummary` is immutable:
 
 * Each stored employee contributes once to the total; an empty tag set contributes to the untagged count.
 * Tag names are lowercased using `Locale.ROOT`, avoiding dependence on the system locale.
 * Normalized tags are deduplicated per employee before counting, so case variants on one employee
   do not inflate that tag's count. Different tag groups may overlap.
-* A `TreeMap` provides alphabetical ordering. The snapshot exposes an unmodifiable copy of the counts.
+* A `TreeMap` provides alphabetical ordering. `EmployeeSummary` exposes an unmodifiable copy of the counts.
 * An empty input produces zero counts. If no tags exist, the formatter omits the tag table.
 
 Aggregation is recomputed on each invocation, without stored counters, new JSON fields, or changes to
 employees, tags, user preferences, or the current filter. The existing application-wide automatic
-save after command execution remains unchanged. This feature does not infer attendance, active
-employment, or departments.
+save after command execution remains unchanged.
 
-Tests in `EmployeeSummaryTest` cover counting, ordering, case deduplication, locale independence, and
-snapshot immutability. `SummaryCommandTest` checks formatting, filtered and empty views, preservation
-of the filter predicate, and fresh results after add/edit/delete. Parser tests cover both spellings,
-surrounding whitespace, and rejection of unexpected arguments. `SummaryScopeCommandTest` covers scope
-selection, empty matches, execution-time reads, and preservation of the filter predicate.
-`SummaryIndexCommandTest` covers index selection in both scopes, overlap, empty selections, invalid indexes,
-execution-time resolution, and preservation of employee records and filters. Logic tests
-exercise both spellings after `find` and `filter`, checking that saved data and the visible list remain unchanged.
-`SummarySortCommandTest` covers sorted inclusion/exclusion, hidden employees, ties after repeated sorts,
-and sort/data changes after parsing. `ModelManagerTest` checks that the full sorted snapshot preserves
-the filter and stored order, and matches the displayed list after filtering and employee changes.
-`LogicManagerTest` checks the repeated-sort regression through real commands without changing saved data.
-`SummaryFormatterTest` checks exact table layouts, omitted detail, long tags, and large totals.
-`CommandResultTest` checks presentation metadata. `ResultDisplayTest` checks equal-width table characters,
-normal/error font restoration, caret reset, and null input handling on the JavaFX thread.
-Linux CI runs these tests with Xvfb to provide a virtual display.
-The JavaFX result-panel preview was checked with synthetic data
-for aligned columns, empty results, and restoration of the normal feedback font.
+Tests cover the `summary` command and its `/summary` alias, valid and invalid selections, filtered and sorted
+views, empty results, and accurate tag, task, leave-record, and salary totals. They also check that commands
+use current data and preserve employee records and filters. Computed `EmployeeSummary` values must remain
+unchanged after later record updates.
+Presentation tests check table alignment and restoration of the normal feedback font.
 
 #### Leave-record counts
 
@@ -496,17 +488,12 @@ are not used to match records. Employees without an ID contribute no leave recor
 This takes O(E + L) time for E selected employees and L stored leave records.
 
 Each saved period counts once regardless of its duration, year, or whether it is in the past or future.
-The result is stored as a `long` in the immutable snapshot and displayed as `Leave records`.
-Empty selections and selections without matching records produce zero. The one-argument factory assumes
-no leave records. Neither factory retains or changes the input lists.
+The result is stored as a `long` in `EmployeeSummary` and displayed as `Leave records`.
+Empty selections and selections without matching records produce zero.
+`fromEmployees(employees)` delegates to `fromEmployees(employees, List.of())`, using an empty leave list.
+Neither factory retains or changes the input lists.
 The existing leave records are the source of truth after restart: the count is recalculated rather than
 saved separately. Changes to leave or employee records are reflected the next time `summary` runs.
-
-`EmployeeSummaryLeaveTest` checks record counting across years, stable IDs after renaming, empty and
-unmatched inputs, null inputs, and snapshot independence. `SummaryLeaveCommandTest` checks both aliases,
-filtered/all scopes, inclusion/exclusion selections, displayed indexes after sorting, and fresh counts
-after leave or employee deletion. `LogicManagerTest` exercises real leave commands and verifies that
-summaries preserve the active filter and saved data, and that changes persist correctly.
 
 #### Task counts
 
@@ -516,25 +503,21 @@ Employees without tasks are derived from headcount minus employees with tasks. E
 zero for all task statistics; identical descriptions on different employees count separately.
 
 `SummaryFormatter` displays assigned tasks and employees with tasks in the metrics table, even when
-there are no tags. Derived counts and per-employee maxima remain available in the snapshot but are not displayed.
-The snapshot contains counts only and remains unchanged when source records are replaced.
-Tests cover mixed and empty lists, tied maxima, repeated descriptions across employees, filtered views,
-unchanged records, and fresh snapshots after task and employee changes. No completion or due-date
-semantics, storage fields, or task commands are introduced by this feature.
+there are no tags. Derived counts and per-employee maxima remain available in `EmployeeSummary` but are not displayed.
+`EmployeeSummary` contains only derived aggregate values and does not retain employee records.
+Its values remain unchanged when source records are replaced.
 
 #### Salary statistics
 
 `EmployeeSummary` also captures salary statistics from the same employee collection. Its private
-`IntSummaryStatistics` is constructed locally and never exposed or modified after snapshot creation.
+`IntSummaryStatistics` is constructed locally and never exposed or modified after `EmployeeSummary` is created.
 The total is a `long`; minimum and maximum are `OptionalInt` values, empty for an empty collection.
 The average is an optional `BigDecimal`, calculated directly from the integer total and employee count
 with scale 2 and `RoundingMode.HALF_UP`, without converting to floating point. Zero salaries are included.
 
 `SummaryFormatter` displays total and average salary in the metrics table. An empty collection displays
-`$0.00` for the total and `N/A` for the average. Minimum and maximum remain available in the snapshot but are not displayed.
-No currency period, benefits, or payroll assumptions are added. Tests cover empty/single inputs,
-zero/maximum amounts, half-cent rounding, totals beyond `int`, snapshot independence, filtered views,
-and recomputation after a salary command.
+`$0.00` for the total and `N/A` for the average. Minimum and maximum remain available in `EmployeeSummary`
+but are not displayed.
 
 ### Leave management
 
@@ -683,6 +666,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
+| `* * *`  | HR Officer                 | view employee, task, leave-record, and salary totals for selected employees      | review the workforce without checking each employee separately                           |
 | `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
 | `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
 | `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
@@ -1157,8 +1141,36 @@ selects an employee and the system displays that employee's tasks or reports tha
 
     Use case ends.
 
+**Use case: UC13 - View workforce summary**
 
+**MSS**
 
+1. HR manager requests a summary of the displayed employees or all employees, optionally including or excluding indexes within that scope.
+2. System displays employee, tag, task, and leave-record counts, plus total and average salary for the selected employees.
+
+   Use case ends.
+
+Employee data and the current filter remain unchanged in all flows.
+
+**Extensions**
+
+* 1a. The HR manager provides an invalid scope or malformed selection.
+
+    * 1a1. System reports the input error.
+
+      Use case ends.
+
+* 1b. A provided index is outside the chosen scope.
+
+    * 1b1. System identifies the invalid index and shows the valid index range, or indicates that there are no valid indexes.
+
+      Use case ends.
+
+* 2a. The chosen scope is empty or all its employees are excluded.
+
+    * 2a1. System displays zero counts, a total salary of `$0.00`, and an average salary of `N/A`.
+
+      Use case ends.
 
 ### Non-Functional Requirements
 
