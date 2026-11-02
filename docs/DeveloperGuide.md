@@ -1131,6 +1131,45 @@ testers are expected to do more *exploratory* testing.
    1. Relaunch the app by double-clicking the JAR file.<br>
        Expected: The most recent window size and location are retained.
 
+### Adding an employee
+
+Use a separate copy of the application with test data. Run `list` and
+ensure no employees named `Alice Tan`, `Bob Lim`, or `alice tan` exist.
+Run the following test cases in order.
+
+1. Adding an employee with valid details
+
+   1. Test case:
+      `add n/Alice Tan p/91234567 e/alice@example.com a/123 Clementi Road le/14`<br>
+      Expected: The employee appears in the employee list. The status message begins with
+      `New employee added:` and shows the employee's details.
+
+2. Adding an employee with an existing name but different details
+
+   1. Test case:
+      `add n/Alice Tan p/98765432 e/anotheralice@example.com a/456 Jurong Road le/20`<br>
+      Expected: The command is rejected with
+      `This employee already exists in the address book.`
+      No employee is added and the existing employee's details remain unchanged.
+
+3. Adding an employee with a different name but matching contact details
+
+   1. Test case:
+      `add n/Bob Lim p/91234567 e/alice@example.com a/123 Clementi Road le/14`<br>
+      Expected: The employee is added because duplicate detection uses
+      names only. Matching phone numbers and email addresses are allowed.
+
+4. Adding an employee whose name differs only in letter case
+
+   1. Test case:
+      `add n/alice tan p/91234567 e/alice@example.com a/123 Clementi Road le/14`<br>
+      Expected: The employee is added because name comparison is
+      case-sensitive. `Alice Tan` and `alice tan` are treated as different names.
+
+5. Cleanup
+
+   1. Run `list` and delete each employee created above using `delete INDEX`.
+      Check the displayed indexes again after each deletion because they may change.
 
 ### Deleting an employee
 
