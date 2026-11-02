@@ -37,7 +37,7 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
    * `leave add 1 from/20-10-2026 to/22-10-2026` : Records leave for the first employee currently shown.
 
-   * `leave list` : Lists leave records for the employees currently displayed and shows each record's current status.
+   * `leave list` : Shows current-year remaining balances and leave records for the employees currently displayed.
 
    * `delete 3` : Deletes the 3rd employee shown in the current list and their leave records.
 
@@ -378,19 +378,38 @@ Examples:
 
 ### Managing employee leave
 
-Leave records are stored separately from employee records and linked internally to the correct employee. You select an
-employee using the index currently displayed in the employee list. Internal employee IDs are not shown and are not
-accepted by leave commands.
+Use the employee's displayed index to record leave, and the leave record's own ID to delete it:
 
-Each recorded leave has a stable, public leave ID. Use `leave list` to find this ID before deleting a leave record. As
-`leave list` follows the currently displayed employee list, run `list` first if you need to find a leave record for any
-employee.
+| Command | Which number should I use? |
+| --- | --- |
+| `leave add INDEX ...` | The employee index currently shown on the employee card. |
+| `leave delete LEAVE_ID` | The stable leave ID shown by `leave list`. |
+
+The examples below use John Doe at employee index `1`, with an annual entitlement of 14 days and no existing leave
+for 2026. The newly recorded leave has ID `7` in this example; your assigned ID and balance may differ.
 
 #### Recording leave: `leave add`
 
 Records one leave period for the employee at the displayed index.
 
 Format: `leave add INDEX from/START_DATE to/END_DATE`
+
+Example command:
+
+```text
+leave add 1 from/09-11-2026 to/11-11-2026
+```
+
+Example output:
+
+```text
+Leave recorded: ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 3 working day(s); 11 day(s) remaining in 2026.
+```
+
+This records three weekdays and leaves John with 11 days for 2026. Keep the returned leave ID (`7`) if you later
+need to cancel this record. Employee index `1` and leave ID `7` identify different things.
+
+Rules:
 
 * `INDEX` refers to the index shown in the current employee list and must be a positive integer.
 * Dates must use the `DD-MM-YYYY` format. Years from `0001` to `9999` are accepted; year `0000` is invalid. Valid
@@ -404,26 +423,70 @@ Format: `leave add INDEX from/START_DATE to/END_DATE`
   to different employees may overlap.
 * The number of weekdays requested cannot exceed the employee's remaining entitlement for that calendar year.
 
-The success message shows the new leave ID, employee name, period, charged working days, and remaining leave for the
-year.
+For example, `leave add 1 from/13-11-2026 to/16-11-2026` requests two working days, excluding the weekend.
 
-Examples:
-* `list` followed by `leave add 1 from/20-10-2026 to/22-10-2026` records three working days for the first employee.
-* `find Betsy` followed by `leave add 1 from/23-10-2026 to/26-10-2026` records two working days for Betsy, excluding
-  the weekend.
+If a request overlaps John's existing record, the app reports:
+
+```text
+This leave period overlaps an existing leave record for the employee.
+```
+
+If another request needs 12 working days while John has only 11 remaining, the app reports:
+
+```text
+John Doe has only 11 annual leave day(s) remaining in 2026, but this request needs 12.
+```
+
+Neither rejection adds a leave record. Check `leave list` for overlaps or request fewer working days.
 
 #### Listing leave: `leave list`
 
-Lists leave records belonging to employees in the currently displayed employee list, ordered by leave ID.
+Shows the current-year remaining balance for each displayed employee, followed by their leave records in leave ID
+order. Balances appear in the same employee order as the cards.
 
 Format: `leave list`
 
-The command uses whichever employees are currently displayed. For example, after `find Betsy` or a `filter` command,
-only leave records belonging to the matching employees are listed. Run `list` before `leave list` to display leave
-records for all employees. If none of the displayed employees has a leave record, the command reports that no leave
-records were found.
+Continuing the three-day example above, run:
 
-Each line shows the leave ID, employee name, inclusive date range, charged working days, and one of these statuses:
+```text
+leave list
+```
+
+Example output, assuming today's date is 2 November 2026:
+
+```text
+Remaining annual leave (2026):
+John Doe: 11 of 14 day(s) remaining.
+
+Leave records:
+ID 7 | John Doe | 09-11-2026 to 11-11-2026 | 3 working day(s) | Upcoming
+```
+
+| Output field | Meaning |
+| --- | --- |
+| `Remaining annual leave (2026)` | The calendar year used for all balances in this result. |
+| `11 of 14 day(s) remaining` | Remaining days and total annual entitlement for the named employee. |
+| `ID 7` | The leave ID to use with `leave delete`. |
+| `John Doe` | The employee's current name. |
+| `09-11-2026 to 11-11-2026` | The inclusive start and end dates. |
+| `3 working day(s)` | Days charged against annual entitlement. |
+| `Upcoming` | The leave's status relative to today. |
+
+Rules:
+
+* The year in the balance header is the current year according to your computer's date. Extra arguments after
+  `leave list` are ignored and cannot select a different year.
+* Each balance deducts all recorded working leave days in that year, including upcoming leave. Records from other
+  years do not affect it. If recorded days exceed the employee's current entitlement, the balance is shown as `0`.
+* An employee with no leave records in the current year is shown with their full annual entitlement remaining.
+* `find` and `filter` restrict both balances and records to the displayed employees. Run `list` before `leave list`
+  to show everyone's balances and records.
+* The record list still includes all years. If there are no matching records, balances are followed by
+  `No leave records found.` If no employees are displayed, the result is `No employees displayed.`
+* Listing balances and records does not add or delete leave, change employee details, or reset the current filter
+  or sort order.
+
+Statuses:
 
 * `Upcoming`: today's date is before the start date.
 * `Ongoing`: today's date falls within the inclusive date range.
@@ -432,12 +495,20 @@ Each line shows the leave ID, employee name, inclusive date range, charged worki
 The status is calculated whenever the command runs and is not saved. An ongoing period remains `Ongoing` when today is
 a weekend inside that period, even though weekends do not consume entitlement.
 
-Example output:
+#### Checking an employee's remaining leave
 
-```text
-Leave records:
-ID 1 | John Doe | 20-10-2026 to 22-10-2026 | 3 working day(s) | Upcoming
-```
+To check an employee's current-year balance without recording or cancelling leave:
+
+1. Use `find` or `filter` to locate the employee, for example `find John`.
+2. Run `leave list` and read that employee's line under **Remaining annual leave**. Check the year in the header.
+
+In the example above, John has **11 days remaining in 2026**, including the deduction for his upcoming three-day
+leave. The card's **Total annual leave** is his entitlement of 14 days; it is not the remaining balance.
+
+<img src="images/LeaveBalanceExample.png" alt="HR Book showing John Doe's remaining balance of 11 out of 14 days for 2026, followed by leave record ID 7" width="726" style="max-width: 100%; height: auto;" />
+
+*The result box shows the balance separately from leave ID `7`. The employee's displayed index is `1`.
+This screenshot was captured on 2 November 2026, so the leave is `Upcoming`.*
 
 #### Deleting leave: `leave delete`
 
@@ -445,14 +516,28 @@ Deletes the leave record with the specified leave ID.
 
 Format: `leave delete LEAVE_ID`
 
+To cancel the record from the example above, run:
+
+```text
+leave delete 7
+```
+
+Example output:
+
+```text
+Deleted leave: ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 14 day(s) remaining in 2026.
+```
+
+The three charged days are released. As John has no other leave in 2026 in this example, his remaining balance
+returns to 14 days. Use the ID returned by your own `leave list` output if it differs from `7`.
+
+Rules:
+
 * `LEAVE_ID` must be a positive integer displayed by `leave list`; it is not an employee list index.
 * Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
   balance is recalculated from the records that remain.
 * Leave IDs removed using `leave delete` are not reused while the current address book remains in use. The `clear`
   command starts a fresh address book and resets the ID sequence.
-
-Example:
-* `leave list` followed by `leave delete 2` deletes the leave record whose ID is `2`.
 
 ### Listing tasks on an employee: `task list`
 
@@ -638,7 +723,7 @@ stable identifier for one leave record. Use the displayed index with `leave add`
 | **Sort**              | `sort FIELD/ORDER`<br> e.g., `sort s/asc` or `sort p/des` |
 | **List employees**    | `list` |
 | **Record leave**      | `leave add INDEX from/START_DATE to/END_DATE`<br>e.g., `leave add 1 from/20-10-2026 to/22-10-2026` |
-| **List leaves**       | `leave list` |
+| **View leave balances and records** | `leave list` |
 | **Delete leave**      | `leave delete LEAVE_ID`<br>e.g., `leave delete 2` |
 | **List tasks**        | `task list EMPLOYEE_INDEX`<br>e.g., `task list 1` |
 | **Add task**          | `task add EMPLOYEE_INDEX d/DETAILS`<br>e.g., `task add 1 d/Prepare report` |
