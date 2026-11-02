@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -50,15 +52,22 @@ public class ModelManager implements Model {
 
     @Override
     public ModelSnapshot createSnapshot() {
-        return new ModelSnapshot(addressBook, filteredEmployees.getPredicate(), sortedEmployees.getComparator());
+        return new ModelSnapshot(addressBook, filteredEmployees.getPredicate(), sortedEmployees.getComparator(),
+                sortedEmployees);
     }
 
     @Override
     public void restoreSnapshot(ModelSnapshot snapshot) {
         requireNonNull(snapshot);
         addressBook.restoreValidatedData(snapshot.addressBook);
-        filteredEmployees.setPredicate(snapshot.predicate);
+        Map<Employee, Integer> positions = new HashMap<>();
+        for (int i = 0; i < snapshot.displayOrder.size(); i++) {
+            positions.put(snapshot.displayOrder.get(i), i);
+        }
+        // Restore the saved order before reapplying the sort rule so ties keep their previous positions.
+        sortedEmployees.setComparator(Comparator.comparingInt(positions::get));
         sortedEmployees.setComparator(snapshot.comparator);
+        filteredEmployees.setPredicate(snapshot.predicate);
     }
 
     //=========== UserPrefs ==================================================================================
