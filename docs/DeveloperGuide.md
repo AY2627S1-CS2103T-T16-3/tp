@@ -12,7 +12,7 @@ title: Developer Guide
 * HR Book is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3),
   developed by the [SE-EDU initiative](https://se-education.org).
 * We used [ChatGPT](https://chatgpt.com/) by OpenAI to assist with
-  reviewing code, suggesting test cases, and refining documentation.
+  generating and reviewing code, suggesting test cases, and refining documentation.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -583,6 +583,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | filter through a list of employees                                             | easily find employees that match specific criteria                                      |
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
+| `* * *`  | HR Officer                 | view employee, task, leave-record, and salary totals for selected employees      | review the workforce without checking each employee separately                           |
 | `* *`    | HR Officer                 | have local storage for employee contact and details                            | retain employee information between application sessions                       |
 | `* *`    | HR Officer                 | have employee data saved automatically after each successfully executed command | retain my changes between sessions without saving manually                              |
 | `*`      | Experienced HR Officer     | tag employees together                                                         | easily group employees based on similar tags                                             |
