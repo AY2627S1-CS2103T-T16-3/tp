@@ -1178,6 +1178,75 @@ Run the following test cases in order.
       Identify them by their phone numbers and email addresses.
       Recheck displayed indexes after each deletion because they may change.
 
+### Editing an employee
+
+Use a separate copy of the application with test data. Run `list` and ensure the names,
+phone numbers, and email addresses below are not already in use.
+If you ran the preceding add tests, complete their cleanup first.
+Run the following test cases in order. Replace `INDEX` with the selected employee's
+current displayed index, rechecking it before each edit.
+
+1. Preparing employee records
+
+   1. Run:
+      `add n/Alice Tan p/91234567 e/alice@example.com a/123 Clementi Road le/14`
+
+   2. Run:
+      `add n/Bob Lim p/92345678 e/bob@example.com a/789 Bedok Road le/14`<br>
+      Expected: Both employees are added.
+
+2. Editing other details while retaining existing contact details
+
+   1. Run `find Bob` and identify Bob Lim by his phone number and email address.
+
+   2. Test case: `edit INDEX a/456 Jurong Road`.<br>
+      Expected: Bob's address changes. His phone number, email address, and
+      other details remain unchanged.
+
+3. Changing a phone number to one already in use
+
+   1. Run `find Bob` again and note Bob's displayed index. Alice is hidden.
+
+   2. Test case: `edit INDEX p/91234567`.<br>
+      Expected: The command is rejected with
+      `Another employee already uses this phone number or email address (email is case-insensitive).`
+      Bob's details remain unchanged. Alice's phone number cannot be reused
+      even though Alice is hidden.
+
+4. Changing an email address to one already in use
+
+   1. Run `find Bob` again and note Bob's displayed index.
+
+   2. Test case: `edit INDEX e/alice@example.com`.<br>
+      Expected: The command is rejected with the same contact-conflict message.
+      Bob's details remain unchanged, even though Alice is hidden.
+
+   3. Repeat with `edit INDEX e/ALICE@example.com`.<br>
+      Expected: The command is rejected because email comparison ignores case.
+      Bob's details remain unchanged.
+
+5. Changing contact details to unused values
+
+   1. Run `find Bob` again and note Bob's displayed index.
+
+   2. Test case: `edit INDEX p/93456789 e/robert@example.com`.<br>
+      Expected: Both contact details are updated. Bob's other details remain unchanged.
+
+6. Renaming an employee to an existing name
+
+   1. Run `find Bob` again and note Bob's displayed index.
+
+   2. Test case: `edit INDEX n/Alice Tan`.<br>
+      Expected: The edit succeeds because names may be shared.
+      Two employees named Alice Tan now exist, with different phone numbers
+      and email addresses.
+
+7. Cleanup
+
+   1. Run `list` and delete the two records created above using `delete INDEX`.
+      Identify them by phone numbers `91234567` and `93456789`.
+      Recheck displayed indexes after each deletion.
+
 ### Deleting an employee
 
 1. Deleting an employee while all employees are being shown
