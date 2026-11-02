@@ -22,8 +22,8 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
    HR Book keeps its data, preferences, and logs in this folder, even when launched from another folder.
    Choose a folder where the app is allowed to create files.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar hr-book.jar`.<br>
-   On Windows, using `cd` first also avoids Java launcher errors with non-English characters in the full JAR path.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar JAR_FILE_NAME`, replacing
+   `JAR_FILE_NAME` with the downloaded file's complete name, including the `.jar` extension.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
@@ -98,6 +98,9 @@ Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SAL
 
 * To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
   `p\/777` to store `p/777` as part of the address.
+
+`NAME` must not be blank and may contain only English letters (`A`-`Z`, `a`-`z`), digits (`0`-`9`), and spaces.
+Hyphens, apostrophes, accented letters, and characters from other writing systems are not accepted.
 
 Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
@@ -231,6 +234,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 * Existing values will be updated to the input values.
 * To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
   `p\/777` to store `p/777` as part of the address.
+* When changing the name, `NAME` must follow the restrictions described under [`add`](#adding-an-employee-add).
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
