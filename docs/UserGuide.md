@@ -96,6 +96,11 @@ Annual leave entitlement is compulsory. It must be a whole number from `0` to `3
 employee who is not entitled to annual leave. Leading zeros are accepted and removed: for example, `le/00014` is
 stored as `14`. The value after removing leading zeros must still be within the allowed range.
 
+Employees may share the same name, but each employee must have a unique phone number and email address.
+Adding an employee is rejected if either contact detail is already used by another employee, including one
+hidden by a search or filter. Email comparison ignores case. Phone numbers are compared as digit strings
+after surrounding spaces are removed.
+
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
 </div>
@@ -187,6 +192,7 @@ Format: `salary INDEX s/SALARY`
 * Other fields, such as `n/`, are rejected with "Unsupported field. The salary command only accepts s/." This check happens before salary validation, so only the unsupported-field error is shown when both the field and amount are invalid.
 * Leading zeros are accepted and removed: `s/005000` is stored as `5000` and displayed as `$5000`.
 * When the salary changes, the feedback shows the employee's name and both amounts, for example: `Updated Betsy's salary from $5000 to $6000.`
+* After a successful salary change, all employees are displayed again, clearing any active `find` or `filter` results while retaining the active sort. Displayed indexes may change, so recheck them before entering another command.
 * If the employee already has the requested salary, the feedback reports that no changes were made, for example: `Betsy's salary is already $6000. No changes made.` The currently displayed employee list is preserved.
 
 Examples:
@@ -203,6 +209,11 @@ Use `salary INDEX s/SALARY` to change salary.
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
 
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
+* An employee may be renamed to match another employee's name.
+* An employee's phone number or email address cannot be changed to one used by another employee, including
+  one hidden by a search or filter. Email comparison ignores case.
+* The selected employee may retain their existing phone number and email address. A rejected edit leaves
+  their details unchanged.
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.

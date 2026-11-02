@@ -700,31 +700,24 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 1b. The HR manager provides an invalid field.
+* 1b. The HR manager repeats a field that may only be specified once.
 
-    * 1b1. System informs the HR manager that the field does not exist.
+    * 1b1. System informs the HR manager that the field cannot be repeated.
     * 1b2. System does not add the employee.
 
       Use case ends.
 
-* 1c. The HR manager provides more fields than required.
+* 1c. One or more provided employee details are invalid.
 
-    * 1c1. System informs the HR manager that there are too many fields.
+    * 1c1. System informs the HR manager that the details are invalid.
     * 1c2. System does not add the employee.
 
       Use case ends.
 
-* 1d. One or more provided employee details are invalid.
+* 1d. The provided phone number or email address is already used by an existing employee.
 
-    * 1d1. System informs the HR manager that the details are invalid.
+    * 1d1. System informs the HR manager that another employee already uses the phone number or email address.
     * 1d2. System does not add the employee.
-
-      Use case ends.
-
-* 1e. The provided email address or contact number belongs to an existing employee.
-
-    * 1e1. System informs the HR manager that the provided email address or contact number belongs to an existing employee.
-    * 1e2. System does not add the employee.
 
       Use case ends.
 
@@ -1196,6 +1189,128 @@ testers are expected to do more *exploratory* testing.
    1. Relaunch the app by double-clicking the JAR file.<br>
        Expected: The most recent window size and location are retained.
 
+### Adding an employee
+
+Use a separate copy of the application with test data. Run `list` and ensure the names,
+phone numbers, and email addresses below are not already in use.
+Run the following test cases in order.
+
+1. Adding an employee with valid details
+
+   1. Test case:
+      `add n/Alice Tan p/91234567 e/alice@example.com a/123 Clementi Road le/14`<br>
+      Expected: The employee appears in the employee list. The status message begins with
+      `New employee added:` and shows the employee's details.
+
+2. Adding an employee with the same name but different contact details
+
+   1. Test case:
+      `add n/Alice Tan p/98765432 e/anotheralice@example.com a/456 Jurong Road le/20`<br>
+      Expected: The employee is added because names may be shared.
+      Both employees named Alice Tan remain in the list.
+
+3. Adding an employee with an existing phone number
+
+   1. Test case:
+      `add n/Bob Lim p/91234567 e/bob@example.com a/789 Bedok Road le/14`<br>
+      Expected: The command is rejected with
+      `Another employee already uses this phone number or email address (email is case-insensitive).`
+      No employee is added and existing records remain unchanged.
+
+4. Adding an employee with an existing email address
+
+   1. Test case:
+      `add n/Bob Lim p/92345678 e/alice@example.com a/789 Bedok Road le/14`<br>
+      Expected: The command is rejected with the same contact-conflict message.
+      No employee is added and existing records remain unchanged.
+
+   2. Repeat with:
+      `add n/Bob Lim p/92345678 e/ALICE@example.com a/789 Bedok Road le/14`<br>
+      Expected: The command is rejected because email comparison ignores case.
+
+5. Adding an employee whose contact details conflict with a hidden employee
+
+   1. Run `find Alice` so that the two Alice Tan records are displayed, then run `find Bob`.
+      The Alice Tan records should now be hidden.
+
+   2. Repeat the phone-conflict command from test 3 and the first email-conflict command from test 4.<br>
+      Expected: Both commands are rejected even though Alice is hidden.
+      Duplicate checks include all stored employees. Existing records remain unchanged.
+
+6. Cleanup
+
+   1. Run `list` and delete the two Alice Tan records created above using `delete INDEX`.
+      Identify them by their phone numbers and email addresses.
+      Recheck displayed indexes after each deletion because they may change.
+
+### Editing an employee
+
+Use a separate copy of the application with test data. Run `list` and ensure the names,
+phone numbers, and email addresses below are not already in use.
+If you ran the preceding add tests, complete their cleanup first.
+Run the following test cases in order. Replace `INDEX` with the selected employee's
+current displayed index, rechecking it before each edit.
+
+1. Preparing employee records
+
+   1. Run:
+      `add n/Alice Tan p/91234567 e/alice@example.com a/123 Clementi Road le/14`
+
+   2. Run:
+      `add n/Bob Lim p/92345678 e/bob@example.com a/789 Bedok Road le/14`<br>
+      Expected: Both employees are added.
+
+2. Editing other details while retaining existing contact details
+
+   1. Run `find Bob` and identify Bob Lim by his phone number and email address.
+
+   2. Test case: `edit INDEX a/456 Jurong Road`.<br>
+      Expected: Bob's address changes. His phone number, email address, and
+      other details remain unchanged.
+
+3. Changing a phone number to one already in use
+
+   1. Run `find Bob` again and note Bob's displayed index. Alice is hidden.
+
+   2. Test case: `edit INDEX p/91234567`.<br>
+      Expected: The command is rejected with
+      `Another employee already uses this phone number or email address (email is case-insensitive).`
+      Bob's details remain unchanged. Alice's phone number cannot be reused
+      even though Alice is hidden.
+
+4. Changing an email address to one already in use
+
+   1. Run `find Bob` again and note Bob's displayed index.
+
+   2. Test case: `edit INDEX e/alice@example.com`.<br>
+      Expected: The command is rejected with the same contact-conflict message.
+      Bob's details remain unchanged, even though Alice is hidden.
+
+   3. Repeat with `edit INDEX e/ALICE@example.com`.<br>
+      Expected: The command is rejected because email comparison ignores case.
+      Bob's details remain unchanged.
+
+5. Changing contact details to unused values
+
+   1. Run `find Bob` again and note Bob's displayed index.
+
+   2. Test case: `edit INDEX p/93456789 e/robert@example.com`.<br>
+      Expected: Both contact details are updated. Bob's other details remain unchanged.
+
+6. Renaming an employee to an existing name
+
+   1. Run `find Bob` again and note Bob's displayed index.
+
+   2. Test case: `edit INDEX n/Alice Tan`.<br>
+      Expected: The edit succeeds because names may be shared.
+      Two employees named Alice Tan now exist, with different phone numbers
+      and email addresses.
+
+7. Cleanup
+
+   1. Run `list` and delete the two records created above using `delete INDEX`.
+      Identify them by phone numbers `91234567` and `93456789`.
+      Recheck displayed indexes after each deletion.
 
 ### Deleting an employee
 
@@ -1227,10 +1342,12 @@ current salary. Recheck displayed indexes after commands that change the list.
       Expected: Their monthly salary becomes `$5000`. Feedback identifies the employee and their previous and new
       salaries. Their other details and other employees remain unchanged.
 
-   3. Repeat with `s/0` and `s/50000`, rechecking the employee's index before each command.<br>
+   3. Repeat with `salary INDEX s/0` and `salary INDEX s/50000`, replacing `INDEX` with the selected employee's
+      current displayed index before each command.<br>
       Expected: Both boundary amounts are accepted.
 
-   4. Test case: Set the employee's salary to a different amount, then use `s/005000`.<br>
+   4. Test case: Set the employee's salary to an amount other than `$5000`, then run `salary INDEX s/005000`,
+      replacing `INDEX` with their current displayed index.<br>
       Expected: Their salary is stored as `5000` and displayed as `Monthly salary: $5000`.
 
 2. Rejecting invalid requests
