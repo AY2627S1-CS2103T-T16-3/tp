@@ -38,6 +38,20 @@ public class FilterCommandTest {
     private final AddressBookParser parser = new AddressBookParser();
 
     @Test
+    public void execute_escapedAddress_matchesLiteralSlashAfterAddAndEdit() throws Exception {
+        parser.parseCommand("add n/Escaped Address p/91234567 e/escaped@example.com"
+                + " a/Road c\\/ le/14").execute(model);
+        Employee added = model.getFilteredEmployeeList().getLast();
+        assertEquals("Road c/", added.getAddress().value);
+        assertFilter("a/Road c\\/", List.of(added));
+
+        parser.parseCommand("edit 1 a/Road p\\/").execute(model);
+        Employee edited = model.getFilteredEmployeeList().getLast();
+        assertEquals("Road p/", edited.getAddress().value);
+        assertFilter("a/Road p\\/", List.of(edited));
+    }
+
+    @Test
     public void execute_eachField_matchesEmployees() throws Exception {
         assertFilter("n/ALICE", List.of(ALICE));
         assertFilter("p/94351253", List.of(ALICE));

@@ -236,6 +236,12 @@ the data file. See **Save failures and model rollback** for details.
 
 ### Filtering employees
 
+`ParserUtil#unescapeSlashes` converts `\/` to a literal `/` in address and task text.
+`add` and `edit` decode address escapes in `ParserUtil#parseAddress`; `filter` decodes
+address and task criteria after tokenization and before matching. Escaping a slash prevents
+prefix recognition, so `a/10 Road c\/o` represents the address `10 Road c/o`. Unknown unescaped
+prefixes remain invalid for `filter`. Other field validation rules still apply.
+
 `filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
 supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
 and repeated scalar fields, and uses `ParserUtil` to validate numeric thresholds. Salary thresholds

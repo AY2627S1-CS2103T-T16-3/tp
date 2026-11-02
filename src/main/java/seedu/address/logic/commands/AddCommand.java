@@ -32,6 +32,7 @@ public class AddCommand extends Command {
             + PREFIX_LEAVE_ENTITLEMENT + "ANNUAL_LEAVE_DAYS "
             + "[" + PREFIX_SALARY + "SALARY] "
             + "[" + PREFIX_TAG + "TAG]...\n"
+            + "Use \\/ in address text for a literal slash, e.g. a/10 Road c\\/o.\n"
             + "Example: " + COMMAND_WORD + " "
             + PREFIX_NAME + "John Doe "
             + PREFIX_PHONE + "98765432 "

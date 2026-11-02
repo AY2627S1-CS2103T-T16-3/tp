@@ -36,6 +36,16 @@ public class FilterCommandParserTest {
     private final FilterCommandParser parser = new FilterCommandParser();
 
     @Test
+    public void parse_escapedAddressSlashes_preservesLiteralPrefixes() {
+        for (String prefix : List.of("c", "p", "a", "n", "s", "le", "task")) {
+            assertParseSuccess(parser, "a/Road " + prefix + "\\/ s/3000", new FilterCommand(
+                    new EmployeeMatchesCriteriaPredicate(Map.of(
+                            Field.ADDRESS, List.of("Road " + prefix + "/"), Field.SALARY, List.of("3000")))));
+        }
+        assertInvalidFormat("a/Road c/");
+    }
+
+    @Test
     public void parse_missingCriteriaOrPreamble_throwsParseException() {
         for (String input : List.of("", "   ", "Alice", "Alice n/Bob")) {
             assertInvalidFormat(input);

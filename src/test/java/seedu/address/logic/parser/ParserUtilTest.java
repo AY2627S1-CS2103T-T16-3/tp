@@ -70,16 +70,16 @@ public class ParserUtilTest {
     }
 
     @Test
-    public void unescapeTaskText_escapedSlashes_returnsLiteralSlashes() {
-        assertEquals("Coordinate w/Finance", ParserUtil.unescapeTaskText("Coordinate w\\/Finance"));
+    public void unescapeSlashes_escapedSlashes_returnsLiteralSlashes() {
+        assertEquals("Coordinate w/Finance", ParserUtil.unescapeSlashes("Coordinate w\\/Finance"));
         assertEquals("Review d/DETAILS and n/NAME",
-                ParserUtil.unescapeTaskText("Review d\\/DETAILS and n\\/NAME"));
+                ParserUtil.unescapeSlashes("Review d\\/DETAILS and n\\/NAME"));
     }
 
     @Test
-    public void unescapeTaskText_noEscapedSlash_returnsUnchangedText() {
-        assertEquals("Prepare report", ParserUtil.unescapeTaskText("Prepare report"));
-        assertEquals("https://example.com", ParserUtil.unescapeTaskText("https://example.com"));
+    public void unescapeSlashes_noEscapedSlash_returnsUnchangedText() {
+        assertEquals("Prepare report", ParserUtil.unescapeSlashes("Prepare report"));
+        assertEquals("https://example.com", ParserUtil.unescapeSlashes("https://example.com"));
     }
 
     @Test

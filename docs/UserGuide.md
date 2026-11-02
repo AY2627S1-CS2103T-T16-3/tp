@@ -84,6 +84,8 @@ Format: `help`
 
 Adds an employee to the address book.
 
+In addresses, write `\/` for a literal `/` when text could look like a field prefix. For example, `a/10 Road c\/o` stores `10 Road c/o`.
+
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
 Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
@@ -213,6 +215,8 @@ Examples:
 
 Edits an existing employee in the address book.
 
+Use `\/` for literal slashes in address text that could look like a field prefix. For example, `edit 1 a/10 Road c\/o` sets the address to `10 Road c/o`.
+
 Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
 
@@ -262,7 +266,7 @@ Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAIL
 * Names allow only alphanumeric characters and spaces. Phone queries require at least 3 digits and no other characters. Emails must be complete valid addresses (for example, `alice@example.com`); fragments such as `@example.com` are rejected. Addresses may contain any non-blank text. Tags must be alphanumeric without spaces. Task details must be non-blank and at most 120 characters.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
-* To avoid conflict with flags, replace `/` with `\/` in task description.
+* To avoid conflict with flags, write `\/` for a literal `/` in address or task text. For example, `filter a/10 Road c\/o` searches for `10 Road c/o`, and `filter task/Review p\/details` searches for `Review p/details`. The backslash is removed before matching. Unescaped unsupported prefixes are still rejected.
 * Salary accepts an exact amount (`s/4000`), strictly less than (`s/<4000`), or strictly greater than (`s/>4000`). Use `s/<=4000` for at most 4000 or `s/>=4000` for at least 4000. `<` and `>` exclude the specified amount; `<=` and `>=` include it. Amounts must be whole numbers from 0 to 50000. Leading zeros are not allowed: `s/003000` is rejected; use `s/3000`. The `=` operator is not supported; omit the operator for an exact match.
 * Annual leave entitlement accepts an exact number of days (`le/14`), strictly less than (`le/<14`), or strictly greater than (`le/>14`). This filters the annual entitlement, not the remaining balance or leave dates. Use `le/<=14` for at most 14 days or `le/>=14` for at least 14 days. `<` and `>` exclude the threshold; `<=` and `>=` include it. Days must be whole numbers from 0 to 365. Leading zeros are not allowed: `le/014` is rejected; use `le/14`. The `=` operator is not supported; omit the operator for an exact match.
 * Tags match the whole tag name, ignoring case. For example, `t/friend` does not match the tag `friends`.
