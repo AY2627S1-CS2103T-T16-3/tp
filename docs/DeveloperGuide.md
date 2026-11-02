@@ -1183,8 +1183,7 @@ Employee data and the current filter remain unchanged in all flows.
 2.  HR Book should be able to hold up to 1000 employees.
 3.  Users should be able to execute all documented commands from the command box without using the mouse. The mouse
     may still be used to inspect or scroll through results.
-4.  With up to 1000 employee records stored, each documented command should complete end to end within 2 seconds on
-    average over five runs, measured from pressing Enter until its result is displayed (or the app closes for `exit`).
+4.  With up to 1000 employee records stored, each documented command should have a response time of at most 2 seconds.
 5.  HR Book should be able to carry out its functionality without internet access, except for accessing the online
     User Guide.
 
@@ -1208,6 +1207,8 @@ Employee data and the current filter remain unchanged in all flows.
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
+* **Response time**: The time from pressing Enter until a command finishes and its result is displayed (or the app closes
+  for `exit`), averaged over five runs
 * **Task**: A work item assigned to the HR manager concerning a particular employee, consisting of task details and a
   completion state of pending or completed
 * **Task index**: A temporary, one-based number shown beside a task in one employee's task list and used to select that
