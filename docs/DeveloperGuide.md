@@ -14,10 +14,6 @@ title: Developer Guide
 * We used [ChatGPT](https://chatgpt.com/) by OpenAI to assist with
   generating and reviewing code, suggesting test cases, and refining documentation.
 
-* [@geengene](https://github.com/geengene) used OpenAI Codex to generate and revise workforce-summary code,
-  tests, documentation, and diagrams, and to implement and test save-failure recovery and application file paths.
-  Codex also assisted with PR reviews, test planning, and debugging.
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
