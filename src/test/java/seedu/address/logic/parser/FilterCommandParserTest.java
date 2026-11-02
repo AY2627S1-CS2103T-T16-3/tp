@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FilterCommand;
+import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate.Field;
@@ -43,6 +44,14 @@ public class FilterCommandParserTest {
                             Field.ADDRESS, List.of("Road " + prefix + "/"), Field.SALARY, List.of("3000")))));
         }
         assertInvalidFormat("a/Road c/");
+    }
+
+    @Test
+    public void parse_addressWithUnicodeLineSeparator_throwsAddressConstraintError() {
+        for (String separator : List.of("\u0085", "\u2028", "\u2029")) {
+            assertParseFailure(parser, "a/10 Road" + separator + "Unit 2", Address.MESSAGE_CONSTRAINTS);
+            assertParseFailure(parser, "a/10 Road c\\/o" + separator + "Alice", Address.MESSAGE_CONSTRAINTS);
+        }
     }
 
     @Test
