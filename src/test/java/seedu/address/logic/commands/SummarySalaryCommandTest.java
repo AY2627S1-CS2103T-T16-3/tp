@@ -19,8 +19,10 @@ public class SummarySalaryCommandTest {
     @Test
     public void execute_noTagsAndFilteredList_showsSalaryStatisticsForAllEmployees() throws CommandException {
         Model model = new ModelManager();
-        Employee alice = new EmployeeBuilder().withName("Alice").withSalary("3000").build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withSalary("5000").build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("3000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withSalary("5000").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);

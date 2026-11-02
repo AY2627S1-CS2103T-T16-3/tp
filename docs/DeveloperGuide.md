@@ -9,7 +9,10 @@ title: Developer Guide
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
+* HR Book is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3),
+  developed by the [SE-EDU initiative](https://se-education.org).
+* We used [ChatGPT](https://chatgpt.com/) by OpenAI to assist with
+  generating and reviewing code, suggesting test cases, and refining documentation.
 
 * [@geengene](https://github.com/geengene) used OpenAI Codex to generate and revise workforce-summary code,
   tests, documentation, and diagrams, and to implement and test save-failure recovery and application file paths.
@@ -294,6 +297,17 @@ and that a later successful command saves only accepted changes.
 See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) for the tested cases and exclusions.
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Employee contact uniqueness
+
+Employees may share names, but cannot share a phone number or email address. `Employee#isSameEmployee`
+checks for either contact conflict; email comparison ignores case and phone comparison uses the trimmed
+stored digit string. This conflict relation is not transitive and is separate from internal employee IDs
+and `Employee#equals`. `UniqueEmployeeList` enforces it when adding, replacing, and loading employees.
+For edits, both the command and model exclude the target employee before checking every other employee,
+including those hidden by a filter. This permits unchanged contact details while rejecting either
+conflicting field, even when the other contact detail is unchanged. Loading a file with conflicting
+contact details fails validation; existing data must satisfy the same uniqueness rules.
 
 ### Employee identifier allocation
 
@@ -681,12 +695,10 @@ use invalid identifiers or periods.
 **Target user profile**:
 
 * HR officer who has to manage a significant number of employee contacts by themselves
-* HR officer who can use the contact book to help them carry out her administrative tasks
+* HR officer who needs to maintain employee contact details, recorded monthly salaries, annual leave records, and assigned tasks
 * HR officer who is reasonably comfortable using CLI apps and types fast compared to using mouse interactions
-* HR officer that needs help tracking and managing employee records, onboarding, attendance, leave, and other day-to-day administrative matters
 
-**Value proposition**: Helps HR officers keep employee information organised and up to date while reducing repetitive administrative work.
-
+**Value proposition**: Helps HR officers maintain and retrieve employee information, record annual leave, and track assigned tasks through keyboard commands in one desktop application.
 
 ### User stories
 
@@ -710,13 +722,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | change an employee's salary                                                    | keep employee salary records up to date                                                  |
 | `* * *`  | HR Officer                 | view an employee's salary                                                      | check their current pay when handling payroll enquiries                                  |
 | `* * *`  | HR Officer                 | view employee, task, leave-record, and salary totals for selected employees      | review the workforce without checking each employee separately                           |
-| `* * *`  | HR Officer                 | shift employees between different departments                                  | keep track of changing roles within the startup                                          |
-| `* * *`  | HR Officer                 | view an employee's department, role, employment status, or other details       | keep track of information relevant to HR administration                                  |
-| `* *`    | Experienced HR Officer     | sort employees by department                                                   | locate personnel within a department easily                                              |
-| `* *`    | HR Officer                 | have local storage for employee contact and details                            | have a persistent and secure database for all relevant information                       |
-| `* *`    | HR Officer                 | have automatic local backups for employee contact and details                  | back up employee information locally                                                     |
+| `* *`    | HR Officer                 | have local storage for employee contact and details                            | retain employee information between application sessions                       |
+| `* *`    | HR Officer                 | have employee data saved automatically after each successfully executed command | retain my changes between sessions without saving manually                              |
 | `*`      | Experienced HR Officer     | tag employees together                                                         | easily group employees based on similar tags                                             |
-| `*`      | Experienced HR Officer     | generate a list of administrative actions                                      | show logs during audits or reviews                                                       |
 
 ### Use cases
 

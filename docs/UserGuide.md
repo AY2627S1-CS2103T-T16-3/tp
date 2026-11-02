@@ -90,7 +90,9 @@ Format: `help`
 
 Adds an employee to the address book.
 
-In addresses, write `\/` for a literal `/` when text could look like a field prefix. For example, `a/10 Road c\/o` stores `10 Road c/o`.
+Employees may share a name, but each must have a unique phone number and email address. An addition is rejected if either contact detail is already in use, including by an employee hidden by a search or filter. Email uniqueness ignores case. Phone numbers are compared as entered, after trimming surrounding spaces.
+
+Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
@@ -212,7 +214,7 @@ Examples:
 
 Edits an existing employee in the address book.
 
-Use `\/` for literal slashes in address text that could look like a field prefix. For example, `edit 1 a/10 Road c\/o` sets the address to `10 Road c/o`.
+Names may be shared. A phone number or email cannot be changed to one used by another employee, including an employee hidden by a search or filter. Email uniqueness ignores case. You can keep your selected employee's existing contact details. A rejected edit leaves the employee unchanged.
 
 Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
