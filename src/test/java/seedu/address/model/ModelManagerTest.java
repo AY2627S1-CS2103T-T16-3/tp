@@ -41,7 +41,8 @@ public class ModelManagerTest {
         ModelSnapshot snapshot = modelManager.createSnapshot();
 
         modelManager.deleteEmployee(alice);
-        modelManager.addEmployee(new EmployeeBuilder().withName("Charlie").build());
+        modelManager.addEmployee(new EmployeeBuilder().withName("Charlie")
+                .withPhone("81000005").withEmail("charlie@example.com").build());
         modelManager.sortFilteredEmployeeList(
                 Comparator.comparing((Employee employee) -> employee.getName().fullName).reversed());
         modelManager.restoreSnapshot(snapshot);
@@ -70,7 +71,8 @@ public class ModelManagerTest {
         modelManager.restoreSnapshot(snapshot);
 
         assertEquals(originalOrder, modelManager.getFilteredEmployeeList());
-        modelManager.addEmployee(new EmployeeBuilder().withName("Aaron").build());
+        modelManager.addEmployee(new EmployeeBuilder().withName("Aaron")
+                .withPhone("81000000").withEmail("aaron@example.com").build());
         assertEquals("Aaron", modelManager.getFilteredEmployeeList().get(2).getName().fullName);
     }
 
@@ -155,9 +157,12 @@ public class ModelManagerTest {
 
     @Test
     public void getAllEmployeesInDisplayOrder_repeatedSortsWithTies_matchesViewAfterDataAndFilterChanges() {
-        Employee alice = new EmployeeBuilder().withName("Alice").withEmployeeId(1).build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withEmployeeId(2).build();
-        Employee carol = new EmployeeBuilder().withName("Carol").withEmployeeId(3).build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withEmployeeId(1).build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withEmployeeId(2).build();
+        Employee carol = new EmployeeBuilder().withName("Carol")
+                .withPhone("81000004").withEmail("carol@example.com").withEmployeeId(3).build();
         AddressBook addressBook = new AddressBookBuilder().withEmployee(carol).withEmployee(bob)
                 .withEmployee(alice).build();
         modelManager = new ModelManager(addressBook, new UserPrefs());
