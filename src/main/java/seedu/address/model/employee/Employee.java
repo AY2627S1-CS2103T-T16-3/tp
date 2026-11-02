@@ -190,8 +190,9 @@ public class Employee {
     }
 
     /**
-     * Returns true if both employees have the same name.
-     * This defines a weaker notion of equality between two employees.
+     * Returns true if the employees share a phone number or email address (ignoring email case).
+     * This detects conflicting contact details, not internal employee identity.
+     * Names may be shared; this relation is not transitive and must not be used as object equality.
      */
     public boolean isSameEmployee(Employee otherEmployee) {
         if (otherEmployee == this) {
@@ -199,7 +200,8 @@ public class Employee {
         }
 
         return otherEmployee != null
-                && otherEmployee.getName().equals(getName());
+                && (otherEmployee.getPhone().equals(getPhone())
+                || otherEmployee.getEmail().value.equalsIgnoreCase(getEmail().value));
     }
 
     /**

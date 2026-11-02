@@ -15,10 +15,13 @@ import seedu.address.model.employee.Task;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class SummaryTaskCommandTest {
-    private static final Employee ALICE = new EmployeeBuilder().withName("Alice").withEmployeeId(1).build();
-    private static final Employee BOB = new EmployeeBuilder().withName("Bob").withEmployeeId(2)
+    private static final Employee ALICE = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withEmployeeId(1).build();
+    private static final Employee BOB = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withEmployeeId(2)
             .withTasks(new Task("Report"), new Task("Review")).build();
-    private static final Employee CAROL = new EmployeeBuilder().withName("Carol").withEmployeeId(3).build();
+    private static final Employee CAROL = new EmployeeBuilder().withName("Carol")
+                .withPhone("81000004").withEmail("carol@example.com").withEmployeeId(3).build();
 
     @Test
     public void execute_noTagsAndFilteredView_countsAllTasksWithoutChangingModel() throws CommandException {

@@ -67,13 +67,13 @@ public class AppPathsTest {
 
     @Test
     public void resolve_relativeFiles_normalizesPathsWithinHomeWithoutCreatingFiles() {
-        assertEquals(temporaryFolder.resolve("data/addressbook.json"),
-                AppPaths.resolve(temporaryFolder, "data/addressbook.json"));
+        assertEquals(temporaryFolder.resolve("data/hrbook.json"),
+                AppPaths.resolve(temporaryFolder, "data/hrbook.json"));
         assertEquals(temporaryFolder.resolve("preferences.json"),
                 AppPaths.resolve(temporaryFolder, "data/../preferences.json"));
         assertFalse(Files.exists(temporaryFolder.resolve("data")));
-        assertEquals(AppPaths.getHomeDirectory().resolve("data/addressbook.json"),
-                AppPaths.resolve("data/addressbook.json"));
+        assertEquals(AppPaths.getHomeDirectory().resolve("data/hrbook.json"),
+                AppPaths.resolve("data/hrbook.json"));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class AppPathsTest {
         String output = runProbe(jar, launch);
 
         assertTrue(output.contains("HOME=" + home), output);
-        assertTrue(output.contains("DATA=" + home.resolve("data/addressbook.json")), output);
+        assertTrue(output.contains("DATA=" + home.resolve("data/hrbook.json")), output);
         assertTrue(output.contains("PREFS=" + home.resolve("preferences.json")), output);
         assertTrue(Files.exists(home.resolve("addressbook.log.0")), output);
         try (var files = Files.list(launch)) {
@@ -111,7 +111,7 @@ public class AppPathsTest {
         String output = runProbe(createProbeJar(home), launch);
 
         assertTrue(output.contains("HOME=" + home), output);
-        assertTrue(output.contains("DATA=" + home.resolve("data/addressbook.json")), output);
+        assertTrue(output.contains("DATA=" + home.resolve("data/hrbook.json")), output);
         assertTrue(Files.exists(home.resolve("addressbook.log.0")), output);
         try (var files = Files.list(launch)) {
             assertEquals(0, files.count(), output);
