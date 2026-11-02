@@ -300,7 +300,10 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Employee contact uniqueness
 
-Employees may share names, but cannot share a phone number or email address. `Employee#isSameEmployee`
+`Messages#getContactConflictMessage` reports every conflicting contact value and its existing employee
+name. Both add and edit use this formatter; edit excludes its own target before checking conflicts.
+
+Employees may share names, but cannot share a phone number or email address. `Employee#hasContactConflictWith`
 checks for either contact conflict; email comparison ignores case and phone comparison uses the trimmed
 stored digit string. This conflict relation is not transitive and is separate from internal employee IDs
 and `Employee#equals`. `UniqueEmployeeList` enforces it when adding, replacing, and loading employees.

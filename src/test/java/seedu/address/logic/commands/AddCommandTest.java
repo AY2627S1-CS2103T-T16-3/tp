@@ -57,8 +57,9 @@ public class AddCommandTest {
         AddCommand addCommand = new AddCommand(validEmployee);
         ModelStub modelStub = new ModelStubWithEmployee(validEmployee);
 
-        assertThrows(CommandException.class,
-                AddCommand.MESSAGE_DUPLICATE_EMPLOYEE, () -> addCommand.execute(modelStub));
+        String expectedMessage = "Phone number 85355255 is already used by Amy Bee.\n"
+                + "Email address amy@gmail.com is already used by Amy Bee.";
+        assertThrows(CommandException.class, expectedMessage, () -> addCommand.execute(modelStub));
     }
 
     @Test
@@ -215,9 +216,14 @@ public class AddCommandTest {
         }
 
         @Override
+        public ReadOnlyAddressBook getAddressBook() {
+            return new AddressBook(List.of(employee), 1);
+        }
+
+        @Override
         public boolean hasEmployee(Employee employee) {
             requireNonNull(employee);
-            return this.employee.isSameEmployee(employee);
+            return this.employee.hasContactConflictWith(employee);
         }
     }
 
@@ -230,7 +236,7 @@ public class AddCommandTest {
         @Override
         public boolean hasEmployee(Employee employee) {
             requireNonNull(employee);
-            return employeesAdded.stream().anyMatch(employee::isSameEmployee);
+            return employeesAdded.stream().anyMatch(employee::hasContactConflictWith);
         }
 
         @Override
