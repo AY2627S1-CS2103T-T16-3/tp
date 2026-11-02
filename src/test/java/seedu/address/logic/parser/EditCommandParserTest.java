@@ -198,11 +198,12 @@ public class EditCommandParserTest {
     }
 
     @Test
-    public void parse_unknownPrefixInAddress_success() {
-        EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder()
-                .withAddress("10 Road c/o Alice").build();
-
-        assertParseSuccess(parser, "1 a/10 Road c/o Alice", new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor));
+    public void parse_unknownUnescapedPrefix_throwsEscapeHint() {
+        for (String prefix : new String[] {"c/", "x/", "task/", "unknown/", "N/"}) {
+            String message = String.format(ParserUtil.MESSAGE_UNSUPPORTED_PREFIX, prefix, prefix.replace("/", "\\/"));
+            assertParseFailure(parser, "1 a/10 Road " + prefix + "o Alice", message);
+            assertParseFailure(parser, "1 n/Alice " + prefix + "value", message);
+        }
     }
 
     @Test

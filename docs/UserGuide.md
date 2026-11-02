@@ -96,8 +96,10 @@ Saved files must follow the same contact uniqueness rules. If an older file cont
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
-* To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
-  `p\/777` to store `p/777` as part of the address.
+* Escape any prefix-like address text (letters followed by `/` at the start of a token), including unknown
+  prefixes, by writing `\/` for the slash. For example, `a/10 Road c\/o` stores `10 Road c/o`, and
+  `a/Block p\/777` stores `Block p/777`. Unknown unescaped prefixes are rejected with an escape hint.
+  Known unescaped prefixes remain separate command fields.
 
 `NAME` must not be blank and may contain only English letters (`A`-`Z`, `a`-`z`), digits (`0`-`9`), and spaces.
 Hyphens, apostrophes, accented letters, and characters from other writing systems are not accepted.
@@ -232,8 +234,10 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
   their details unchanged.
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
-  `p\/777` to store `p/777` as part of the address.
+* Escape any prefix-like address text (letters followed by `/` at the start of a token), including unknown
+  prefixes, by writing `\/` for the slash. For example, `a/10 Road c\/o` stores `10 Road c/o`, and
+  `a/Block p\/777` stores `Block p/777`. Unknown unescaped prefixes are rejected with an escape hint.
+  Known unescaped prefixes remain separate command fields.
 * When changing the name, `NAME` must follow the restrictions described under [`add`](#adding-an-employee-add).
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.

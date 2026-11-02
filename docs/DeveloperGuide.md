@@ -342,6 +342,15 @@ At execution, the command follows these steps:
 sort, and reports a save error. This restores the running application's state; it does not guarantee recovery of
 the data file. See **Save failures and model rollback** for details.
 
+### Address prefix escaping in add and edit
+
+`ParserUtil#verifySupportedPrefixes` rejects unknown, unescaped tokens consisting of letters followed
+by `/` at the start of input or after whitespace. `add` and `edit` run this check after validating
+required fields or the employee index, before parsing field values. Supported prefixes remain command
+fields. Literal prefix-like address text must escape the slash, for example `a/10 Road c\/o` for
+`10 Road c/o` or `a/Block p\/777` for `Block p/777`. The error message suggests the escaped form.
+Address text is decoded once using `ParserUtil#unescapeText` before address validation.
+
 ### Filtering employees
 
 `filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all

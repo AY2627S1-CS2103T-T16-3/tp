@@ -205,13 +205,15 @@ public class AddCommandParserTest {
     }
 
     @Test
-    public void parse_unknownPrefixInAddress_success() {
-        Employee expectedEmployee = new EmployeeBuilder(BOB).withoutEmployeeId().withTags().withSalary("0")
-                .withAddress("10 Road c/o Alice").build();
-        String userInput = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
-                + " a/10 Road c/o Alice" + LEAVE_ENTITLEMENT_DESC_BOB;
-
-        assertParseSuccess(parser, userInput, new AddCommand(expectedEmployee));
+    public void parse_unknownUnescapedPrefix_throwsEscapeHint() {
+        for (String prefix : new String[] {"c/", "x/", "task/", "unknown/", "N/"}) {
+            String message = String.format(ParserUtil.MESSAGE_UNSUPPORTED_PREFIX, prefix, prefix.replace("/", "\\/"));
+            String details = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB;
+            assertParseFailure(parser, details + " a/10 Road " + prefix + "o Alice"
+                    + LEAVE_ENTITLEMENT_DESC_BOB, message);
+            assertParseFailure(parser, details + ADDRESS_DESC_BOB + LEAVE_ENTITLEMENT_DESC_BOB
+                    + " " + prefix + "value", message);
+        }
     }
 
     @Test
