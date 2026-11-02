@@ -1164,8 +1164,10 @@ selects an employee and the system displays that employee's tasks or reports tha
 
 1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
 2.  HR Book should be able to hold up to 1000 employees.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  The HR Book should respond to every command under 2 seconds.
+3.  Users should be able to execute all documented commands from the command box without using the mouse. The mouse
+    may still be used to inspect or scroll through results.
+4.  With 1000 employee records stored, the `list` command should display the employee list within 2 seconds of
+    pressing Enter.
 5.  HR Book should be able to carry out its functionality without internet access.
 
 

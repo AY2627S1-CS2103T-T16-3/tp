@@ -3,7 +3,9 @@ layout: page
 title: User Guide
 ---
 
-HR Book is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, HR Book can help you manage contacts faster than traditional GUI applications.
+HR Book is a **desktop application for managing employee records and leave through a Command Line Interface (CLI)**.
+Its command box supports fast keyboard entry, while the Graphical User Interface (GUI) presents employee and leave
+information that you can scroll and inspect.
 
 * Table of Contents
 {:toc}
