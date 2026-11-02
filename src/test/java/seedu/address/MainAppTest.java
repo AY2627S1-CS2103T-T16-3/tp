@@ -55,7 +55,7 @@ public class MainAppTest {
         app = new MainApp(temporaryFolder);
         app.init();
         assertEquals(temporaryFolder.resolve("preferences.json"), app.storage.getUserPrefsFilePath());
-        assertEquals(temporaryFolder.resolve("data/addressbook.json"), app.storage.getAddressBookFilePath());
+        assertEquals(temporaryFolder.resolve("data/hrbook.json"), app.storage.getAddressBookFilePath());
         app.logic.execute("clear");
         app.logic.execute("add n/Home Test p/90000001 e/home@example.com a/One le/14");
         GuiSettings settings = new GuiSettings(900, 700, 100, 120);

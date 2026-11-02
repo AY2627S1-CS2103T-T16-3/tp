@@ -7,7 +7,7 @@ public class AppPathsProbe {
     public static void main(String[] args) {
         LogsCenter.getLogger(AppPathsProbe.class).info("Checking the packaged application home.");
         System.out.println("HOME=" + AppPaths.getHomeDirectory());
-        System.out.println("DATA=" + AppPaths.resolve("data/addressbook.json"));
+        System.out.println("DATA=" + AppPaths.resolve("data/hrbook.json"));
         System.out.println("PREFS=" + AppPaths.resolve("preferences.json"));
     }
 }

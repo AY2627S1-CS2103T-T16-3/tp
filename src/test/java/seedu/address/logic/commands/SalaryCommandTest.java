@@ -65,8 +65,10 @@ public class SalaryCommandTest {
     @Test
     public void execute_filteredList_updatesDisplayedEmployee() throws Exception {
         Model model = new ModelManager();
-        Employee alice = new EmployeeBuilder().withName("Alice").withSalary("1000").build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withSalary("2000").build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withSalary("2000").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
         model.updateFilteredEmployeeList(employee -> employee.getName().equals(bob.getName()));
@@ -95,8 +97,10 @@ public class SalaryCommandTest {
     @Test
     public void execute_invalidFilteredIndex_preservesModelAndFilter() {
         Model model = new ModelManager();
-        model.addEmployee(new EmployeeBuilder().withName("Alice").build());
-        model.addEmployee(new EmployeeBuilder().withName("Bob").build());
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").build());
         model.updateFilteredEmployeeList(employee -> employee.getName().fullName.equals("Alice"));
         assertCommandFailure(new SalaryCommand(Index.fromOneBased(2), new Salary("5000")),
                 model, Messages.MESSAGE_INVALID_EMPLOYEE_DISPLAYED_INDEX);
@@ -105,8 +109,10 @@ public class SalaryCommandTest {
     @Test
     public void execute_lastIndex_updatesOnlyTarget() throws Exception {
         Model model = new ModelManager();
-        Employee alice = new EmployeeBuilder().withName("Alice").withSalary("1000").build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withSalary("2000").build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withSalary("2000").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
@@ -130,7 +136,8 @@ public class SalaryCommandTest {
                 throw new AssertionError("An unchanged salary must not update the employee.");
             }
         };
-        Employee original = new EmployeeBuilder().withName("Alice").withSalary("5000").build();
+        Employee original = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("5000").build();
         model.addEmployee(original);
         Employee storedOriginal = model.getAddressBook().getEmployeeList().get(0);
 
@@ -146,8 +153,10 @@ public class SalaryCommandTest {
     @Test
     public void execute_sameSalaryFilteredList_preservesFilter() throws Exception {
         Model model = new ModelManager();
-        Employee alice = new EmployeeBuilder().withName("Alice").withSalary("1000").build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withSalary("2000").build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000").build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withSalary("2000").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
         model.updateFilteredEmployeeList(employee -> employee.getName().equals(bob.getName()));
@@ -163,7 +172,8 @@ public class SalaryCommandTest {
     @Test
     public void execute_repeatedSalaryCommand_reportsNoChange() throws Exception {
         Model model = new ModelManager();
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000").build());
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000").build());
         SalaryCommand command = new SalaryCommand(INDEX_FIRST_EMPLOYEE, new Salary("5000"));
 
         CommandResult firstResult = command.execute(model);
@@ -177,7 +187,8 @@ public class SalaryCommandTest {
     @Test
     public void execute_boundarySalaries_preservesOtherDetails() throws Exception {
         Model model = new ModelManager();
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000").build());
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000").build());
 
         for (String salary : List.of("0", "50000", "0")) {
             Employee before = model.getFilteredEmployeeList().get(0);
@@ -196,8 +207,10 @@ public class SalaryCommandTest {
     @Test
     public void execute_sameSalarySortedList_preservesOrderAndEmployeeInstances() throws Exception {
         Model model = new ModelManager();
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000").build());
-        model.addEmployee(new EmployeeBuilder().withName("Bob").withSalary("2000").build());
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000").build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withSalary("2000").build());
         model.sortFilteredEmployeeList(Comparator.comparing(employee -> employee.getName().fullName,
                 Comparator.reverseOrder()));
         List<Employee> originalEmployees = List.copyOf(model.getFilteredEmployeeList());

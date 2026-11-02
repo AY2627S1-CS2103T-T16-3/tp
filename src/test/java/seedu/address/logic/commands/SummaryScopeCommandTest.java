@@ -27,8 +27,10 @@ public class SummaryScopeCommandTest {
     @Test
     public void execute_filteredSubset_countsOnlyVisibleEmployeesAndPreservesPredicate() throws CommandException {
         Model model = new ModelManager();
-        Employee alice = new EmployeeBuilder().withName("Alice").withTags("engineering").build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withTags("remote").build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withTags("engineering").build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withTags("remote").build();
         model.addEmployee(alice);
         model.addEmployee(bob);
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
@@ -74,7 +76,8 @@ public class SummaryScopeCommandTest {
     public void execute_afterParsing_readsCurrentFilterAndLatestData() throws Exception {
         SummaryCommand command = new SummaryCommandParser().parse("");
         Model model = new ModelManager();
-        Employee alice = new EmployeeBuilder().withName("Alice").build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").build();
         model.addEmployee(alice);
         model.updateFilteredEmployeeList(employee -> false);
         assertSummaryValue(command.execute(model).getFeedbackToUser(), "Employees", "0");
