@@ -51,7 +51,8 @@ public class AddCommandParser implements Parser<AddCommand> {
         Name name = ParserUtil.parseName(argMultimap.getValue(PREFIX_NAME).get());
         Phone phone = ParserUtil.parsePhone(argMultimap.getValue(PREFIX_PHONE).get());
         Email email = ParserUtil.parseEmail(argMultimap.getValue(PREFIX_EMAIL).get());
-        Address address = ParserUtil.parseAddress(argMultimap.getValue(PREFIX_ADDRESS).get());
+        Address address = ParserUtil.parseAddress(
+                ParserUtil.unescapeText(argMultimap.getValue(PREFIX_ADDRESS).get()));
         Set<Tag> tagList = ParserUtil.parseTags(argMultimap.getAllValues(PREFIX_TAG));
         Salary salary = ParserUtil.parseSalary(argMultimap.getValue(PREFIX_SALARY).orElse("0"));
         LeaveEntitlement leaveEntitlement = ParserUtil.parseLeaveEntitlement(

@@ -59,7 +59,7 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         for (Map.Entry<Prefix, Field> entry : FIELDS.entrySet()) {
             List<String> values = arguments.getAllValues(entry.getKey());
             if (entry.getValue() == Field.TASK) {
-                values = values.stream().map(ParserUtil::unescapeTaskText).toList();
+                values = values.stream().map(ParserUtil::unescapeText).toList();
             }
             if (values.stream().anyMatch(String::isBlank)) {
                 throw invalidFormat();

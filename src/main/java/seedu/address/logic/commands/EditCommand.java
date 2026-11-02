@@ -47,6 +47,7 @@ public class EditCommand extends Command {
             + "[" + PREFIX_ADDRESS + "ADDRESS] "
             + "[" + PREFIX_LEAVE_ENTITLEMENT + "ANNUAL_LEAVE_DAYS] "
             + "[" + PREFIX_TAG + "TAG]...\n"
+            + "To include a known prefix in ADDRESS, escape / as \\/.\n"
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_PHONE + "91234567 "
             + PREFIX_EMAIL + "johndoe@example.com";
