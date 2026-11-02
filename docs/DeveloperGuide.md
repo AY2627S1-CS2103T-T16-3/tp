@@ -91,41 +91,123 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <img src="images/LogicClassDiagram.png" width="550"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+The sequence diagram below shows a successful `execute("delete 1")` call, including command parsing,
+snapshot capture, and execution. The `Employee deletion cascade` reference frame expands the work inside
+`Model#deleteEmployee` in the [employee deletion cascade](#employee-deletion-cascade) diagram. Here, `e` is the first
+employee in the displayed list. Repeated command text is abbreviated with `...`, and unlabelled arrows into newly introduced
+participant boxes are constructor calls. Formatting helpers, parser disposal, and the storage save between the
+command result and the final return are omitted; see [save failures and model rollback](#save-failures-and-model-rollback).
 
-![Interactions Inside the Logic Component for the `delete 1` Command](images/DeleteSequenceDiagram.png)
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
-</div>
+<img src="images/DeleteSequenceDiagram.png" alt="Successful delete command parsing, snapshot capture, and execution with Model treated as a black box" width="740" style="max-width: 100%; height: auto;" />
 
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete an employee).<br>
-   Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. The command reads the currently displayed employees from `Model`, validates the requested index, and passes the
+   selected `Employee` to `Model#deleteEmployee`. The model removes that employee and their leave records.
+1. The command returns a success `CommandResult` to `LogicManager`. `LogicManager` saves the updated address book
+   before returning the result to the caller. The diagram shows this successful path only; a save failure instead
+   restores the snapshot and reports an error.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
-<img src="images/ParserClasses.png" width="600"/>
+<img src="images/ParserClasses.png" alt="Generic command-parser pattern and shared argument-parsing helpers" width="740" style="max-width: 100%; height: auto;" />
 
 How the parsing works:
-* When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
-* All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
+* For commands such as `add` and `delete`, `AddressBookParser` creates an `XYZCommandParser` (`XYZ` is a placeholder
+  for a specific command, such as `AddCommandParser`). That parser uses the shared helpers to create an
+  `XYZCommand`, which `AddressBookParser` returns as a `Command`.
+* `XYZCommandParser` and `XYZCommand` are placeholders for command-specific classes. This partial diagram shows
+  the direct parser-to-command pattern and shared helpers, not every parser or every helper dependency.
+* Command-group parsers also implement `Parser`, but may delegate to another parser. The leave-specific view
+  below shows this additional routing step without duplicating the concrete classes in the generic overview.
+
+#### Leave command routing
+
+This partial class diagram shows only the creation dependencies that distinguish the nested leave dispatcher.
+The final creation of `AddLeaveCommand` and `DeleteLeaveCommand` by their argument parsers follows the generic
+parser-to-command pattern above and is omitted here. Parser-interface realizations and shared helpers are also
+omitted. Each `create` dependency identifies which class instantiates its target; it is not a stored reference.
+
+<img src="images/LeaveParserClasses.png" alt="AddressBookParser creating the leave dispatcher, which creates add/delete argument parsers or ListLeaveCommand" width="740" style="max-width: 100%; height: auto;" />
+
+* `AddressBookParser` separates the `leave` command word and passes the remaining input to `LeaveCommandParser`.
+* For `add`, `LeaveCommandParser` creates `AddLeaveCommandParser`, which validates the index syntax and date range
+  before creating `AddLeaveCommand`. The command checks that the employee index exists when it executes.
+* For `delete`, it creates `DeleteLeaveCommandParser`, which validates the public leave ID before creating
+  `DeleteLeaveCommand`.
+* For `list`, it creates `ListLeaveCommand` directly; there is no `ListLeaveCommandParser`. The subcommand must be
+  spelled exactly, but arguments after it are ignored like those of other commands that take no parameters.
+* Missing or unknown subcommands produce a `ParseException` with the available leave-command formats. Invalid
+  add/delete arguments are rejected by their parsers. Commands are returned through the two routing layers to
+  `LogicManager` for execution. See [leave management](#leave-management) for their execution behavior.
 
 ### Model component
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-T16-3/tp/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<img src="images/ModelClassDiagram.png" width="450" />
+The following partial class diagram shows the model's main interfaces, managers, and stored collections.
+Employee details and leave identity are shown separately below to keep each view readable.
 
+<img src="images/ModelClassDiagram.png" alt="Model overview showing interfaces, preferences, and employee and leave collections" width="600" style="max-width: 100%; height: auto;" />
 
 The `Model` component,
 
-* stores the address book data i.e., all `Employee` objects (which are contained in a `UniqueEmployeeList` object).
+* stores employees in a `UniqueEmployeeList` and leave records in a separate `UniqueLeaveList`, both held by `AddressBook`.
 * sorts employees using a JavaFX `SortedList<Employee>` and wraps it in a `FilteredList<Employee>` for display. `getFilteredEmployeeList()` exposes this unmodifiable observable view, so the UI receives filter, sort, and employee update notifications without changing the stored employee order.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
+
+**Employee details**
+
+The detail diagrams below use composition to express ownership within employee and leave records.
+
+This partial class diagram shows the details owned by an `Employee`. Each employee has one name, phone number,
+email address, postal address, salary, and annual leave entitlement, together with zero or more tags and tasks.
+The employee's internal identifier is omitted here and shown in the leave identity diagram below.
+
+<img src="images/EmployeeClassDiagram.png" alt="Employee composing its required details and optional tags and tasks" width="300" style="max-width: 100%; height: auto;" />
+
+**Leave identity and records**
+
+This partial class diagram shows how leave records identify their employee without holding an `Employee` reference.
+An employee owns its assigned `EmployeeId`, and a leave record owns its `LeaveId`.
+The ordinary association from `Leave` to `EmployeeId` links the leave to its employee.
+`Leave` also has an ordinary association to `LeavePeriod` because separate leave records can share the same immutable
+period object.
+
+<img src="images/LeaveClassDiagram.png" alt="Employee composing its EmployeeId, and Leave composing its LeaveId while referencing the employee identity and an immutable LeavePeriod" width="640" style="max-width: 100%; height: auto;" />
+
+* `Employee` has `0..1` `EmployeeId` because `Employee.createUnassigned` creates an instance before its ID is allocated.
+  Every employee stored in `AddressBook` has exactly one internal ID; the optional multiplicity describes all
+  `Employee` instances, including those not yet added to the book.
+* Each `Leave` has exactly one `EmployeeId`, one `LeaveId`, and one `LeavePeriod`. A leave belongs to the employee
+  whose assigned `EmployeeId` contains the same integer identifier as the leave's `EmployeeId`.
+  For example, two distinct `EmployeeId` objects containing `7` identify the same employee in that address book.
+  The comparison uses `EmployeeId.equals`, not Java object identity, names, or displayed indexes.
+  Multiple leave records may refer to the same employee.
+* Employee replacements preserve their internal ID when details, salary, or tasks change, so leave records continue
+  to identify the same employee. Loading a save file rejects leave records whose employee ID has no matching employee.
+
+#### Employee deletion cascade
+
+The following sequence diagram shows the interactions inside Model after the delete command has selected a valid
+employee from the displayed list. Here, `e` is that employee and `id` is its assigned `EmployeeId`. Access to that ID
+is omitted from the diagram. This expands the `Employee deletion cascade` reference frame in the
+[Logic component](#logic-component) diagram. Its `m:Model` participant is the `m:ModelManager` instance shown here.
+The caller is `DeleteCommand`; snapshot capture and saving are outside this view.
+
+<img src="images/DeleteEmployeeCascadeSequenceDiagram.png" alt="AddressBook removing the selected employee and all leave records with the matching employee ID" width="740" style="max-width: 100%; height: auto;" />
+
+1. `ModelManager#deleteEmployee` delegates to `AddressBook#removeEmployee`.
+2. `AddressBook` obtains the employee's ID and removes the employee from `UniqueEmployeeList`.
+3. It calls `UniqueLeaveList#removeAllFor` with that ID. Every record with an equal `EmployeeId` value is removed;
+   other employees' leave is retained. Having no matching leave records is valid.
+
+`AddressBook` coordinates both removals; `Employee` does not invoke `Leave`. Object-destruction markers are omitted
+because removal from a collection does not necessarily make an object unreachable; the snapshot may still refer to it.
+The next successful save contains neither the employee nor their leave. A failed save instead restores both
+collections from the snapshot, as described under [save failures and model rollback](#save-failures-and-model-rollback).
 
 ### Storage component
 
@@ -457,9 +539,8 @@ and recomputation after a salary command.
 ### Leave management
 
 The leave feature is implemented as a `leave` command group with the `add`, `list`, and `delete` subcommands.
-`AddressBookParser` passes the remaining input to `LeaveCommandParser`, which selects the matching subcommand parser.
-The `list` subcommand must be spelled exactly, while any arguments after it are ignored like those of other commands
-that take no parameters.
+
+The nested parser structure is described under [leave command routing](#leave-command-routing).
 
 #### Recording leave
 
@@ -474,6 +555,26 @@ that take no parameters.
    checks the requested weekdays against the employee's remaining entitlement for that year.
 4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the ID counter.
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
+
+The following sequence diagram shows successful leave creation inside Model. It starts at `AddressBook#addLeave`,
+called through `ModelManager` after the command has resolved a valid displayed employee index. The request has no
+overlap, fits within the remaining entitlement, and has an available leave ID. Parsing, UI feedback, saving, and
+getter calls are outside this view. The nested activation bar shows that `getWorkingDaysUsed` is called inside
+`calculateRemainingLeave`, before that helper returns the balance.
+
+<img src="images/AddLeaveSequenceDiagram.png" alt="Successful leave creation with the working-day lookup nested inside the remaining-balance calculation" width="740" style="max-width: 100%; height: auto;" />
+
+Here, `id` is the selected employee's internal ID, `period` is the validated date range, and `e` is the employee found
+by that ID. `year` comes from the period; `remaining` is the result of `calculateRemainingLeave`.
+An overlapping period or a request exceeding that balance instead terminates `addLeave` with
+`OverlappingLeaveException` or `InsufficientLeaveException`, respectively. `AddLeaveCommand` converts the exception
+into a user-facing error. Neither rejection changes the leave list or consumes a leave ID. These failure paths are
+omitted from the diagram.
+
+`leaveId` is constructed from `AddressBook.nextLeaveId` before the `Leave` constructor runs; after `add(record)`
+succeeds, `nextLeaveId` advances. These value-object and counter steps are omitted from the diagram.
+An exhausted counter instead raises `LeaveIdExhaustedException` before record creation,
+which the command also converts into an error. The command recalculates the balance after a successful return.
 
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires
 at least one such day. Public holidays are not excluded, so a public holiday on a weekday is
@@ -513,10 +614,11 @@ balance calculation automatically excludes the deleted record.
 `AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
 IDs used before `clear` may therefore be assigned again in the fresh address book.
 
-Employee deletion cascades through `AddressBook#removeEmployee`, which removes the employee and all records with the
-same internal `EmployeeId`. During bulk replacement, `removeOrphanedLeaves` provides the equivalent safeguard. Storage
-loading rejects leave records that refer to an unknown employee, overlap another record for the same employee, or use
-invalid identifiers or periods.
+Employee deletion removes all the employee's leave records, following the
+[employee deletion cascade](#employee-deletion-cascade). During bulk replacement, `removeOrphanedLeaves` provides
+the equivalent referential-integrity safeguard. Storage
+loading rejects leave records that refer to an unknown employee, overlap another record for the same employee, or
+use invalid identifiers or periods.
 
 #### Design considerations
 
