@@ -58,7 +58,8 @@ public class SortCommandTest {
 
     @Test
     public void execute_equalValues_preservesStoredOrder() throws Exception {
-        Employee another = new EmployeeBuilder().withName("Another").withSalary("900")
+        Employee another = new EmployeeBuilder().withName("Another")
+                .withPhone("81000002").withEmail("another@example.com").withSalary("900")
                 .withEmployeeId(4).build();
         Model ties = createModel(low, another, middle);
         parser.parseCommand("sort s/asc").execute(ties);
@@ -69,9 +70,11 @@ public class SortCommandTest {
 
     @Test
     public void execute_phoneWithLeadingZerosAndLargeAmounts_sortsWithoutOverflow() throws Exception {
-        Employee huge = new EmployeeBuilder().withName("Huge").withPhone("99999999999999999999999")
+        Employee huge = new EmployeeBuilder().withName("Huge")
+                .withEmail("huge@example.com").withPhone("99999999999999999999999")
                 .withEmployeeId(5).build();
-        Employee padded = new EmployeeBuilder().withName("Padded").withPhone("000900")
+        Employee padded = new EmployeeBuilder().withName("Padded")
+                .withEmail("padded@example.com").withPhone("000900")
                 .withEmployeeId(6).build();
         Model phones = createModel(huge, padded, middle);
         parser.parseCommand("sort p/asc").execute(phones);

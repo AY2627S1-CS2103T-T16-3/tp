@@ -16,11 +16,14 @@ import seedu.address.model.employee.Task;
 import seedu.address.testutil.EmployeeBuilder;
 
 public class SummarySortCommandTest {
-    private static final Employee ALICE = new EmployeeBuilder().withName("Alice").withEmployeeId(1)
+    private static final Employee ALICE = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withEmployeeId(1)
             .withTags("engineering").withSalary("1000").withTasks(new Task("Report")).build();
-    private static final Employee BOB = new EmployeeBuilder().withName("Bob").withEmployeeId(2)
+    private static final Employee BOB = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withEmployeeId(2)
             .withTags("remote").withSalary("2000").build();
-    private static final Employee CAROL = new EmployeeBuilder().withName("Carol").withEmployeeId(3)
+    private static final Employee CAROL = new EmployeeBuilder().withName("Carol")
+                .withPhone("81000004").withEmail("carol@example.com").withEmployeeId(3)
             .withTags("engineering").withSalary("3000").withTasks(new Task("Review"), new Task("Plan")).build();
 
     private final AddressBookParser parser = new AddressBookParser();

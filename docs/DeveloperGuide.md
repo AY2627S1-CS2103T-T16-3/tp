@@ -298,6 +298,17 @@ See [save safety testing](Testing.md#save-safety-regression-and-stress-tests) fo
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Employee contact uniqueness
+
+Employees may share names, but cannot share a phone number or email address. `Employee#isSameEmployee`
+checks for either contact conflict; email comparison ignores case and phone comparison uses the trimmed
+stored digit string. This conflict relation is not transitive and is separate from internal employee IDs
+and `Employee#equals`. `UniqueEmployeeList` enforces it when adding, replacing, and loading employees.
+For edits, both the command and model exclude the target employee before checking every other employee,
+including those hidden by a filter. This permits unchanged contact details while rejecting either
+conflicting field, even when the other contact detail is unchanged. Loading a file with conflicting
+contact details fails validation; existing data must satisfy the same uniqueness rules.
+
 ### Employee identifier allocation
 
 `AddressBook` assigns each employee an internal positive integer ID from 1 to `Integer.MAX_VALUE`. The next-ID counter
