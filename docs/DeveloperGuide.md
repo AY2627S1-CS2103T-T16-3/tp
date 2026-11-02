@@ -256,42 +256,45 @@ of entitlement, provided they satisfy both criteria. Employee records are unchan
 `FilterCommandParserTest` covers all operators, normalized values, valid limits, and invalid input.
 `FilterCommandTest` exercises parsing through execution, checking equality at inclusive thresholds,
 strict comparisons, limits (0/50000 salary and 0/365 days), and combinations with other criteria.
+
 ### Task management
 
-Users can keep track of tasks for each employee. The `Task` class stores the description and completion status.
-The constructor rejects blank descriptions and descriptions longer than 120 characters. In the command syntax, `INDEX`
-and `TASK_INDEX` are one-based indexes chosen by the user. The task commands use an employee's position in
-`Model#getFilteredEmployeeList` and a task's position in `Employee#getTasks` to identify the records being changed.
+Each `Employee` owns an ordered list of `Task` objects, and every `Task` belongs to exactly one `Employee`. Deleting an
+`Employee` therefore removes its tasks without requiring separate task identifiers or references. `Task` and
+`Employee` objects cannot be changed after they are created. Methods such as `Task#markDone` and
+`Employee#updateTask` return new objects instead, preventing a task update from unexpectedly changing an object used
+elsewhere in the application.
 
-`Employee#getTasks` returns a read-only view of the tasks for each `Employee`. `Task` is immutable: methods such as
-`Task#markDone` and `Task#markUndone` return a new `Task` instead of changing the existing object. Similarly,
-`Employee#addTask`, `Employee#deleteTask`, and `Employee#updateTask` return a new `Employee`. The replacement preserves
-the original employee's other details, including salary, leave entitlement, tags, and unrelated tasks.
+#### Command execution
 
-`AddressBookParser` passes commands beginning with task to `TaskCommandParser`. The available subcommands are:
+1. When `LogicManager` receives a task command, `AddressBookParser` delegates it to `TaskCommandParser`.
+2. `TaskCommandParser` selects the parser for the `list`, `add`, `delete`, `mark`, or `unmark`.
+3. Task commands use the one-based employee index to select an `Employee` from `Model#getFilteredEmployeeList`.
+4. If the command targets a task, it uses the one-based task index to select a `Task` from `Employee#getTasks`.
+5. `task list` only displays tasks. The other task commands update the selected employee in the `Model`.
+6. After execution, `LogicManager` asks `Storage` to save the current `Model`, including each employee's tasks.
 
-* `task list INDEX` displays the selected employee's tasks without changing the model.
-* `task add INDEX d/DETAILS` adds a new incomplete task to the selected employee.
-* `task delete INDEX i/TASK_INDEX` deletes a task.
-* `task mark INDEX i/TASK_INDEX` marks a task as complete.
-* `task unmark INDEX i/TASK_INDEX` marks a task as incomplete.
+For example, suppose `find Alex` displays Alex first and Alex has at least two tasks. When `task mark 1 i/2` runs, the
+command retrieves Alex's second `Task`, calls `Task#markDone`, and places the resulting `Task` in a replacement
+`Employee`. It then updates the `Model` through `Model#setEmployee` while retaining the filtered view.
 
-Each mutating task command reads `Model#getFilteredEmployeeList` when its `execute` method runs. This ensures that
-`AddTaskCommand`, `DeleteTaskCommand`, `MarkTaskCommand`, and `UnmarkTaskCommand` use the same employee ordering shown
-after `find`, `filter`, or `sort`. The commands validate the employee index and the task index, if applicable, before
-calling `Model#setEmployee` with the replacement employee.
+#### Task validation
 
-`Employee#addTask` rejects duplicate tasks by calling `Task#hasSameDetails`. That method compares normalized details:
-it trims the description, combines repeated Unicode whitespace, and ignores letter case. The original
-description remains available through `Task#getDetails` for display.
+* During parsing, `TaskCommandParser` and the parser for the selected action reject incorrect command formats.
+* During execution, the command rejects indexes outside the displayed employee list or the selected employee's task
+  list.
+* During task construction, the `Task` constructor rejects blank details and details longer than 120 characters.
 
-Tasks are saved as part of the employee record. `JsonAdaptedEmployee` converts each `Task` to `JsonAdaptedTask`, which
-stores the task's `details` and `isDone` fields. Since tasks belong to `Employee`, deleting an employee also deletes
-its tasks.
+`Employee#addTask` uses `Task#hasSameDetails` to reject duplicates. For this comparison, `Task#hasSameDetails`
+trims the details, replaces repeated whitespace with a single space, and ignores letter case. The original details
+remain unchanged for display.
 
-When loading data, `JsonAdaptedTask#toModelType` reconstructs each `Task` and applies the constructor's validation.
-`JsonAdaptedEmployee#toModelType` then checks the reconstructed tasks with `Task#hasSameDetails` and rejects duplicates.
-Invalid task data therefore cannot be used to create an invalid `Employee`.
+#### Task storage
+
+`JsonAdaptedTask` stores the `details` and `isDone` fields. When loading data, `JsonAdaptedTask#toModelType` rejects a
+saved task if its details are missing, blank, or longer than 120 characters. `JsonAdaptedEmployee#toModelType` checks
+for duplicate tasks with `Task#hasSameDetails` before constructing the `Employee`. As a result, invalid tasks cannot
+be loaded from storage.
 
 ### Sorting displayed employees
 
