@@ -11,26 +11,34 @@ participant "record:Leave" as Record MODEL_COLOR
 end box
 
 [-> AddressBook : addLeave(id, period)
-AddressBook -> AddressBook : e = findEmployeeById(id)
+activate AddressBook
+AddressBook -> AddressBook : findEmployeeById(id)
+activate AddressBook
+AddressBook --> AddressBook : e
+deactivate AddressBook
 AddressBook -> Leaves : hasOverlappingLeave(id, period)
-Leaves --> AddressBook : overlap
+activate Leaves
+Leaves --> AddressBook : false
+deactivate Leaves
 
-alt overlap
-    [<-- AddressBook : OverlappingLeaveException
-else no overlap
-    AddressBook -> AddressBook : remaining = calculateRemainingLeave(e, year)
-    AddressBook -> Leaves : getWorkingDaysUsed(id, year)
-    Leaves --> AddressBook : usedDays
+AddressBook -> AddressBook : calculateRemainingLeave(e, year)
+activate AddressBook
+AddressBook -> Leaves : getWorkingDaysUsed(id, year)
+activate Leaves
+Leaves --> AddressBook : usedDays
+deactivate Leaves
+AddressBook --> AddressBook : remaining
+deactivate AddressBook
 
-    alt requested > remaining
-        [<-- AddressBook : InsufficientLeaveException
-    else requested <= remaining
-        create Record
-        AddressBook -> Record : new Leave(leaveId, id, period)
-        Record --> AddressBook
-        AddressBook -> Leaves : add(record)
-        Leaves --> AddressBook
-        [<-- AddressBook : record
-    end
-end
+create Record
+AddressBook -> Record : new Leave(leaveId, id, period)
+activate Record
+Record --> AddressBook
+deactivate Record
+AddressBook -> Leaves : add(record)
+activate Leaves
+Leaves --> AddressBook
+deactivate Leaves
+[<-- AddressBook : record
+deactivate AddressBook
 @enduml

@@ -15,9 +15,9 @@ Class Leave
 Class LeaveId
 Class LeavePeriod
 
-Employee -right-> "0..1" EmployeeId : identity
+Employee *-right-> "0..1" EmployeeId : identity
 Leave -left-> "1" EmployeeId : employeeId
-Leave -down-> "1" LeaveId
+Leave *-down-> "1" LeaveId
 Leave -down-> "1" LeavePeriod
 
 note bottom of Employee

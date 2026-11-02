@@ -3,6 +3,7 @@
 skinparam dpi 150
 skinparam ArrowFontStyle plain
 skinparam ParticipantPadding 0
+skinparam sequenceReferenceBackgroundColor white
 <style>
 sequenceDiagram {
     participant {
@@ -55,6 +56,7 @@ Model --> DeleteCommand : employees
 deactivate Model
 DeleteCommand -> Model : deleteEmployee(e)
 activate Model
+ref over Model : Employee deletion\ncascade
 Model --> DeleteCommand
 deactivate Model
 DeleteCommand --> LogicManager : result

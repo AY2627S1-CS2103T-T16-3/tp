@@ -92,9 +92,9 @@ Here's a (partial) class diagram of the `Logic` component:
 <img src="images/LogicClassDiagram.png" width="550"/>
 
 The sequence diagram below shows a successful `execute("delete 1")` call, including command parsing,
-snapshot capture, and execution. It treats `Model` as a black box; employee and leave removal inside Model is shown
-separately in the [employee deletion cascade](#employee-deletion-cascade) diagram. Here, `e` is the first employee
-in the displayed list. Repeated command text is abbreviated with `...`, and unlabelled arrows into newly introduced
+snapshot capture, and execution. The `Employee deletion cascade` reference frame expands the work inside
+`Model#deleteEmployee` in the [employee deletion cascade](#employee-deletion-cascade) diagram. Here, `e` is the first
+employee in the displayed list. Repeated command text is abbreviated with `...`, and unlabelled arrows into newly introduced
 participant boxes are constructor calls. Formatting helpers, parser disposal, and the storage save between the
 command result and the final return are omitted; see [save failures and model rollback](#save-failures-and-model-rollback).
 
@@ -160,28 +160,32 @@ The `Model` component,
 
 **Employee details**
 
-This partial class diagram shows the values referenced by an `Employee`. Each employee has one name, phone number,
+The detail diagrams below use composition to express ownership within employee and leave records.
+
+This partial class diagram shows the details owned by an `Employee`. Each employee has one name, phone number,
 email address, postal address, salary, and annual leave entitlement, together with zero or more tags and tasks.
 The employee's internal identifier is omitted here and shown in the leave identity diagram below.
-Ordinary associations show these references without asserting exclusive ownership of the value objects.
-For example, `withSalary` creates a replacement employee while reusing the existing name, contact details, tags,
-and tasks; a snapshot may still retain the previous employee value. The composition diamonds in the overview instead
-show the employee and leave collection objects created and owned by each `AddressBook`.
 
-<img src="images/EmployeeClassDiagram.png" alt="Employee details showing required values and optional collections of tags and tasks" width="300" style="max-width: 100%; height: auto;" />
+<img src="images/EmployeeClassDiagram.png" alt="Employee composing its required details and optional tags and tasks" width="300" style="max-width: 100%; height: auto;" />
 
 **Leave identity and records**
 
 This partial class diagram shows how leave records identify their employee without holding an `Employee` reference.
+An employee owns its assigned `EmployeeId`, and a leave record owns its `LeaveId`.
+The ordinary association from `Leave` to `EmployeeId` links the leave to its employee.
+`Leave` also has an ordinary association to `LeavePeriod` because separate leave records can share the same immutable
+period object.
 
-<img src="images/LeaveClassDiagram.png" alt="Employee and leave records referencing EmployeeId, with a leave ID and period for each record" width="640" style="max-width: 100%; height: auto;" />
+<img src="images/LeaveClassDiagram.png" alt="Employee composing its EmployeeId, and Leave composing its LeaveId while referencing the employee identity and an immutable LeavePeriod" width="640" style="max-width: 100%; height: auto;" />
 
-* `Employee` has `0..1` `EmployeeId` because `Employee.createUnassigned` creates a value before its ID is allocated.
+* `Employee` has `0..1` `EmployeeId` because `Employee.createUnassigned` creates an instance before its ID is allocated.
   Every employee stored in `AddressBook` has exactly one internal ID; the optional multiplicity describes all
-  `Employee` values, including those not yet added to the book.
-* Each `Leave` has exactly one `EmployeeId`, one `LeaveId`, and one `LeavePeriod`. Its employee ID value must match
-  that of an employee in the same address book. Matching uses `EmployeeId.equals`, not object identity, names, or
-  displayed indexes. Multiple leave records may refer to the same employee.
+  `Employee` instances, including those not yet added to the book.
+* Each `Leave` has exactly one `EmployeeId`, one `LeaveId`, and one `LeavePeriod`. A leave belongs to the employee
+  whose assigned `EmployeeId` contains the same integer identifier as the leave's `EmployeeId`.
+  For example, two distinct `EmployeeId` objects containing `7` identify the same employee in that address book.
+  The comparison uses `EmployeeId.equals`, not Java object identity, names, or displayed indexes.
+  Multiple leave records may refer to the same employee.
 * Employee replacements preserve their internal ID when details, salary, or tasks change, so leave records continue
   to identify the same employee. Loading a save file rejects leave records whose employee ID has no matching employee.
 
@@ -189,8 +193,9 @@ This partial class diagram shows how leave records identify their employee witho
 
 The following sequence diagram shows the interactions inside Model after the delete command has selected a valid
 employee from the displayed list. Here, `e` is that employee and `id` is its assigned `EmployeeId`. Access to that ID
-is omitted from the diagram. The caller is the delete command shown in the [Logic component](#logic-component);
-snapshot capture and saving are outside this view.
+is omitted from the diagram. This expands the `Employee deletion cascade` reference frame in the
+[Logic component](#logic-component) diagram. Its `m:Model` participant is the `m:ModelManager` instance shown here.
+The caller is `DeleteCommand`; snapshot capture and saving are outside this view.
 
 <img src="images/DeleteEmployeeCascadeSequenceDiagram.png" alt="AddressBook removing the selected employee and all leave records with the matching employee ID" width="740" style="max-width: 100%; height: auto;" />
 
@@ -200,7 +205,7 @@ snapshot capture and saving are outside this view.
    other employees' leave is retained. Having no matching leave records is valid.
 
 `AddressBook` coordinates both removals; `Employee` does not invoke `Leave`. Object-destruction markers are omitted
-because removing records from collections does not imply immediate destruction of every referenced Java object.
+because removal from a collection does not necessarily make an object unreachable; the snapshot may still refer to it.
 The next successful save contains neither the employee nor their leave. A failed save instead restores both
 collections from the snapshot, as described under [save failures and model rollback](#save-failures-and-model-rollback).
 
@@ -551,21 +556,24 @@ The nested parser structure is described under [leave command routing](#leave-co
 4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the ID counter.
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
 
-The following sequence diagram focuses on the overlap and entitlement checks inside Model, followed by record
-creation. It starts at `AddressBook#addLeave`, called through `ModelManager` after the command has resolved a valid
-displayed employee index. Parsing, UI feedback, saving, and getter calls are outside this view. Activation bars and
-helper return arrows are omitted to keep the alternative paths readable.
+The following sequence diagram shows successful leave creation inside Model. It starts at `AddressBook#addLeave`,
+called through `ModelManager` after the command has resolved a valid displayed employee index. The request has no
+overlap, fits within the remaining entitlement, and has an available leave ID. Parsing, UI feedback, saving, and
+getter calls are outside this view. The nested activation bar shows that `getWorkingDaysUsed` is called inside
+`calculateRemainingLeave`, before that helper returns the balance.
 
-<img src="images/AddLeaveSequenceDiagram.png" alt="AddressBook rejecting overlapping or excessive leave, or creating and storing a new leave record" width="740" style="max-width: 100%; height: auto;" />
+<img src="images/AddLeaveSequenceDiagram.png" alt="Successful leave creation with the working-day lookup nested inside the remaining-balance calculation" width="740" style="max-width: 100%; height: auto;" />
 
 Here, `id` is the selected employee's internal ID, `period` is the validated date range, and `e` is the employee found
-by that ID. `year` and `requested` come from the period; `remaining` is the result of `calculateRemainingLeave`.
-Exception-labelled replies represent propagation to the caller; `AddLeaveCommand` converts those exceptions into
-user-facing errors. Neither rejection changes the leave list or consumes a leave ID.
+by that ID. `year` comes from the period; `remaining` is the result of `calculateRemainingLeave`.
+An overlapping period or a request exceeding that balance instead terminates `addLeave` with
+`OverlappingLeaveException` or `InsufficientLeaveException`, respectively. `AddLeaveCommand` converts the exception
+into a user-facing error. Neither rejection changes the leave list or consumes a leave ID. These failure paths are
+omitted from the diagram.
 
-The success path assumes a leave ID is available. `leaveId` is constructed from the next-ID counter before the
-`Leave` constructor runs; after `add(record)` succeeds, the counter advances. These value-object and counter steps
-are omitted from the diagram. An exhausted counter instead raises `LeaveIdExhaustedException` before record creation,
+`leaveId` is constructed from `AddressBook.nextLeaveId` before the `Leave` constructor runs; after `add(record)`
+succeeds, `nextLeaveId` advances. These value-object and counter steps are omitted from the diagram.
+An exhausted counter instead raises `LeaveIdExhaustedException` before record creation,
 which the command also converts into an error. The command recalculates the balance after a successful return.
 
 `LeavePeriod` enforces an inclusive, ordered range within one calendar year. It counts Mondays to Fridays and requires

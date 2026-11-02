@@ -20,12 +20,12 @@ Class LeaveEntitlement
 Class Tag
 Class Task
 
-Employee --> "1" Name
-Employee --> "1" Phone
-Employee --> "1" Email
-Employee --> "1" Address
-Employee --> "1" Salary
-Employee --> "1" LeaveEntitlement
-Employee --> "0..*" Tag
-Employee --> "0..*" Task
+Employee *--> "1" Name
+Employee *--> "1" Phone
+Employee *--> "1" Email
+Employee *--> "1" Address
+Employee *--> "1" Salary
+Employee *--> "1" LeaveEntitlement
+Employee *--> "0..*" Tag
+Employee *--> "0..*" Task
 @enduml
