@@ -54,7 +54,7 @@ public class EditCommand extends Command {
     public static final String MESSAGE_EDIT_EMPLOYEE_SUCCESS = "Edited employee: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_SALARY_NOT_EDITABLE = "Use the salary command to change an employee's salary.";
-    public static final String MESSAGE_DUPLICATE_EMPLOYEE = "This employee already exists in the address book.";
+    public static final String MESSAGE_DUPLICATE_EMPLOYEE = "This employee already exists in HR Book.";
 
     private final Index index;
     private final EditEmployeeDescriptor editEmployeeDescriptor;

@@ -3,7 +3,9 @@ layout: page
 title: User Guide
 ---
 
-HR Book is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, HR Book can help you manage contacts faster than traditional GUI applications.
+HR Book is a **desktop application for managing employee records and leave through a Command Line Interface (CLI)**.
+Its command box supports fast keyboard entry, while the Graphical User Interface (GUI) presents employee and leave
+information that you can scroll and inspect.
 
 * Table of Contents
 {:toc}
@@ -82,7 +84,7 @@ Format: `help`
 
 ### Adding an employee: `add`
 
-Adds an employee to the address book.
+Adds an employee to HR Book.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
 
@@ -104,7 +106,7 @@ Examples:
 
 ### Listing all employees: `list`
 
-Shows a list of all employees in the address book.
+Shows a list of all employees in HR Book.
 
 Format: `list`
 
@@ -193,7 +195,7 @@ Run the command again after employee, task, leave, or salary changes to refresh 
 
 ### Changing an employee's salary: `salary`
 
-Changes the monthly salary of an existing employee in the address book.
+Changes the monthly salary of an existing employee in HR Book.
 
 Format: `salary INDEX s/SALARY`
 
@@ -211,7 +213,7 @@ Examples:
 
 ### Editing an employee: `edit`
 
-Edits an existing employee in the address book.
+Edits an existing employee in HR Book.
 
 Salary is preserved when editing other details. The `edit` command rejects `s/`.
 Use `salary INDEX s/SALARY` to change salary.
@@ -271,7 +273,7 @@ Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAIL
 * Range filtering is supported **only for salary (`s/`) and annual leave entitlement (`le/`)**. These fields support `<`, `<=`, `>`, `>=`, and inclusive ranges written as `MIN-MAX`. Both endpoints are included; the minimum must not exceed the maximum. Spaces around an operator or range separator are allowed. Salary endpoints must be from 0 to 50000, leave endpoints from 0 to 365. Phone queries use partial matching.
 * Comparators are supported only for salary (`s/`) and annual leave entitlement (`le/`). Name, phone, email, address, tag, and task filters must not start with `<`, `>`, `=`, or `!=`; for example, `n/>Alice` is rejected with a comparator error. These fields use text matching.
 * Leading zeros are rejected for exact salary/leave values, comparison amounts, and both range endpoints. A single `0` is valid. Phone searches are unaffected.
-* Every filter searches the entire address book, including employees hidden by an earlier search.
+* Every filter searches all stored employees, including those hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 
 Examples:
@@ -302,7 +304,7 @@ Format: `sort FIELD/ORDER`
 * Order: `asc` for ascending or `des` for descending. Supply exactly one field and order.
 * Salary, phone numbers, and annual leave entitlement sort numerically. Text sorts alphabetically, ignoring case.
 * When values tie, `summary scope/all` uses the same employee order as `list`. Earlier sorts can affect this order.
-* Sorting changes the display only; employee details and the stored address book order stay unchanged.
+* Sorting changes the display only; employee details and their stored order stay unchanged.
 * The chosen sort stays active when you filter, find, edit, or list employees. `list` shows all employees in that order. Another `sort` replaces it; restarting the app restores the stored order.
 * Index commands such as `edit`, `salary`, and `delete` use the positions in the sorted displayed list.
 * Sorting an empty list is allowed.
@@ -314,7 +316,7 @@ Examples:
 
 ### Deleting an employee: `delete`
 
-Deletes the specified employee from the address book.
+Deletes the specified employee from HR Book.
 
 Format: `delete INDEX`
 
@@ -325,7 +327,7 @@ Format: `delete INDEX`
   missing employee.
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd employee in the address book.
+* `list` followed by `delete 2` deletes the 2nd employee in HR Book.
 * `find Betsy` followed by `delete 1` deletes the 1st employee in the results of the `find` command.
 
 ### Managing employee leave
@@ -400,8 +402,8 @@ Format: `leave delete LEAVE_ID`
 * `LEAVE_ID` must be a positive integer displayed by `leave list`; it is not an employee list index.
 * Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
   balance is recalculated from the records that remain.
-* Leave IDs removed using `leave delete` are not reused while the current address book remains in use. The `clear`
-  command starts a fresh address book and resets the ID sequence.
+* Leave IDs removed using `leave delete` are not reused while the current HR Book data remains in use. The `clear`
+  command starts a fresh data set and resets the ID sequence.
 
 Example:
 * `leave list` followed by `leave delete 2` deletes the leave record whose ID is `2`.
@@ -511,7 +513,7 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all employee and leave records from HR Book and starts a fresh address book. This also resets HR Book's
+Clears all employee and leave records from HR Book and starts a fresh data set. This also resets HR Book's
 identifier sequences, so leave IDs used before `clear` may be assigned again.
 
 Format: `clear`
@@ -541,7 +543,7 @@ employees, leave records, and the next internal identifiers. Editing it manually
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
-usual command results box. Any explicit JSON `null` anywhere in the address-book file is invalid, including employee
+usual command results box. Any explicit JSON `null` anywhere in the HR Book data file is invalid, including employee
 fields, leave fields, nested data, and array entries. The saved file remains unchanged until you run a successful
 command, which replaces it with the current data. To recover your saved data, close HR Book without
 running a command, correct the file or restore a valid backup, then reopen the app. We recommend backing up the file
