@@ -19,7 +19,8 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
 1. Copy the file to the folder you want to use as the _home folder_ for your HR Book.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar hr-book.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar JAR_FILE_NAME`, replacing
+   `JAR_FILE_NAME` with the downloaded file's complete name, including the `.jar` extension.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
@@ -85,6 +86,9 @@ Format: `help`
 Adds an employee to the address book.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS le/ANNUAL_LEAVE_DAYS [s/SALARY] [t/TAG]…​`
+
+`NAME` must not be blank and may contain only English letters (`A`-`Z`, `a`-`z`), digits (`0`-`9`), and spaces.
+Hyphens, apostrophes, accented letters, and characters from other writing systems are not accepted.
 
 Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
@@ -221,6 +225,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DA
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* When changing the name, `NAME` must follow the restrictions described under [`add`](#adding-an-employee-add).
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
@@ -259,7 +264,10 @@ Lists employees who match all supplied criteria.
 Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... [s/SALARY] [le/DAYS]`
 
 * Supply at least one non-empty criterion. Every value must satisfy its field's validation rules; invalid input returns the corresponding field's error message.
-* Names allow only alphanumeric characters and spaces. Phone queries require at least 3 digits and no other characters. Emails must be complete valid addresses (for example, `alice@example.com`); fragments such as `@example.com` are rejected. Addresses may contain any non-blank text. Tags must be alphanumeric without spaces. Task details must be non-blank and at most 120 characters.
+* Names follow the restrictions described under [`add`](#adding-an-employee-add). Phone queries require at least 3
+  digits and no other characters. Emails must be complete valid addresses (for example, `alice@example.com`);
+  fragments such as `@example.com` are rejected. Addresses may contain any non-blank text. Tags must be alphanumeric
+  without spaces. Task details must be non-blank and at most 120 characters.
 * Name, phone, email, and address use case-insensitive substring matching. For example, `n/ali` matches `Alice Pauline`, and `p/912` matches a phone number containing `912`.
 * Task descriptions use case-insensitive substring matching. `task/report` matches an employee with a task containing `report`.
 * To avoid conflict with flags, replace `/` with `\/` in task description.
