@@ -270,7 +270,7 @@ Format: `filter [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAIL
 * Each of `n/`, `p/`, `e/`, `a/`, `s/`, and `le/` may appear only once. Unsupported prefixes are rejected.
 * Range filtering is supported **only for salary (`s/`) and annual leave entitlement (`le/`)**. These fields support `<`, `<=`, `>`, `>=`, and inclusive ranges written as `MIN-MAX`. Both endpoints are included; the minimum must not exceed the maximum. Spaces around an operator or range separator are allowed. Salary endpoints must be from 0 to 50000, leave endpoints from 0 to 365. Phone queries use partial matching.
 * Comparators are supported only for salary (`s/`) and annual leave entitlement (`le/`). Name, phone, email, address, tag, and task filters must not start with `<`, `>`, `=`, or `!=`; for example, `n/>Alice` is rejected with a comparator error. These fields use text matching.
-* Leading zeros are rejected for exact salary/leave values, comparison amounts, and both range endpoints. A single `0` is valid. Phone searches are unaffected.
+* **Leading zeroes are not allowed in salary (`s/`) or annual leave entitlement (`le/`) filters.** This applies to exact values, comparison amounts, and both range endpoints. For example, `filter s/003000`, `filter le/>014`, and `filter s/03000-5000` are rejected; use `filter s/3000`, `filter le/>14`, and `filter s/3000-5000` instead. A single `0` is valid. This restriction does not apply to phone searches.
 * Every filter searches the entire address book, including employees hidden by an earlier search.
 * Use `list` to show all employees again. Filtering does not modify employee details.
 

@@ -240,7 +240,9 @@ the data file. See **Save failures and model rollback** for details.
 supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
 and repeated scalar fields, and uses `ParserUtil` to validate numeric thresholds. Salary thresholds
 must be whole numbers from 0 to 50000; annual leave entitlement thresholds must be whole numbers
-from 0 to 365. Leading zeros are normalized before constructing the predicate.
+from 0 to 365. Leading zeroes are rejected for exact values, comparison thresholds, and both
+endpoints of inclusive ranges in salary and annual leave entitlement filters. A single `0` is valid.
+For example, `filter s/003000`, `filter le/>014`, and `filter s/03000-5000` are rejected.
 
 Both numeric fields accept exact values (no operator), `<`, `<=`, `>`, and `>=`. The parser checks
 for the two-character inclusive operators before splitting the operator from its amount. It rejects
@@ -253,7 +255,7 @@ match). Leave filtering uses annual entitlement, irrespective of leave already t
 For example, `filter s/<=4000 le/>=14` includes employees earning exactly 4000 with exactly 14 days
 of entitlement, provided they satisfy both criteria. Employee records are unchanged.
 
-`FilterCommandParserTest` covers all operators, normalized values, valid limits, and invalid input.
+`FilterCommandParserTest` covers all operators, valid limits, and invalid input.
 `FilterCommandTest` exercises parsing through execution, checking equality at inclusive thresholds,
 strict comparisons, limits (0/50000 salary and 0/365 days), and combinations with other criteria.
 ### Task management
@@ -754,63 +756,28 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC6 - Find employees by attribute**
+**Use case: UC6 - Find employees by name**
 
 **MSS**
 
-1. HR manager requests for the list of employees with a specific value for an attribute
-2. System displays the list of employees with the specified value for the attribute
+1. HR manager requests to find employees by providing one or more name keywords.
+2. System identifies employees whose names contain any of the supplied keywords, using case-insensitive whole-word matching.
+3. System displays the matching employees and the number of matches.
 
     Use case ends.
 
 **Extensions**
 
-* 1a. HR manager did not specify an attribute.
+* 1a. HR manager does not provide any search keywords.
 
-    * 1a1. System informs the HR manager to specify an attribute.
-    * 1a2. System does not display a filtered list of employees.
-
-      Use case ends.
-
-* 1b. HR manager specified multiple attributes.
-
-    * 1b1. System informs the HR manager it does not support multiple attributes.
-    * 1b2. System does not display a filtered list of employees.
+    * 1a1. System informs the HR manager of the valid command format, which requires at least one keyword.
+    * 1a2. System keeps the currently displayed employee list.
 
       Use case ends.
 
-* 1c. HR manager specified an attribute which does not exist.
+* 2a. No employees match any of the supplied keywords.
 
-    * 1c1. System informs the HR manager the attribute does not exist.
-    * 1c2. System does not display a filtered list of employees.
-
-      Use case ends.
-
-* 1d. HR manager did not specify a value.
-
-    * 1d1. System informs the HR manager to specify a value.
-    * 1d2. System does not display a filtered list of employees.
-
-      Use case ends.
-
-* 1e. HR manager specified multiple values.
-
-    * 1e1. System informs the HR manager it does not support multiple values.
-    * 1e2. System does not display a filtered list of employees.
-
-      Use case ends.
-
-* 1f. HR manager specified a value which is invalid.
-
-    * 1f1. System informs the HR manager the specified value is invalid.
-    * 1f2. System does not display a filtered list of employees.
-
-      Use case ends.
-
-* 1g. None of the employees match the specified value and attribute.
-
-    * 1g1. System informs the HR manager that no employees match the specified value and attribute.
-    * 1g2. System displays an empty list with no employees.
+    * 2a1. System displays an empty employee list and reports zero matches.
 
       Use case ends.
 
@@ -856,8 +823,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1e. The HR manager provides an empty criterion.
 
-    * 1a1. System informs the HR manager that supplied criteria must not be empty.
-    * 1a2. System keeps the currently displayed employee list.
+    * 1e1. System informs the HR manager that supplied criteria must not be empty.
+    * 1e2. System keeps the currently displayed employee list.
 
       Use case ends.
 
