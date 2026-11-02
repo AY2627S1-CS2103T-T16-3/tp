@@ -536,12 +536,12 @@ Older save files without salary values load with a salary of `0`.
 
 ### Editing the data file
 
-HR Book data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. The file contains
+HR Book data is saved automatically as a JSON file `[JAR file location]/data/hrbook.json`. The file contains
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
-usual command results box. Any explicit JSON `null` anywhere in the address-book file is invalid, including employee
+usual command results box. Any explicit JSON `null` anywhere in the HR Book data file is invalid, including employee
 fields, leave fields, nested data, and array entries. The saved file remains unchanged until you run a successful
 command, which replaces it with the current data. To recover your saved data, close HR Book without
 running a command, correct the file or restore a valid backup, then reopen the app. We recommend backing up the file
