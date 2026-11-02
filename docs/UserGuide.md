@@ -222,6 +222,7 @@ Use `salary INDEX s/SALARY` to change salary.
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [le/ANNUAL_LEAVE_DAYS] [t/TAG]…​`
 
 * Edits the employee at the specified `INDEX`. The index refers to the index number shown in the displayed employee list. The index **must be a positive integer** 1, 2, 3, …​
+* An employee cannot be renamed to exactly match another employee’s name. Name comparison is case-sensitive.
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
