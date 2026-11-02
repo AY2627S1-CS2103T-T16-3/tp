@@ -3,7 +3,9 @@ layout: page
 title: User Guide
 ---
 
-HR Book is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, HR Book can help you manage contacts faster than traditional GUI applications.
+HR Book is a **desktop application for managing employee records and leave through a Command Line Interface (CLI)**.
+Its command box supports fast keyboard entry, while the Graphical User Interface (GUI) presents employee and leave
+information that you can scroll and inspect.
 
 * Table of Contents
 {:toc}
@@ -22,8 +24,8 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
    HR Book keeps its data, preferences, and logs in this folder, even when launched from another folder.
    Choose a folder where the app is allowed to create files.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar hr-book.jar`.<br>
-   On Windows, using `cd` first also avoids Java launcher errors with non-English characters in the full JAR path.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar JAR_FILE_NAME`, replacing
+   `JAR_FILE_NAME` with the downloaded file's complete name, including the `.jar` extension.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
@@ -104,6 +106,9 @@ For older saved files, see [Editing the data file](#editing-the-data-file).
 
 * To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
   `p\/777` to store `p/777` as part of the address.
+
+`NAME` must not be blank and may contain only English letters (`A`-`Z`, `a`-`z`), digits (`0`-`9`), and spaces.
+Hyphens, apostrophes, accented letters, and characters from other writing systems are not accepted.
 
 Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
@@ -234,6 +239,7 @@ Use `salary INDEX s/SALARY` to change salary.
 * Existing values will be updated to the input values.
 * To include text that resembles a known prefix in an address, replace `/` with `\/`. For example, enter
   `p\/777` to store `p/777` as part of the address.
+* When changing the name, `NAME` must follow the restrictions described under [`add`](#adding-an-employee-add).
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
@@ -680,7 +686,7 @@ Older save files without salary values load with a salary of `0`.
 
 ### Editing the data file
 
-HR Book data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. The file contains
+HR Book data is saved automatically as a JSON file `[JAR file location]/data/hrbook.json`. The file contains
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
 
 **Contact uniqueness:** Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it. Email comparison ignores case. Phone numbers are compared as digit strings after trimming surrounding spaces, so `090000002` and `90000002` are different values.
@@ -690,7 +696,7 @@ If an older version saved files in another folder, close HR Book and copy `data/
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
-usual command results box. Any explicit JSON `null` anywhere in the address-book file is invalid, including employee
+usual command results box. Any explicit JSON `null` anywhere in the HR Book data file is invalid, including employee
 fields, leave fields, nested data, and array entries. The saved file remains unchanged until you run a successful
 command, which replaces it with the current data. To recover your saved data, close HR Book without
 running a command, correct the file or restore a valid backup, then reopen the app. We recommend backing up the file

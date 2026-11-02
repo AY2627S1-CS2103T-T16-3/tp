@@ -242,7 +242,7 @@ Before deserializing the file, `JsonAddressBookStorage` scans its JSON tokens an
 IDs and counters, nested task and tag data, array entries, unknown fields, and the root document itself. Validation
 happens before deserialization can turn nulls into default values. Omitted fields retain their existing compatibility
 defaults; an explicit `null` is always rejected. The quoted text `"null"` is a string rather than a JSON null and remains
-subject to the existing field validation. This check applies to `addressbook.json`.
+subject to the existing field validation. This check applies to `hrbook.json`.
 `MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
 `Ui#setFeedbackToUser`. `UiManager` forwards the message through `MainWindow` to the existing `ResultDisplay`,
 identifying the data file and explaining recovery.
@@ -1190,9 +1190,11 @@ Employee data and the current filter remain unchanged in all flows.
 
 1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
 2.  HR Book should be able to hold up to 1000 employees.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  The HR Book should respond to every command under 2 seconds.
-5.  HR Book should be able to carry out its functionality without internet access.
+3.  Users should be able to execute all documented commands from the command box without using the mouse. The mouse
+    may still be used to inspect or scroll through results.
+4.  With up to 1000 employee records stored, each documented command should have a response time of at most 2 seconds.
+5.  HR Book should be able to carry out its functionality without internet access, except for accessing the online
+    User Guide.
 
 
 ### Glossary
@@ -1214,6 +1216,8 @@ Employee data and the current filter remain unchanged in all flows.
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
+* **Response time**: The time from pressing Enter until a command finishes and its result is displayed (or the app closes
+  for `exit`), averaged over five runs
 * **Task**: A work item assigned to the HR manager concerning a particular employee, consisting of task details and a
   completion state of pending or completed
 * **Task index**: A temporary, one-based number shown beside a task in one employee's task list and used to select that
@@ -1632,7 +1636,7 @@ Run the command again after a change to see updated counts; summaries are not re
 
 1. Dealing with missing/corrupted data files
 
-   1. Prerequisites: Use a disposable copy of the application and back up `data/addressbook.json`. Close the app
+   1. Prerequisites: Use a disposable copy of the application and back up `data/hrbook.json`. Close the app
       before editing the file. Restore the backup between cases.
 
    1. Test case: Simulate a maliciously modified data file by replacing its contents with
