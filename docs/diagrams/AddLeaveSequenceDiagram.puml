@@ -1,0 +1,44 @@
+@startuml
+!include style.puml
+skinparam dpi 150
+skinparam ArrowFontStyle plain
+skinparam ParticipantPadding 5
+
+box Model MODEL_COLOR_T1
+participant ":AddressBook" as AddressBook MODEL_COLOR
+participant "leaves:\nUniqueLeaveList" as Leaves MODEL_COLOR
+participant "record:Leave" as Record MODEL_COLOR
+end box
+
+[-> AddressBook : addLeave(id, period)
+activate AddressBook
+AddressBook -> AddressBook : findEmployeeById(id)
+activate AddressBook
+AddressBook --> AddressBook : e
+deactivate AddressBook
+AddressBook -> Leaves : hasOverlappingLeave(id, period)
+activate Leaves
+Leaves --> AddressBook : false
+deactivate Leaves
+
+AddressBook -> AddressBook : calculateRemainingLeave(e, year)
+activate AddressBook
+AddressBook -> Leaves : getWorkingDaysUsed(id, year)
+activate Leaves
+Leaves --> AddressBook : usedDays
+deactivate Leaves
+AddressBook --> AddressBook : remaining
+deactivate AddressBook
+
+create Record
+AddressBook -> Record : new Leave(leaveId, id, period)
+activate Record
+Record --> AddressBook
+deactivate Record
+AddressBook -> Leaves : add(record)
+activate Leaves
+Leaves --> AddressBook
+deactivate Leaves
+[<-- AddressBook : record
+deactivate AddressBook
+@enduml
