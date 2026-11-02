@@ -1,0 +1,63 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+<style>
+sequenceDiagram {
+    participant {
+        Margin 0
+    }
+}
+</style>
+
+box Logic LOGIC_COLOR_T1
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":TaskCommandParser" as TaskCommandParser LOGIC_COLOR
+participant ":AddTaskCommandParser" as AddTaskCommandParser LOGIC_COLOR
+participant "<<class>>\nParserUtil" as ParserUtil LOGIC_COLOR
+participant "c:AddTaskCommand" as AddTaskCommand LOGIC_COLOR
+end box
+
+[-> AddressBookParser : parseCommand("task add 1 d/new")
+activate AddressBookParser
+
+AddressBookParser -> TaskCommandParser ** : new TaskCommandParser()
+activate TaskCommandParser
+deactivate TaskCommandParser
+
+AddressBookParser -> TaskCommandParser : parse(" add 1 d/new")
+activate TaskCommandParser
+
+TaskCommandParser -> AddTaskCommandParser ** : new AddTaskCommandParser()
+activate AddTaskCommandParser
+deactivate AddTaskCommandParser
+
+TaskCommandParser -> AddTaskCommandParser : parse("1 d/new")
+activate AddTaskCommandParser
+
+note right of AddTaskCommandParser
+  Argument tokenization and
+  format checks are omitted.
+end note
+
+AddTaskCommandParser -> ParserUtil : parseIndex("1")
+activate ParserUtil
+ParserUtil --> AddTaskCommandParser : employeeIndex
+deactivate ParserUtil
+
+AddTaskCommandParser -> ParserUtil : parseTask("new")
+activate ParserUtil
+ParserUtil --> AddTaskCommandParser : task
+deactivate ParserUtil
+
+AddTaskCommandParser -> AddTaskCommand ** : new AddTaskCommand(employeeIndex, task)
+activate AddTaskCommand
+deactivate AddTaskCommand
+
+AddTaskCommandParser --> TaskCommandParser : c
+deactivate AddTaskCommandParser
+TaskCommandParser --> AddressBookParser : c
+deactivate TaskCommandParser
+[<-- AddressBookParser : c
+deactivate AddressBookParser
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+<style>
+sequenceDiagram {
+    participant {
+        Margin 0
+    }
+}
+</style>
+
+box Logic LOGIC_COLOR_T1
+participant "c:AddTaskCommand" as AddTaskCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "model:Model" as Model MODEL_COLOR
+participant "employee:Employee" as Employee MODEL_COLOR
+participant "updatedEmployee:Employee" as UpdatedEmployee MODEL_COLOR
+end box
+
+[-> AddTaskCommand : execute(model)
+activate AddTaskCommand
+
+AddTaskCommand -> Model : getFilteredEmployeeList()
+activate Model
+Model --> AddTaskCommand : employees
+deactivate Model
+
+note right of AddTaskCommand
+  Employee lookup, index validation, duplicate-task
+  errors, and result-message formatting are omitted.
+end note
+
+AddTaskCommand -> Employee : addTask(task)
+activate Employee
+
+Employee -> UpdatedEmployee ** : new Employee(...)
+activate UpdatedEmployee
+deactivate UpdatedEmployee
+
+Employee --> AddTaskCommand : updatedEmployee
+deactivate Employee
+
+AddTaskCommand -> Model : setEmployee(employee, updatedEmployee)
+activate Model
+Model --> AddTaskCommand
+deactivate Model
+
+[<-- AddTaskCommand : commandResult
+deactivate AddTaskCommand
+
+@enduml
