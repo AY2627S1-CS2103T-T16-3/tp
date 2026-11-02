@@ -19,6 +19,9 @@ HR Book is a **desktop application for managing contacts, optimized for use thro
 
 1. Copy the file to the folder you want to use as the _home folder_ for your HR Book.
 
+   HR Book keeps its data, preferences, and logs in this folder, even when launched from another folder.
+   Choose a folder where the app is allowed to create files.
+
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar hr-book.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
@@ -538,6 +541,9 @@ Older save files without salary values load with a salary of `0`.
 
 HR Book data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. The file contains
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
+
+If an older version saved files in another folder, close HR Book and copy `data/addressbook.json` and
+`preferences.json` into the same relative locations beside the JAR before starting the updated app.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If the data file is invalid or cannot be read, HR Book starts with empty data and explains the loading error in the
