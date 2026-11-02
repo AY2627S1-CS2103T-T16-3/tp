@@ -1,5 +1,7 @@
 package seedu.address;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -46,17 +48,27 @@ public class MainApp extends Application {
     protected Storage storage;
     protected Model model;
 
+    private final Path homeDirectory;
     private boolean dataLoadingFailed;
+
+    /** Creates an application whose files are kept beside the running JAR. */
+    public MainApp() {
+        this(AppPaths.getHomeDirectory());
+    }
+
+    MainApp(Path homeDirectory) {
+        this.homeDirectory = requireNonNull(homeDirectory).toAbsolutePath().normalize();
+    }
 
     @Override
     public void init() throws Exception {
         logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(AppPaths.resolve("preferences.json"));
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(homeDirectory.resolve("preferences.json"));
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
         JsonAddressBookStorage addressBookStorage =
-                new JsonAddressBookStorage(AppPaths.resolve("data/addressbook.json"));
+                new JsonAddressBookStorage(homeDirectory.resolve("data/addressbook.json"));
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);

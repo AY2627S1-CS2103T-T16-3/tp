@@ -6,15 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,6 +56,13 @@ public class AppPathsTest {
                 URI.create("https://example.com/app.jar").toURL(), temporaryFolder));
         assertThrows(IllegalStateException.class, () -> AppPaths.getHomeDirectory(
                 temporaryFolder.resolve("missing.jar").toUri().toURL(), temporaryFolder));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void getHomeDirectory_malformedFileUrl_throwsClearError() throws Exception {
+        assertThrows(IllegalStateException.class, () ->
+                AppPaths.getHomeDirectory(new URL("file:/invalid path"), temporaryFolder));
     }
 
     @Test
@@ -125,8 +138,14 @@ public class AppPathsTest {
 
     private String runProbe(Path jar, Path launch) throws Exception {
         String javaExecutable = Path.of(System.getProperty("java.home"), "bin", "java").toString();
-        Process process = new ProcessBuilder(javaExecutable, "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8",
-                "-jar", jar.toString())
+        List<String> command = new ArrayList<>();
+        command.add(javaExecutable);
+        ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
+                .filter(argument -> argument.startsWith("-javaagent:") && argument.contains("jacoco"))
+                .map(this::absoluteCoverageAgent)
+                .forEach(command::add);
+        command.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8", "-jar", jar.toString()));
+        Process process = new ProcessBuilder(command)
                 .directory(launch.toFile()).redirectErrorStream(true).start();
         try {
             assertTrue(process.waitFor(20, TimeUnit.SECONDS), "Packaged path probe timed out.");
@@ -136,5 +155,15 @@ public class AppPathsTest {
         } finally {
             process.destroyForcibly();
         }
+    }
+
+    private String absoluteCoverageAgent(String argument) {
+        Matcher destination = Pattern.compile("destfile=([^,]+)").matcher(argument);
+        if (!destination.find()) {
+            return argument;
+        }
+        return argument.substring(0, destination.start(1))
+                + Path.of(destination.group(1)).toAbsolutePath().normalize()
+                + argument.substring(destination.end(1));
     }
 }
