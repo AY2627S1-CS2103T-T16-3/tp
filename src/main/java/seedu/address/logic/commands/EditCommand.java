@@ -55,7 +55,8 @@ public class EditCommand extends Command {
     public static final String MESSAGE_EDIT_EMPLOYEE_SUCCESS = "Edited employee: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_SALARY_NOT_EDITABLE = "Use the salary command to change an employee's salary.";
-    public static final String MESSAGE_DUPLICATE_EMPLOYEE = "This employee already exists in the address book.";
+    public static final String MESSAGE_DUPLICATE_EMPLOYEE =
+            "Another employee already uses this phone number or email address (email is case-insensitive).";
 
     private final Index index;
     private final EditEmployeeDescriptor editEmployeeDescriptor;
@@ -84,7 +85,8 @@ public class EditCommand extends Command {
         Employee employeeToEdit = lastShownList.get(index.getZeroBased());
         Employee editedEmployee = createEditedEmployee(employeeToEdit, editEmployeeDescriptor);
 
-        if (!employeeToEdit.isSameEmployee(editedEmployee) && model.hasEmployee(editedEmployee)) {
+        if (model.getAddressBook().getEmployeeList().stream()
+                .anyMatch(employee -> !employee.equals(employeeToEdit) && employee.isSameEmployee(editedEmployee))) {
             throw new CommandException(MESSAGE_DUPLICATE_EMPLOYEE);
         }
 

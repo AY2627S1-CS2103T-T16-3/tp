@@ -135,9 +135,11 @@ public class LogicManagerTest {
 
     @Test
     public void execute_summaryAliasesWithTasksAndActiveFilter_preservesModelAndSavedData() throws Exception {
-        Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering")
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withTags("Engineering", "engineering")
                 .withTasks(new Task("Report")).build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withTags()
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withTags()
                 .withTasks(new Task("Report"), new Task("Review")).build();
         model.addEmployee(alice);
         model.addEmployee(bob);
@@ -164,8 +166,10 @@ public class LogicManagerTest {
 
     @Test
     public void execute_invalidSummaryWithTasks_preservesModelFilterAndSavedData() throws Exception {
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withTasks(new Task("Report")).build());
-        model.addEmployee(new EmployeeBuilder().withName("Bob").withTasks(new Task("Review")).build());
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withTasks(new Task("Report")).build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withTasks(new Task("Review")).build());
         logic.execute("find Alice");
         AddressBook before = new AddressBook(model.getAddressBook());
         List<Employee> displayedEmployees = List.copyOf(model.getFilteredEmployeeList());
@@ -184,8 +188,10 @@ public class LogicManagerTest {
 
     @Test
     public void execute_summaryAfterTaskCommands_recomputesAndPreservesSavedTasks() throws Exception {
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withTags().build());
-        model.addEmployee(new EmployeeBuilder().withName("Bob").withTags()
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withTags().build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withTags()
                 .withTasks(new Task("Review")).build());
         logic.execute("find Alice");
         logic.execute("task add 1 d/Report");
@@ -241,8 +247,10 @@ public class LogicManagerTest {
 
     @Test
     public void execute_summaryAliases_summarizeDisplayedEmployeesWithoutChangingFilterOrSavedData() throws Exception {
-        Employee alice = new EmployeeBuilder().withName("Alice").withTags("Engineering", "engineering").build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withTags().build();
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withTags("Engineering", "engineering").build();
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withTags().build();
         model.addEmployee(alice);
         model.addEmployee(bob);
         Employee storedAlice = model.getAddressBook().getEmployeeList().get(0);
@@ -264,9 +272,11 @@ public class LogicManagerTest {
 
     @Test
     public void execute_scopedSummaryAfterFindAndFilter_preservesDataAndDisplayedEmployees() throws Exception {
-        Employee alice = new EmployeeBuilder().withName("Alice").withTags("engineering").withSalary("1000")
+        Employee alice = new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withTags("engineering").withSalary("1000")
                 .withTasks(new Task("Report"), new Task("Review")).build();
-        Employee bob = new EmployeeBuilder().withName("Bob").withTags("remote").withSalary("3000")
+        Employee bob = new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withTags("remote").withSalary("3000")
                 .withTasks(new Task("Review")).build();
         model.addEmployee(alice);
         model.addEmployee(bob);
@@ -340,6 +350,50 @@ public class LogicManagerTest {
             model.updateFilteredEmployeeList(Model.PREDICATE_SHOW_ALL_EMPLOYEES);
             assertEquals(before.getEmployeeList(), model.getFilteredEmployeeList());
             model.updateFilteredEmployeeList(employee -> employee.getName().fullName.equals("Alice"));
+        }
+    }
+
+    @Test
+    public void execute_saveFailureWithTies_retryDeletesOriginalEmployee() throws Exception {
+        for (IOException failure : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            for (String selection : List.of("list", "find Alice Carol")) {
+                model = new ModelManager();
+                setUp();
+                logic.execute("add n/Carol p/90000001 e/carol@example.com a/One le/14 s/1000");
+                logic.execute("add n/Bob p/90000002 e/bob@example.com a/Two le/14 s/1000");
+                logic.execute("add n/Alice p/90000003 e/alice@example.com a/Three le/14 s/1000");
+                logic.execute("sort n/asc");
+                logic.execute("sort s/asc");
+                logic.execute(selection);
+                AddressBook before = new AddressBook(model.getAddressBook());
+                List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
+                List<Employee> allEmployees = model.getAllEmployeesInDisplayOrder();
+                Path dataFile = temporaryFolder.resolve("addressBook.json");
+                String savedData = Files.readString(dataFile);
+                JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(dataFile) {
+                    @Override
+                    public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                        throw failure;
+                    }
+                };
+                Logic failingLogic = new LogicManager(model, new StorageManager(failingStorage,
+                        new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+
+                for (String command : List.of("delete 1", "sort n/des", "salary 1 s/2000", "clear")) {
+                    assertThrows(CommandException.class, () -> failingLogic.execute(command));
+                    assertEquals(before, model.getAddressBook());
+                    assertEquals(displayed, model.getFilteredEmployeeList());
+                    assertEquals(allEmployees, model.getAllEmployeesInDisplayOrder());
+                    assertEquals(savedData, Files.readString(dataFile));
+                }
+
+                logic.execute("delete 1");
+                assertEquals(List.of("Carol", "Bob"), model.getAddressBook().getEmployeeList().stream()
+                        .map(employee -> employee.getName().fullName).toList());
+                assertEquals(displayed.subList(1, displayed.size()), model.getFilteredEmployeeList());
+                assertEquals(model.getAddressBook(),
+                        new JsonAddressBookStorage(dataFile).readAddressBook().orElseThrow());
+            }
         }
     }
 
@@ -425,9 +479,11 @@ public class LogicManagerTest {
 
     @Test
     public void execute_salaryWithUnsupportedField_preservesModelListAndSavedData() throws Exception {
-        model.addEmployee(new EmployeeBuilder().withName("Alice").withSalary("1000")
+        model.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withSalary("1000")
                 .withTasks(new Task("Report")).build());
-        model.addEmployee(new EmployeeBuilder().withName("Bob").withSalary("2000").build());
+        model.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").withSalary("2000").build());
         Path dataFile = temporaryFolder.resolve("addressBook.json");
 
         for (String selection : List.of("list", "find Bob", "sort s/des")) {

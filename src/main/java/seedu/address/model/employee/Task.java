@@ -53,7 +53,8 @@ public class Task {
      * @return True if the details are valid.
      */
     public static boolean isValidDetails(String details) {
-        return details != null && !details.isBlank() && details.length() <= MAX_DETAILS_LENGTH;
+        return details != null && !WHITESPACE_PATTERN.matcher(details).replaceAll("").isEmpty()
+                && details.length() <= MAX_DETAILS_LENGTH;
     }
 
     /**

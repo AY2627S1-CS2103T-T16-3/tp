@@ -210,11 +210,13 @@ public class SafeSaveStressTest {
             Path relative = Path.of("").toAbsolutePath().relativize(absolute);
             JsonAddressBookStorage storage = new JsonAddressBookStorage(relative);
             AddressBook book = new AddressBook();
-            book.addEmployee(new EmployeeBuilder().withName("Alice").withAddress("新加坡 Café Street").build());
+            book.addEmployee(new EmployeeBuilder().withName("Alice")
+                .withPhone("81000001").withEmail("alice@example.com").withAddress("新加坡 Café Street").build());
 
             storage.saveAddressBook(book);
             assertEquals(book, storage.readAddressBook().orElseThrow());
-            book.addEmployee(new EmployeeBuilder().withName("Bob").build());
+            book.addEmployee(new EmployeeBuilder().withName("Bob")
+                .withPhone("81000003").withEmail("bob@example.com").build());
             storage.saveAddressBook(book);
             assertEquals(book, storage.readAddressBook().orElseThrow());
             try (var files = Files.list(absolute.getParent())) {

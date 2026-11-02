@@ -19,7 +19,8 @@ public class FilterCommand extends Command {
             "Comparators are only allowed for salary (s/) and annual leave entitlement (le/) filters.";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Match all supplied filters. Provide at least one.\n"
-            + "Fields: n/NAME p/PHONE e/EMAIL a/ADDRESS t/TAG task/DETAILS s/SALARY le/DAYS\n"
+            + "Fields: [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [task/DETAILS]... "
+            + "[s/SALARY] [le/DAYS]\n"
             + "Text: partial match; tags: whole match (case-insensitive). Repeat only t/ or task/.\n"
             + "Values must follow field rules: names allow letters, digits and spaces; tags are alphanumeric; "
             + "phones need at least 3 digits; emails must be valid; tasks allow up to 120 characters.\n"
