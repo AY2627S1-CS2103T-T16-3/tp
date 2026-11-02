@@ -492,8 +492,11 @@ For backward compatibility, employees in older data files with no entitlement lo
 
 #### Listing and deleting leave
 
-`leave list` reads the currently filtered employee list from `Model`, collects those employees' internal IDs, and
-retains only matching records from the central leave list. It then sorts the records by `LeaveId`, resolves each
+`leave list` reads the currently filtered employee list from `Model` and uses `Model#getRemainingLeave` to report
+each employee's balance for `LocalDate.now(clock).getYear()`, in displayed employee order. Employees without leave
+in that year retain their full entitlement. An empty employee view returns `No employees displayed.`
+The command then collects the displayed employees' internal IDs and retains only matching records from the central
+leave list, including records from other years. It sorts the records by `LeaveId`, resolves each
 internal employee ID to the employee's current name, and returns a multiline result. Consequently, `find` and `filter`
 also scope the following `leave list`, while running `list` first restores an all-employee scope. The status is derived
 using `LocalDate.now(clock)` on every invocation. Production commands use the system-default clock, while tests inject
@@ -503,7 +506,7 @@ a fixed clock for deterministic status checks:
 * `Past` when today is after the end date.
 * `Ongoing` otherwise, including a weekend contained within the recorded period.
 
-The status is presentation data and is not persisted.
+Balances and statuses are derived for display and are not persisted.
 
 `leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so an ID removed using
 `leave delete` is not reused while the current address book remains in use. No balance mutation is required; the next
@@ -576,6 +579,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | HR Officer                 | mark a task as done                                                            | keep track of completed work                                                             |
 | `* * *`  | HR Officer                 | mark a task as pending                                                         | keep track of work that still needs to be completed                                       |
 | `* * *`  | HR Officer                 | record an employee's leave                                                     | track used and remaining annual leave                                                    |
+| `* * *`  | HR Officer                 | view remaining annual leave without recording or cancelling leave              | check an employee's available allowance before entering a request                         |
 | `* * *`  | HR Officer                 | list all leave with its current status                                         | see upcoming, ongoing, and past absences                                                 |
 | `* * *`  | HR Officer                 | cancel a recorded leave                                                        | correct mistakes and restore the employee's available leave                              |
 | `* * *`  | HR Officer                 | delete an employee profile and their leave records                             | remove former employees without retaining orphaned data                                 |
@@ -947,17 +951,23 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. HR manager requests to list leave records for the currently displayed employees.
-2. System displays matching leave records in leave ID order, including the employee name, dates, charged working days,
-   and status relative to today's date.
+1. HR manager requests leave balances and records for the currently displayed employees.
+2. System displays current-year remaining balances, followed by matching leave records in leave ID order, including
+   the employee name, dates, charged working days, and status relative to today's date.
 
     Use case ends.
 
 **Extensions**
 
-* 2a. None of the currently displayed employees has a leave record.
+* 2a. Employees are displayed, but none has a leave record.
 
-    * 2a1. System informs the HR manager that no leave records were found.
+    * 2a1. System displays their current-year balances and informs the HR manager that no leave records were found.
+
+      Use case ends.
+
+* 2b. No employees are displayed.
+
+    * 2b1. System informs the HR manager that no employees are displayed.
 
       Use case ends.
 
@@ -1335,14 +1345,19 @@ current salary. Recheck displayed indexes after commands that change the list.
    1. Prerequisites: Record leave periods for at least two employees and note the IDs returned by `leave add`.
 
    1. Test case: Run `list`, followed by `leave list`.<br>
-      Expected: All leave records appear in leave ID order with employee name, period, working days, and a status of
-      `Upcoming`, `Ongoing`, or `Past` based on today's date.
+      Expected: Current-year balances appear in displayed employee order, followed by all leave records in leave ID
+      order with employee name, period, working days, and a status based on today's date. Only records in the current
+      year reduce its balances; upcoming leave in that year is included.
 
    1. Test case: Use `find` or `filter` to display one of the employees, followed by `leave list`.<br>
-      Expected: Only leave records belonging to the displayed employee appear.
+      Expected: Only the displayed employee's balance and leave records appear; the filter remains active.
 
    1. Test case: Use `find` or `filter` so that no displayed employee has a leave record, followed by `leave list`.<br>
-      Expected: The result reports that no leave records were found.
+      Expected: Each displayed employee has their full current-year entitlement remaining, followed by
+      `No leave records found.`
+
+   1. Test case: Use `find` so that no employee is displayed, followed by `leave list`.<br>
+      Expected: The result is `No employees displayed.` No employee or leave records are changed.
 
    1. Test case: `leave delete 1` (replace `1` with the recorded ID)<br>
       Expected: That record is deleted and the result shows the employee's restored remaining leave.
