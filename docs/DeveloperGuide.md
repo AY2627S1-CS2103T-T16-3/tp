@@ -1181,9 +1181,11 @@ Employee data and the current filter remain unchanged in all flows.
 
 1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
 2.  HR Book should be able to hold up to 1000 employees.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  The HR Book should respond to every command under 2 seconds.
-5.  HR Book should be able to carry out its functionality without internet access.
+3.  Users should be able to execute all documented commands from the command box without using the mouse. The mouse
+    may still be used to inspect or scroll through results.
+4.  With up to 1000 employee records stored, each documented command should have a response time of at most 2 seconds.
+5.  HR Book should be able to carry out its functionality without internet access, except for accessing the online
+    User Guide.
 
 
 ### Glossary
@@ -1205,6 +1207,8 @@ Employee data and the current filter remain unchanged in all flows.
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
+* **Response time**: The time from pressing Enter until a command finishes and its result is displayed (or the app closes
+  for `exit`), averaged over five runs
 * **Task**: A work item assigned to the HR manager concerning a particular employee, consisting of task details and a
   completion state of pending or completed
 * **Task index**: A temporary, one-based number shown beside a task in one employee's task list and used to select that
