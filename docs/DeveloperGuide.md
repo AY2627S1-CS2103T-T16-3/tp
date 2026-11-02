@@ -259,24 +259,40 @@ strict comparisons, limits (0/50000 salary and 0/365 days), and combinations wit
 
 ### Task management
 
-Each `Employee` owns an ordered list of `Task` objects, and every `Task` belongs to exactly one `Employee`. Deleting an
-`Employee` therefore removes its tasks without requiring separate task identifiers or references. `Task` and
-`Employee` objects cannot be changed after they are created. Methods such as `Task#markDone` and
-`Employee#updateTask` return new objects instead, preventing a task update from unexpectedly changing an object used
-elsewhere in the application.
+Each `Employee` owns an ordered list of `Task` objects. Tasks are stored within employees rather than in a separate
+collection. Deleting an `Employee` therefore removes its tasks without requiring separate task identifiers or
+references. `Task` and `Employee` objects cannot be changed after they are created. Methods such as `Task#markDone`
+and `Employee#updateTask` return new objects instead, preventing a task update from unexpectedly changing an object
+used elsewhere in the application.
+
+#### Command parsing
+
+1. When `LogicManager` receives a task command, `AddressBookParser` delegates it to `TaskCommandParser`.
+2. `TaskCommandParser` selects the parser for `list`, `add`, `delete`, `mark`, or `unmark`.
+3. The selected parser parses and validates the arguments, then creates the corresponding task command.
+
+The following sequence diagram illustrates how `task add 1 d/new` is successfully parsed into an `AddTaskCommand`.
+Argument tokenization and invalid-input paths are omitted for clarity.
+
+![Sequence diagram for parsing task add](images/TaskAddParsingSequenceDiagram.png)
 
 #### Command execution
 
-1. When `LogicManager` receives a task command, `AddressBookParser` delegates it to `TaskCommandParser`.
-2. `TaskCommandParser` selects the parser for the `list`, `add`, `delete`, `mark`, or `unmark`.
-3. Task commands use the one-based employee index to select an `Employee` from `Model#getFilteredEmployeeList`.
-4. If the command targets a task, it uses the one-based task index to select a `Task` from `Employee#getTasks`.
-5. `task list` only displays tasks. The other task commands update the selected employee in the `Model`.
-6. After execution, `LogicManager` asks `Storage` to save the current `Model`, including each employee's tasks.
+1. Task commands use the one-based employee index to select an `Employee` from `Model#getFilteredEmployeeList`.
+2. If the command targets a task, it uses the one-based task index to select a `Task` from `Employee#getTasks`.
+3. `task list` only displays tasks. The other task commands update the selected employee in the `Model`.
+4. After successful execution, `LogicManager` asks `Storage` to save the current address book, including each
+   employee's tasks.
 
-For example, suppose `find Alex` displays Alex first and Alex has at least two tasks. When `task mark 1 i/2` runs, the
-command retrieves Alex's second `Task`, calls `Task#markDone`, and places the resulting `Task` in a replacement
-`Employee`. It then updates the `Model` through `Model#setEmployee` while retaining the filtered view.
+The following sequence diagram illustrates the successful execution of `AddTaskCommand`. `Employee#addTask` creates
+a replacement `Employee`, which the command uses to update the `Model` before returning a `CommandResult`.
+
+![Sequence diagram for executing AddTaskCommand](images/AddTaskCommandExecutionSequenceDiagram.png)
+
+For a command that targets an existing task, suppose `find Alex` displays Alex first and Alex has at least two tasks.
+When `task mark 1 i/2` runs, the command retrieves Alex's second `Task`, calls `Task#markDone`, and places the resulting
+`Task` in a replacement `Employee`. It then updates the `Model` through `Model#setEmployee` while retaining the
+filtered view.
 
 #### Task validation
 
@@ -291,10 +307,10 @@ remain unchanged for display.
 
 #### Task storage
 
-`JsonAdaptedTask` stores the `details` and `isDone` fields. When loading data, `JsonAdaptedTask#toModelType` rejects a
-saved task if its details are missing, blank, or longer than 120 characters. `JsonAdaptedEmployee#toModelType` checks
-for duplicate tasks with `Task#hasSameDetails` before constructing the `Employee`. As a result, invalid tasks cannot
-be loaded from storage.
+`JsonAdaptedTask` stores the `details` and `isDone` fields. When loading data, `JsonAdaptedTask#toModelType`
+reconstructs the `Task` from these fields and restores its completion status. It rejects a saved task if its details
+are missing, blank, or longer than 120 characters. `JsonAdaptedEmployee#toModelType` checks for duplicate tasks with
+`Task#hasSameDetails` before constructing the `Employee`. As a result, invalid tasks cannot be loaded from storage.
 
 ### Sorting displayed employees
 
