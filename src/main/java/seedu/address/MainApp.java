@@ -68,7 +68,7 @@ public class MainApp extends Application {
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(homeDirectory.resolve("preferences.json"));
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
         JsonAddressBookStorage addressBookStorage =
-                new JsonAddressBookStorage(homeDirectory.resolve("data/addressbook.json"));
+                new JsonAddressBookStorage(homeDirectory.resolve("data/hrbook.json"));
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);

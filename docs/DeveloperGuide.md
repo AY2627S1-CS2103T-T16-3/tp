@@ -242,7 +242,7 @@ Before deserializing the file, `JsonAddressBookStorage` scans its JSON tokens an
 IDs and counters, nested task and tag data, array entries, unknown fields, and the root document itself. Validation
 happens before deserialization can turn nulls into default values. Omitted fields retain their existing compatibility
 defaults; an explicit `null` is always rejected. The quoted text `"null"` is a string rather than a JSON null and remains
-subject to the existing field validation. This check applies to `addressbook.json`.
+subject to the existing field validation. This check applies to `hrbook.json`.
 `MainApp` handles loading failures by creating an empty model and, after starting the UI, calling
 `Ui#setFeedbackToUser`. `UiManager` forwards the message through `MainWindow` to the existing `ResultDisplay`,
 identifying the data file and explaining recovery.
@@ -1623,7 +1623,7 @@ Run the command again after a change to see updated counts; summaries are not re
 
 1. Dealing with missing/corrupted data files
 
-   1. Prerequisites: Use a disposable copy of the application and back up `data/addressbook.json`. Close the app
+   1. Prerequisites: Use a disposable copy of the application and back up `data/hrbook.json`. Close the app
       before editing the file. Restore the backup between cases.
 
    1. Test case: Simulate a maliciously modified data file by replacing its contents with
