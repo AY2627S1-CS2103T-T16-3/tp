@@ -25,11 +25,11 @@ import seedu.address.model.leave.exceptions.OverlappingLeaveException;
 class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_EMPLOYEE = "Employees list contains duplicate employee(s).";
-    public static final String MESSAGE_INVALID_EMPLOYEE_ID = "Address book contains invalid employee ID data.";
+    public static final String MESSAGE_INVALID_EMPLOYEE_ID = "HR Book data contains invalid employee ID data.";
     public static final String MESSAGE_DUPLICATE_LEAVE = "Leave list contains duplicate leave record(s).";
     public static final String MESSAGE_ORPHANED_LEAVE = "Leave list contains a record for an unknown employee.";
     public static final String MESSAGE_OVERLAPPING_LEAVE = "Leave list contains overlapping records for an employee.";
-    public static final String MESSAGE_INVALID_NEXT_LEAVE_ID = "Address book contains an invalid next leave ID.";
+    public static final String MESSAGE_INVALID_NEXT_LEAVE_ID = "HR Book data contains an invalid next leave ID.";
     public static final String MESSAGE_NULL_LEAVE = "Leave list contains a null record.";
 
     // Retain the existing JSON key so saved address books remain compatible.
@@ -86,7 +86,7 @@ class JsonSerializableAddressBook {
         List<Employee> modelEmployees = new ArrayList<>();
         for (JsonAdaptedEmployee jsonAdaptedEmployee : employees) {
             Employee employee = jsonAdaptedEmployee.toModelType();
-            if (modelEmployees.stream().anyMatch(employee::isSameEmployee)) {
+            if (modelEmployees.stream().anyMatch(employee::hasContactConflictWith)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_EMPLOYEE);
             }
             modelEmployees.add(employee);

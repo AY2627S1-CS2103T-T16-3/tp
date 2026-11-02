@@ -109,7 +109,8 @@ public class EditCommandTest {
         EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder(firstEmployee).build();
         EditCommand editCommand = new EditCommand(INDEX_SECOND_EMPLOYEE, descriptor);
 
-        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_EMPLOYEE);
+        assertCommandFailure(editCommand, model, "Phone number 94351253 is already used by Alice Pauline.\n"
+                + "Email address alice@example.com is already used by Alice Pauline.");
     }
 
     @Test
@@ -121,7 +122,8 @@ public class EditCommandTest {
         EditCommand editCommand = new EditCommand(INDEX_FIRST_EMPLOYEE,
                 new EditEmployeeDescriptorBuilder(employeeInList).build());
 
-        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_EMPLOYEE);
+        assertCommandFailure(editCommand, model, "Phone number 98765432 is already used by Benson Meier.\n"
+                + "Email address johnd@example.com is already used by Benson Meier.");
     }
 
     @Test

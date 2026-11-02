@@ -194,7 +194,7 @@ public class Employee {
      * This detects conflicting contact details, not internal employee identity.
      * Names may be shared; this relation is not transitive and must not be used as object equality.
      */
-    public boolean isSameEmployee(Employee otherEmployee) {
+    public boolean hasContactConflictWith(Employee otherEmployee) {
         if (otherEmployee == this) {
             return true;
         }

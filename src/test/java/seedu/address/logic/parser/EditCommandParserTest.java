@@ -57,6 +57,16 @@ public class EditCommandParserTest {
     private EditCommandParser parser = new EditCommandParser();
 
     @Test
+    public void parse_escapedAddressSlashes_preservesLiteralPrefixes() {
+        for (String prefix : new String[] {"c", "p", "a", "n", "s", "le", "task"}) {
+            EditEmployeeDescriptor descriptor = new EditEmployeeDescriptorBuilder()
+                    .withAddress("Road " + prefix + "/").withPhone(VALID_PHONE_BOB).build();
+            assertParseSuccess(parser, "1 a/Road " + prefix + "\\/" + PHONE_DESC_BOB,
+                    new EditCommand(INDEX_FIRST_EMPLOYEE, descriptor));
+        }
+    }
+
+    @Test
     public void parse_salaryPrefix_failure() {
         assertParseFailure(parser, "1 s/5000", EditCommand.MESSAGE_SALARY_NOT_EDITABLE);
         assertParseFailure(parser, "1 n/Updated Name s/5000", EditCommand.MESSAGE_SALARY_NOT_EDITABLE);

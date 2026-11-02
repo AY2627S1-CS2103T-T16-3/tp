@@ -1,5 +1,7 @@
 package seedu.address.logic;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +31,29 @@ public class Messages {
                 Stream.of(duplicatePrefixes).map(Prefix::toString).collect(Collectors.toSet());
 
         return MESSAGE_DUPLICATE_FIELDS + String.join(" ", duplicateFields);
+    }
+
+    /**
+     * Lists each conflicting contact value and its existing owner in stored employee order.
+     * For edits, callers must exclude the employee being edited from {@code existingEmployees}.
+     * Returns an empty string if no contact details conflict.
+     */
+    public static String getContactConflictMessage(Employee candidate, List<Employee> existingEmployees) {
+        List<String> conflicts = new ArrayList<>();
+        for (Employee employee : existingEmployees) {
+            if (!candidate.hasContactConflictWith(employee)) {
+                continue;
+            }
+            if (candidate.getPhone().equals(employee.getPhone())) {
+                conflicts.add(String.format("Phone number %s is already used by %s.",
+                        candidate.getPhone(), employee.getName()));
+            }
+            if (candidate.getEmail().value.equalsIgnoreCase(employee.getEmail().value)) {
+                conflicts.add(String.format("Email address %s is already used by %s.",
+                        candidate.getEmail(), employee.getName()));
+            }
+        }
+        return String.join("\n", conflicts);
     }
 
     /**

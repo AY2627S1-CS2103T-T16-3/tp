@@ -126,13 +126,48 @@ public class ContactUniquenessTest {
         }
     }
 
-    private void assertRejectedUnchanged(String command) throws Exception {
+    @Test
+    public void add_contactErrors_identifyTheFieldAndExistingOwner() throws Exception {
+        assertEquals("Phone number 90000002 is already used by Bob.",
+                assertRejectedUnchanged("add n/Charlie p/90000002 e/new@example.com a/Three le/14").getMessage());
+        assertEquals("Email address BOB@EXAMPLE.COM is already used by Bob.",
+                assertRejectedUnchanged("add n/Charlie p/90000003 e/BOB@EXAMPLE.COM a/Three le/14").getMessage());
+    }
+
+    @Test
+    public void add_contactsConflictWithDifferentEmployees_namesBothOwners() throws Exception {
+        assertEquals("Email address alice@example.com is already used by Alice.\n"
+                        + "Phone number 90000002 is already used by Bob.",
+                assertRejectedUnchanged("add n/Charlie p/90000002 e/alice@example.com a/Three le/14").getMessage());
+    }
+
+    @Test
+    public void edit_contactErrors_identifyHiddenOwnerAndBothConflicts() throws Exception {
+        logic.execute("find Alice");
+        assertEquals("Phone number 90000002 is already used by Bob.",
+                assertRejectedUnchanged("edit 1 p/90000002").getMessage());
+        assertEquals("Email address BOB@EXAMPLE.COM is already used by Bob.",
+                assertRejectedUnchanged("edit 1 e/BOB@EXAMPLE.COM").getMessage());
+        assertEquals("Phone number 90000002 is already used by Bob.\n"
+                        + "Email address bob@example.com is already used by Bob.",
+                assertRejectedUnchanged("edit 1 p/90000002 e/bob@example.com").getMessage());
+    }
+
+    @Test
+    public void add_phoneWithLeadingZero_comparesDigitStringsRatherThanNumericValues() throws Exception {
+        logic.execute("add n/Charlie p/090000001 e/new@example.com a/Three le/14");
+        assertEquals(3, model.getAddressBook().getEmployeeList().size());
+        assertEquals("090000001", model.getAddressBook().getEmployeeList().getLast().getPhone().value);
+    }
+
+    private CommandException assertRejectedUnchanged(String command) throws Exception {
         List<Employee> before = List.copyOf(model.getAddressBook().getEmployeeList());
         List<Employee> displayed = List.copyOf(model.getFilteredEmployeeList());
         String saved = Files.readString(dataFile);
-        assertThrows(CommandException.class, () -> logic.execute(command));
+        CommandException failure = assertThrows(CommandException.class, () -> logic.execute(command));
         assertEquals(before, model.getAddressBook().getEmployeeList());
         assertEquals(displayed, model.getFilteredEmployeeList());
         assertEquals(saved, Files.readString(dataFile));
+        return failure;
     }
 }

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.FilterCommand;
+import seedu.address.model.employee.Address;
 import seedu.address.model.employee.Email;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate.Field;
@@ -34,6 +35,26 @@ import seedu.address.model.tag.Tag;
 public class FilterCommandParserTest {
 
     private final FilterCommandParser parser = new FilterCommandParser();
+
+    @Test
+    public void parse_escapedAddressSlashes_preservesLiteralPrefixes() {
+        for (String prefix : List.of("c", "p", "a", "n", "s", "le", "task")) {
+            assertParseSuccess(parser, "a/Road " + prefix + "\\/ s/3000", new FilterCommand(
+                    new EmployeeMatchesCriteriaPredicate(Map.of(
+                            Field.ADDRESS, List.of("Road " + prefix + "/"), Field.SALARY, List.of("3000")))));
+        }
+        assertParseFailure(parser, "a/Road c/",
+                "Unsupported prefix: c/. Check the command's supported prefixes.\n"
+                        + "If this is literal address or task text, escape the slash as c\\/.");
+    }
+
+    @Test
+    public void parse_addressWithUnicodeLineSeparator_throwsAddressConstraintError() {
+        for (String separator : List.of("\u0085", "\u2028", "\u2029")) {
+            assertParseFailure(parser, "a/10 Road" + separator + "Unit 2", Address.MESSAGE_CONSTRAINTS);
+            assertParseFailure(parser, "a/10 Road c\\/o" + separator + "Alice", Address.MESSAGE_CONSTRAINTS);
+        }
+    }
 
     @Test
     public void parse_missingCriteriaOrPreamble_throwsParseException() {

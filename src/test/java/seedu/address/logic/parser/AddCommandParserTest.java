@@ -55,6 +55,17 @@ public class AddCommandParserTest {
     private AddCommandParser parser = new AddCommandParser();
 
     @Test
+    public void parse_escapedAddressSlashes_preservesLiteralPrefixes() {
+        for (String prefix : new String[] {"c", "p", "a", "n", "s", "le", "task"}) {
+            String address = "Road " + prefix + "/";
+            Employee expected = new EmployeeBuilder(BOB).withoutEmployeeId().withTags()
+                    .withSalary("0").withAddress(address).build();
+            assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
+                    + " a/Road " + prefix + "\\/" + LEAVE_ENTITLEMENT_DESC_BOB, new AddCommand(expected));
+        }
+    }
+
+    @Test
     public void parse_salaryPresent_success() {
         Employee expected = new EmployeeBuilder(BOB).withoutEmployeeId().withSalary("5000").build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB

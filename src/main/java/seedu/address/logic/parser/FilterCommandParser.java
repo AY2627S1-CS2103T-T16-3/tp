@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.FilterCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.employee.Address;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate;
 import seedu.address.model.employee.EmployeeMatchesCriteriaPredicate.Field;
 
@@ -52,8 +53,8 @@ public class FilterCommandParser implements Parser<FilterCommand> {
         Map<Field, List<String>> criteria = new EnumMap<>(Field.class);
         for (Map.Entry<Prefix, Field> entry : FIELDS.entrySet()) {
             List<String> values = arguments.getAllValues(entry.getKey());
-            if (entry.getValue() == Field.TASK) {
-                values = values.stream().map(ParserUtil::unescapeText).toList();
+            if (entry.getValue() == Field.TASK || entry.getValue() == Field.ADDRESS) {
+                values = values.stream().map(ParserUtil::unescapeSlashes).toList();
             }
             if (values.stream().anyMatch(String::isBlank)) {
                 throw invalidFormat();
@@ -114,7 +115,11 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             case NAME -> ParserUtil.parseName(value);
             case PHONE -> ParserUtil.parsePhone(value);
             case EMAIL -> ParserUtil.parseEmail(value);
-            case ADDRESS -> ParserUtil.parseAddress(value);
+            case ADDRESS -> {
+                if (!Address.isValidAddress(value)) {
+                    throw new ParseException(Address.MESSAGE_CONSTRAINTS);
+                }
+            }
             case TAG -> ParserUtil.parseTag(value);
             case TASK -> ParserUtil.parseTask(value);
             default -> throw new IllegalArgumentException("Field is not a text field: " + field);

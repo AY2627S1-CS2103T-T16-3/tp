@@ -230,7 +230,7 @@ When running unpackaged classes from an IDE or Gradle, the working folder remain
 The resolver rejects absolute filenames and paths that climb out of the home folder.
 `MainApp` uses it for both JSON files. `LogsCenter` uses it before creating the first log file and escapes
 literal percent signs for `FileHandler`. If the log file cannot be opened, logging continues on the console.
-Existing filenames are retained; files outside the JAR's home folder are not imported automatically.
+Files outside the JAR's home folder are not imported automatically.
 
 Saved address-book data is treated as untrusted input because files may be edited accidentally or modified maliciously.
 Before deserializing the file, `JsonAddressBookStorage` scans its JSON tokens and rejects every explicit `null` with an
@@ -296,7 +296,10 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Employee contact uniqueness
 
-Employees may share names, but cannot share a phone number or email address. `Employee#isSameEmployee`
+`Messages#getContactConflictMessage` reports every conflicting contact value and its existing employee
+name. Both add and edit use this formatter; edit excludes its own target before checking conflicts.
+
+Employees may share names, but cannot share a phone number or email address. `Employee#hasContactConflictWith`
 checks for either contact conflict; email comparison ignores case and phone comparison uses the trimmed
 stored digit string. This conflict relation is not transitive and is separate from internal employee IDs
 and `Employee#equals`. `UniqueEmployeeList` enforces it when adding, replacing, and loading employees.
@@ -345,10 +348,10 @@ For the shared prefix and literal-slash rules, see [Filtering employees](#filter
 supported prefixes for a possible typo, or escape the slash if the token is literal address or task text.
 `add` and `edit` run this check after validating required fields or the employee index, before parsing values.
 
-With the filter-escaping changes integrated, both command parsers pass the raw address value to
+Both command parsers pass the raw address value to
 `ParserUtil#parseAddress`. That method calls `ParserUtil#unescapeSlashes`, trims surrounding whitespace,
 and validates the decoded address. The command parsers must not decode the value first: each address
-is decoded exactly once. The integrated helper name is `unescapeSlashes` throughout the parsers.
+is decoded exactly once. The helper name is `unescapeSlashes` throughout the parsers.
 
 ### Filtering employees
 
@@ -361,11 +364,10 @@ Unescaped letter-plus-slash tokens at the start of input or after whitespace are
 unknown prefixes are rejected. Writing `\/` keeps the slash literal during prefix detection.
 `ParserUtil#unescapeSlashes` then replaces each escaped slash with `/` before storage or matching.
 
-In the integrated implementation, `FilterCommandParser` decodes address and task criteria after
+`FilterCommandParser` decodes address and task criteria after
 argument tokenization, then validates those decoded values. Address criteria are checked directly with
 `Address#isValidAddress`, rather than passed to `ParserUtil#parseAddress`, to avoid decoding twice.
 `AddTaskCommandParser` uses the same `ParserUtil#unescapeSlashes` helper for task descriptions.
-
 
 `filter` searches all stored employees using `EmployeeMatchesCriteriaPredicate` and combines all
 supplied criteria with AND. `FilterCommandParser` validates field prefixes, rejects empty criteria
@@ -1204,9 +1206,11 @@ Employee data and the current filter remain unchanged in all flows.
 
 1.  HR Book should work on any _mainstream OS_ as long as it has Java `25` installed.
 2.  HR Book should be able to hold up to 1000 employees.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-4.  The HR Book should respond to every command under 2 seconds.
-5.  HR Book should be able to carry out its functionality without internet access.
+3.  Users should be able to execute all documented commands from the command box without using the mouse. The mouse
+    may still be used to inspect or scroll through results.
+4.  With up to 1000 employee records stored, each documented command should have a response time of at most 2 seconds.
+5.  HR Book should be able to carry out its functionality without internet access, except for accessing the online
+    User Guide.
 
 
 ### Glossary
@@ -1228,6 +1232,8 @@ Employee data and the current filter remain unchanged in all flows.
 * **Leave ID**: A public, stable positive integer identifying one leave record, shown by `leave list` and used by
   `leave delete`
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
+* **Response time**: The time from pressing Enter until a command finishes and its result is displayed (or the app closes
+  for `exit`), averaged over five runs
 * **Task**: A work item assigned to the HR manager concerning a particular employee, consisting of task details and a
   completion state of pending or completed
 * **Task index**: A temporary, one-based number shown beside a task in one employee's task list and used to select that

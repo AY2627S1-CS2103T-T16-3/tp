@@ -42,7 +42,8 @@ public class AddCommandIntegrationTest {
     public void execute_duplicateEmployee_throwsCommandException() {
         Employee employeeInList = model.getAddressBook().getEmployeeList().get(0);
         assertCommandFailure(new AddCommand(employeeInList), model,
-                AddCommand.MESSAGE_DUPLICATE_EMPLOYEE);
+                "Phone number 94351253 is already used by Alice Pauline.\n"
+                        + "Email address alice@example.com is already used by Alice Pauline.");
     }
 
 }

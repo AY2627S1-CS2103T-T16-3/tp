@@ -27,7 +27,7 @@ import seedu.address.model.leave.exceptions.OverlappingLeaveException;
 
 /**
  * Wraps all data at the address-book level.
- * Duplicates are not allowed (by .isSameEmployee comparison).
+ * Employees must not share phone numbers or email addresses; names may be shared.
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
@@ -115,7 +115,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     //// employee-level operations
 
     /**
-     * Returns true if an employee with the same identity as {@code employee} exists in the address book.
+     * Returns true if an employee shares {@code employee}'s phone number or email address.
      */
     public boolean hasEmployee(Employee employee) {
         requireNonNull(employee);
@@ -149,7 +149,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Replaces the given employee {@code target} in the list with {@code editedEmployee}.
      * {@code target} must exist in the address book.
-     * The employee identity of {@code editedEmployee} must not be the same as another existing employee in
+     * The contact details of {@code editedEmployee} must not conflict with another employee in
      * the address book.
      */
     public void setEmployee(Employee target, Employee editedEmployee) {

@@ -24,7 +24,7 @@ import seedu.address.model.ReadOnlyAddressBook;
  */
 public class JsonAddressBookStorage {
 
-    public static final String MESSAGE_NULL_VALUE = "Address book data must not contain null values.";
+    public static final String MESSAGE_NULL_VALUE = "HR Book data must not contain null values.";
     public static final String MESSAGE_INVALID_TASK_STATUS = "Task completion state must be true or false.";
 
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);

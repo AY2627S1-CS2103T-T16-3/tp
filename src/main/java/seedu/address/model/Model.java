@@ -49,7 +49,7 @@ public interface Model {
     ReadOnlyAddressBook getAddressBook();
 
     /**
-     * Returns true if an employee with the same identity as {@code employee} exists in the address book.
+     * Returns true if an employee shares {@code employee}'s phone number or email address.
      */
     boolean hasEmployee(Employee employee);
 
@@ -68,7 +68,7 @@ public interface Model {
     /**
      * Replaces the given employee {@code target} with {@code editedEmployee}.
      * {@code target} must exist in the address book.
-     * The employee identity of {@code editedEmployee} must not be the same as another existing employee in
+     * The contact details of {@code editedEmployee} must not conflict with another employee in
      * the address book.
      */
     void setEmployee(Employee target, Employee editedEmployee);
