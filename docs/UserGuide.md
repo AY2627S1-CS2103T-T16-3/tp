@@ -109,6 +109,17 @@ For older saved files, see [Editing the data file](#editing-the-data-file).
 `NAME` must not be blank and may contain only English letters (`A`-`Z`, `a`-`z`), digits (`0`-`9`), and spaces.
 Hyphens, apostrophes, accented letters, and characters from other writing systems are not accepted.
 
+`PHONE_NUMBER` must contain only digits and be at least three digits long.
+
+`EMAIL` must be a complete valid email address and must not exceed 254 characters. Its local part may use
+alphanumeric characters, with `+`, `_`, `.`, or `-` only between alphanumeric groups. Domain labels may contain
+internal hyphens, must start and end with alphanumeric characters, and the final label must contain at least two
+characters.
+
+`ADDRESS` must not be blank.
+
+Each `TAG` must contain only alphanumeric characters without spaces.
+
 Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
 Employee cards display salary with a monthly label, for example `Monthly salary: $5000`.
@@ -120,6 +131,9 @@ stored as `14`. The value after removing leading zeros must still be within the 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 An employee can have any number of tags, including zero.
 </div>
+
+After a successful addition, all employees are displayed again, clearing any active `find` or `filter` results while
+retaining the active sort. Displayed indexes may change, so recheck them before entering another index-based command.
 
 Examples:
 * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 le/14 s/5000`
@@ -238,6 +252,8 @@ Use `salary INDEX s/SALARY` to change salary.
 * Existing values will be updated to the input values.
 * For literal prefix-like text in addresses, follow the [escaping rules under `filter`](#escaping-prefix-like-text).
 * When changing the name, `NAME` must follow the restrictions described under [`add`](#adding-an-employee-add).
+* Phone numbers, email addresses, addresses, and tags must follow the restrictions described under
+  [`add`](#adding-an-employee-add).
 * `le/ANNUAL_LEAVE_DAYS` changes the employee's annual entitlement and accepts a whole number from `0` to `365`.
   Leading zeros are accepted and removed: for example, `le/00021` is stored as `21`.
   Existing leave records are not deleted if the entitlement is reduced below the number of days already used. Until
@@ -246,6 +262,8 @@ Use `salary INDEX s/SALARY` to change salary.
   mistake, delete that leave record separately.
 * When editing tags, all of the employee's existing tags are removed; adding tags is not cumulative.
 * To remove all of an employee's tags, enter `t/` without a tag after it.
+* After a successful edit, all employees are displayed again, clearing any active `find` or `filter` results while
+  retaining the active sort. Displayed indexes may change, so recheck them before entering another index-based command.
 
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st employee to be `91234567` and `johndoe@example.com` respectively.
@@ -269,7 +287,7 @@ Examples:
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
-### Filtering employees by any field: `filter`
+### Filtering employees by supported fields: `filter`
 
 Lists employees who match **all** supplied criteria (`AND`).
 
@@ -407,6 +425,8 @@ Format: `delete INDEX`
 * The index **must be a positive integer** 1, 2, 3, …​
 * All leave records belonging to the employee are also deleted. They cannot become orphaned records that refer to a
   missing employee.
+* The current `find` or `filter` remains active after deletion. Any remaining matching employees stay displayed, but
+  their indexes may shift.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd employee in HR Book.
@@ -690,20 +710,26 @@ Format: `exit`
 
 ### Saving the data
 
-HR Book automatically saves employee and leave data after every command. You do not need to save manually.
+HR Book attempts to save its data after every valid command, including commands that do not change data. Invalid
+commands do not trigger a save.
 
-If saving fails, HR Book shows an error and restores the data, employee filter, and sort order from before
-the command. Fix the reported problem and retry the command; rejected changes will not be saved by later commands.
-Saving writes directly to the data file. Restoring the app's data does not repair a partially written file;
-a failed save may leave the file incomplete or containing rejected changes. A later successful command saves
-the restored data, but restarting before a successful save can lose data. There is no automatic backup recovery.
+If saving fails, HR Book reports the error and restores the data, filter, and sort order. Until the problem is fixed,
+other valid commands, including `exit`, will continue to report the save error.
 
-Older save files without salary values load with a salary of `0`.
+To recover, fix the reported problem and run a command that does not change data. If no save error appears, the save
+succeeded. You can then retry the original command, as its changes were not retained.
+
+Because HR Book writes directly to the data file, a failed save may leave it incomplete or corrupted. Confirm that
+saving works before restarting. If you cannot retry, close the application window, then follow the recovery
+instructions under [Editing the data file](#editing-the-data-file) before reopening HR Book. There is no automatic
+backup recovery.
 
 ### Editing the data file
 
 HR Book data is saved automatically as a JSON file `[JAR file location]/data/hrbook.json`. The file contains
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
+
+Older save files without salary values load with a salary of `0`.
 
 **Contact uniqueness:** Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it. Email comparison ignores case. Phone numbers are compared as digit strings after trimming surrounding spaces, so `090000002` and `90000002` are different values.
 

@@ -812,7 +812,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 2a. The list is empty.
 
-    * 2a1. System informs the HR manager that there are no employees to delete.
+    * 2a1. System displays an empty employee list.
 
       Use case ends.
 
@@ -1171,7 +1171,11 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     Use case ends.
 
-**Use case: UC13 - View workforce summary**
+**Use case: UC12 - View workforce summary**
+
+**Guarantees**
+
+* Employee data and the current filter remain unchanged in all flows.
 
 **MSS**
 
@@ -1179,8 +1183,6 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 2. System displays employee, tag, task, and leave-record counts, plus total and average salary for the selected employees.
 
    Use case ends.
-
-Employee data and the current filter remain unchanged in all flows.
 
 **Extensions**
 
