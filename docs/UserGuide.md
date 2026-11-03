@@ -425,6 +425,8 @@ Format: `delete INDEX`
 * The index **must be a positive integer** 1, 2, 3, …​
 * All leave records belonging to the employee are also deleted. They cannot become orphaned records that refer to a
   missing employee.
+* The current `find` or `filter` remains active after deletion. Any remaining matching employees stay displayed, but
+  their indexes may shift.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd employee in HR Book.
