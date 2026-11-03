@@ -10,7 +10,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Salary {
     public static final int MAX_SALARY = 50000;
     public static final String MESSAGE_CONSTRAINTS =
-            "Salary must contain only digits and represent an amount from 0 to " + MAX_SALARY;
+            "Salary must be a whole number from 0 to " + MAX_SALARY + " (digits only, no $, commas or decimals).";
     public static final String VALIDATION_REGEX = "[0-9]+";
     private static final int MAX_SALARY_DIGITS = Integer.toString(MAX_SALARY).length();
 

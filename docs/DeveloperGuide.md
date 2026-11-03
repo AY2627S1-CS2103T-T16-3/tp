@@ -1139,7 +1139,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1b. The HR manager provides an invalid salary.
 
-    * 1b1. System informs the HR manager that salary must contain only digits and represent an amount from 0 to 50000.
+    * 1b1. System informs the HR manager that the salary is invalid and states the accepted format and range.
     * 1b2. System leaves the employee's salary unchanged.
 
     Use case ends.
@@ -1699,3 +1699,58 @@ Run the command again after a change to see updated counts; summaries are not re
    1. Test case: Repeat with malformed JSON, then with a valid data file and with a missing data file.<br>
       Expected: Malformed JSON produces the same error message and recovery behaviour. Valid data loads normally. A missing
       file starts with sample data. Neither a valid file nor a missing file produces a data-loading error message.
+
+
+## **Future Enhancements**
+
+The following improvements are planned for consideration in future versions.
+They are not implemented in the current release.
+
+### Broader support for employee names
+
+Employee names currently accept only English letters, digits, and spaces.
+A future version could support names containing hyphens, apostrophes, accented
+letters, and characters from other writing systems.
+
+### List leave by year
+
+Allow HR managers to view leave records for a
+selected year in isolation. Show remaining balances for that year instead
+of always showing current-year balances.
+
+
+### Filter employees by year-specific leave
+
+Allow HR managers to select a year and filter employees by the total number
+of working days of leave taken in that year, or by their remaining entitlement
+in days. Filtering is based on the amount of leave, not the start or end dates
+of leave records. For example, a filter could show employees who have taken
+more than 10 working days of leave in the selected year. Keep these criteria
+distinct from the existing annual entitlement filter.
+
+### Sort employees by year-specific leave
+
+Allow HR managers to select a year and sort employees by the total number of
+working days of leave taken in that year, or by their remaining entitlement
+in days, in ascending or descending order. Sorting is based on the amount of
+leave, not the start or end dates of leave records. For example, ascending
+order by leave taken would place an employee with 5 days taken before one
+with 10 days taken in the selected year.
+
+### More resilient local saving
+
+The current implementation writes directly to the JSON data file and restores
+the in-memory model if saving fails. This rollback does not repair a partially
+written file.
+
+Temporary-file saving with atomic replacement was previously implemented but
+removed after intermittent access-denied failures were encountered on Windows.
+A future version could revisit this approach after resolving those failures
+and verifying file replacement on Windows, Linux, and macOS. The design should
+handle unsupported atomic replacement and replacement failures without
+silently falling back to an overwrite that could damage the existing file.
+
+Keeping a previous valid backup could also support recovery from damaged data,
+with a defined recovery procedure. Data, temporary files, and backups would
+remain within the application's home folder, in a human-editable format, and
+saving and recovery would continue to work offline.
