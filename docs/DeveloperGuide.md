@@ -1702,16 +1702,21 @@ of always showing current-year balances.
 
 ### Filter employees by year-specific leave
 
-Allow HR managers to select
-a year and filter employees by leave taken or remaining entitlement in
-that year. Keep these criteria distinct from the existing annual
-entitlement filter.
+Allow HR managers to select a year and filter employees by the total number
+of working days of leave taken in that year, or by their remaining entitlement
+in days. Filtering is based on the amount of leave, not the start or end dates
+of leave records. For example, a filter could show employees who have taken
+more than 10 working days of leave in the selected year. Keep these criteria
+distinct from the existing annual entitlement filter.
 
 ### Sort employees by year-specific leave
 
-Allow HR managers to select
-a year and sort employees by leave taken or remaining entitlement in
-ascending or descending order.
+Allow HR managers to select a year and sort employees by the total number of
+working days of leave taken in that year, or by their remaining entitlement
+in days, in ascending or descending order. Sorting is based on the amount of
+leave, not the start or end dates of leave records. For example, ascending
+order by leave taken would place an employee with 5 days taken before one
+with 10 days taken in the selected year.
 
 ### More resilient local saving
 
