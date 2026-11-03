@@ -1132,7 +1132,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1b. The HR manager provides an invalid salary.
 
-    * 1b1. System informs the HR manager that salary must contain only digits and represent an amount from 0 to 50000.
+    * 1b1. System informs the HR manager that the salary is invalid and states the accepted format and range.
     * 1b2. System leaves the employee's salary unchanged.
 
     Use case ends.
@@ -1680,3 +1680,6 @@ Run the command again after a change to see updated counts; summaries are not re
    1. Test case: Repeat with malformed JSON, then with a valid data file and with a missing data file.<br>
       Expected: Malformed JSON produces the same error message and recovery behaviour. Valid data loads normally. A missing
       file starts with sample data. Neither a valid file nor a missing file produces a data-loading error message.
+
+
+
