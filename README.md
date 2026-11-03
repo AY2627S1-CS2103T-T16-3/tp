@@ -23,7 +23,7 @@ visible.
 | Workforce summaries | View employee, tag, task, and leave-record counts, plus total and average salary for all employees or a selected group. |
 
 Employees may share names, but phone numbers and email addresses must be unique. Data is saved locally
-between sessions. HR Book focuses on internal employee administration and talent acquisition.
+between sessions. HR Book focuses on internal employee administration work.
 Features such as employee messaging are outside its scope.
 
 ## Getting started
