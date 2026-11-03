@@ -1292,19 +1292,22 @@ Run the following test cases in order.
    1. Test case:
       `add n/Bob Lim p/91234567 e/bob@example.com a/789 Bedok Road le/14`<br>
       Expected: The command is rejected with
-      `Another employee already uses this phone number or email address (email is case-insensitive).`
+      `Phone number 91234567 is already used by Alice Tan.`
       No employee is added and existing records remain unchanged.
 
 4. Adding an employee with an existing email address
 
    1. Test case:
       `add n/Bob Lim p/92345678 e/alice@example.com a/789 Bedok Road le/14`<br>
-      Expected: The command is rejected with the same contact-conflict message.
+      Expected: The command is rejected with
+      `Email address alice@example.com is already used by Alice Tan.`
       No employee is added and existing records remain unchanged.
 
    2. Repeat with:
       `add n/Bob Lim p/92345678 e/ALICE@example.com a/789 Bedok Road le/14`<br>
-      Expected: The command is rejected because email comparison ignores case.
+      Expected: The command is rejected with
+      `Email address ALICE@example.com is already used by Alice Tan.`
+      Email comparison ignores case. No employee is added and existing records remain unchanged.
 
 5. Adding an employee whose contact details conflict with a hidden employee
 
@@ -1352,7 +1355,7 @@ current displayed index, rechecking it before each edit.
 
    2. Test case: `edit INDEX p/91234567`.<br>
       Expected: The command is rejected with
-      `Another employee already uses this phone number or email address (email is case-insensitive).`
+      `Phone number 91234567 is already used by Alice Tan.`
       Bob's details remain unchanged. Alice's phone number cannot be reused
       even though Alice is hidden.
 
@@ -1361,11 +1364,14 @@ current displayed index, rechecking it before each edit.
    1. Run `find Bob` again and note Bob's displayed index.
 
    2. Test case: `edit INDEX e/alice@example.com`.<br>
-      Expected: The command is rejected with the same contact-conflict message.
+      Expected: The command is rejected with
+      `Email address alice@example.com is already used by Alice Tan.`
       Bob's details remain unchanged, even though Alice is hidden.
 
    3. Repeat with `edit INDEX e/ALICE@example.com`.<br>
-      Expected: The command is rejected because email comparison ignores case.
+      Expected: The command is rejected with
+      `Email address ALICE@example.com is already used by Alice Tan.`
+      Email comparison ignores case.
       Bob's details remain unchanged.
 
 5. Changing contact details to unused values
