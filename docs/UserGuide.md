@@ -116,7 +116,9 @@ alphanumeric characters, with `+`, `_`, `.`, or `-` only between alphanumeric gr
 internal hyphens, must start and end with alphanumeric characters, and the final label must contain at least two
 characters.
 
-`ADDRESS` must not be blank. Each `TAG` must contain only alphanumeric characters without spaces.
+`ADDRESS` must not be blank.
+
+Each `TAG` must contain only alphanumeric characters without spaces.
 
 Monthly salary is optional and defaults to `0`. It must be a whole number from `0` to `50000`.
 Leading zeros are accepted and removed: `s/000000001` is stored as `1`.
@@ -706,21 +708,26 @@ Format: `exit`
 
 ### Saving the data
 
-HR Book automatically saves employee and leave data after every successfully executed command. Commands rejected
-during parsing or execution do not trigger a save. You do not need to save manually.
+HR Book attempts to save its data after every valid command, including commands that do not change data. Invalid
+commands do not trigger a save.
 
-If saving fails, HR Book shows an error and restores the data, employee filter, and sort order from before
-the command. Fix the reported problem and retry the command; rejected changes will not be saved by later commands.
-Saving writes directly to the data file. Restoring the app's data does not repair a partially written file;
-a failed save may leave the file incomplete or containing rejected changes. A later successful command saves
-the restored data, but restarting before a successful save can lose data. There is no automatic backup recovery.
+If saving fails, HR Book reports the error and restores the data, filter, and sort order. Until the problem is fixed,
+other valid commands, including `exit`, will continue to report the save error.
 
-Older save files without salary values load with a salary of `0`.
+To recover, fix the reported problem and run a command that does not change data. If no save error appears, the save
+succeeded. You can then retry the original command, as its changes were not retained.
+
+Because HR Book writes directly to the data file, a failed save may leave it incomplete or corrupted. Confirm that
+saving works before restarting. If you cannot retry, close the application window, then follow the recovery
+instructions under [Editing the data file](#editing-the-data-file) before reopening HR Book. There is no automatic
+backup recovery.
 
 ### Editing the data file
 
 HR Book data is saved automatically as a JSON file `[JAR file location]/data/hrbook.json`. The file contains
 employees, leave records, and the next internal identifiers. Editing it manually is not recommended.
+
+Older save files without salary values load with a salary of `0`.
 
 **Contact uniqueness:** Saved files must follow the same contact uniqueness rules. If an older file contains shared phone numbers or emails, resolve those conflicts before loading it. Email comparison ignores case. Phone numbers are compared as digit strings after trimming surrounding spaces, so `090000002` and `90000002` are different values.
 
