@@ -35,7 +35,7 @@ public class AddLeaveCommand extends Command {
             + PREFIX_START_DATE + "05-10-2026 " + PREFIX_END_DATE + "07-10-2026";
 
     public static final String MESSAGE_SUCCESS =
-            "Leave recorded: ID %1$s for %2$s; period %3$s; %4$d working day(s); %5$d day(s) remaining in %6$d.";
+            "Leave recorded: Leave ID %1$s for %2$s; period %3$s; %4$d working day(s); %5$d day(s) remaining in %6$d.";
     public static final String MESSAGE_OVERLAPPING_LEAVE =
             "This leave period overlaps an existing leave record for the employee.";
     public static final String MESSAGE_INSUFFICIENT_LEAVE =

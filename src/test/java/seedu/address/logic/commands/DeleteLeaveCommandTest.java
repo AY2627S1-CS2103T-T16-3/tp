@@ -35,8 +35,8 @@ public class DeleteLeaveCommandTest {
         addressBook.addEmployee(ALICE);
         Leave leave = addressBook.addLeave(new EmployeeId(1), MONDAY_TO_WEDNESDAY);
         Model model = new ModelManager(addressBook, new UserPrefs());
-        String expectedMessage = String.format(DeleteLeaveCommand.MESSAGE_SUCCESS, leave.getLeaveId(),
-                ALICE.getName(), MONDAY_TO_WEDNESDAY, ALICE.getLeaveEntitlement().value, 2026);
+        String expectedMessage = "Deleted leave: Leave ID 1 for Alice Pauline; period "
+                + "05-10-2026 to 07-10-2026; 14 day(s) remaining in 2026.";
 
         CommandResult result = new DeleteLeaveCommand(leave.getLeaveId()).execute(model);
 
@@ -51,8 +51,7 @@ public class DeleteLeaveCommandTest {
         Model model = new ModelManager();
         LeaveId leaveId = new LeaveId(1);
 
-        assertCommandFailure(new DeleteLeaveCommand(leaveId), model,
-                String.format(DeleteLeaveCommand.MESSAGE_LEAVE_NOT_FOUND, leaveId));
+        assertCommandFailure(new DeleteLeaveCommand(leaveId), model, "No leave record found with Leave ID 1.");
     }
 
     @Test

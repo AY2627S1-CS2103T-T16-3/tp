@@ -592,7 +592,8 @@ The nested parser structure is described under [leave command routing](#leave-co
    `filter` before selecting an employee without exposing the employee's internal ID.
 3. `AddressBook#addLeave` finds the employee through its internal `EmployeeId`, rejects an overlapping period, and
    checks the requested weekdays against the employee's remaining entitlement for that year.
-4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the ID counter.
+4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the leave ID
+   counter.
 5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
 
 The following sequence diagram shows successful leave creation inside Model. It starts at `AddressBook#addLeave`,
@@ -633,12 +634,14 @@ For backward compatibility, employees in older data files with no entitlement lo
 #### Listing and deleting leave
 
 `leave list` reads the currently filtered employee list from `Model` and uses `Model#getRemainingLeave` to report
-each employee's balance for `LocalDate.now(clock).getYear()`, in displayed employee order. Employees without leave
+each employee's balance for `LocalDate.now(clock).getYear()`, in displayed employee order. Each balance line shows the
+employee's current name and email, which distinguish employees who share a name. Employees without leave
 in that year retain their full entitlement. An empty employee view returns `No employees displayed.`
 The command then collects the displayed employees' internal IDs and retains only matching records from the central
 leave list, including records from other years. It sorts the records by `LeaveId`, resolves each
-internal employee ID to the employee's current name, and returns a multiline result. Consequently, `find` and `filter`
-also scope the following `leave list`, while running `list` first restores an all-employee scope. The status is derived
+internal employee ID to the employee's current name and email, labels the number `Leave ID`, and returns a multiline
+result. Consequently, `find` and `filter` also scope the following `leave list`, while running `list` first restores
+an all-employee scope. The status is derived
 using `LocalDate.now(clock)` on every invocation. Production commands use the system-default clock, while tests inject
 a fixed clock for deterministic status checks:
 
@@ -648,9 +651,9 @@ a fixed clock for deterministic status checks:
 
 Balances and statuses are derived for display and are not persisted.
 
-`leave delete LEAVE_ID` removes one record by its stable ID. The ID counter is not decremented, so an ID removed using
-`leave delete` is not reused while the current address book remains in use. No balance mutation is required; the next
-balance calculation automatically excludes the deleted record.
+`leave delete LEAVE_ID` removes one record by its stable leave ID. The leave ID counter is not decremented, so the
+deleted leave ID is not reused while the current address book remains in use. No balance mutation is
+required; the next balance calculation automatically excludes the deleted record.
 
 `ClearCommand` has broader semantics than deleting records individually. It replaces the model data with a new
 `AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
@@ -1023,7 +1026,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1. HR manager requests leave balances and records for the currently displayed employees.
 2. System displays current-year remaining balances, followed by matching leave records in leave ID order, including
-   the employee name, dates, charged working days, and status relative to today's date.
+   the employee name and email, dates, charged working days, and status relative to today's date.
 
     Use case ends.
 
@@ -1062,7 +1065,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 2b. The leave ID is a valid positive integer, but no matching record exists.
 
-    * 2b1. System informs the HR manager that no leave record was found with that ID.
+    * 2b1. System informs the HR manager that no leave record was found with that leave ID.
     * 2b2. System leaves all employee and leave information unchanged.
 
       Use case ends.
@@ -1537,26 +1540,35 @@ Run these tests in order on a disposable copy of the app with fresh sample data.
    1. Test case: `leave add 1 from/24-10-2026 to/25-10-2026`<br>
       Expected: No leave is recorded because the period contains only weekend days.
 
-2. Listing and deleting leave
+2. Listing leave
 
-   1. Prerequisites: Record leave periods for at least two employees and note the IDs returned by `leave add`.
+   1. Prerequisites: Record leave for one employee. Have another employee with no leave for the filtered view checks.
 
-   1. Test case: Run `list`, followed by `leave list`.<br>
+   1. Test case: Run `list`, followed by `leave list`. To check record order, first add another non-overlapping leave
+      period for an employee with enough remaining entitlement.<br>
       Expected: Current-year balances appear in displayed employee order, followed by all leave records in leave ID
-      order with employee name, period, working days, and a status based on today's date. Only records in the current
-      year reduce its balances; upcoming leave in that year is included.
+      order with `Leave ID`, employee name and email, period, working days, and a status based on today's date.
+      Only records in the current year reduce its balances; upcoming leave in that year is included.
 
-   1. Test case: Use `find` or `filter` to display one of the employees, followed by `leave list`.<br>
+   1. Test case: Use `find` or `filter` to display the employee with recorded leave, followed by `leave list`.<br>
       Expected: Only the displayed employee's balance and leave records appear; the filter remains active.
 
-   1. Test case: Use `find` or `filter` so that no displayed employee has a leave record, followed by `leave list`.<br>
+   1. Test case: Run `list`, add two employees with the same name and distinct phone numbers and emails, then run
+      `list` again. Record leave for each new employee using their displayed indexes, then run `leave list`.<br>
+      Expected: Both balances and both leave records show the matching employee's email beside the shared name.
+
+   1. Test case: Use `find` or `filter` to display the employee without leave, followed by `leave list`.<br>
       Expected: Each displayed employee has their full current-year entitlement remaining, followed by
       `No leave records found.`
 
    1. Test case: Use `find` so that no employee is displayed, followed by `leave list`.<br>
       Expected: The result is `No employees displayed.` No employee or leave records are changed.
 
-   1. Test case: `leave delete 1` (replace `1` with the recorded ID)<br>
+3. Deleting leave
+
+   1. Prerequisites: Note a leave ID returned by `leave add`; one recorded leave period is enough.
+
+   1. Test case: `leave delete 1` (replace `1` with the recorded leave ID)<br>
       Expected: That record is deleted and the result shows the employee's restored remaining leave.
 
    1. Test case: Repeat the same `leave delete` command.<br>

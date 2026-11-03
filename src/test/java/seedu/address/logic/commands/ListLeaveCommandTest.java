@@ -70,7 +70,7 @@ public class ListLeaveCommandTest {
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 14 of 14 day(s) remaining.\n\n"
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 14 of 14 day(s) remaining.\n\n"
                 + ListLeaveCommand.MESSAGE_NO_LEAVE, result.getFeedbackToUser());
     }
 
@@ -82,13 +82,16 @@ public class ListLeaveCommandTest {
         AddressBook addressBook = new AddressBook(List.of(ALICE), 2,
                 List.of(upcomingLeave, pastLeave, ongoingLeave), 4);
         Model model = new ModelManager(addressBook, new UserPrefs());
-        String expectedRecords = "ID 1 | Alice Pauline | 01-10-2026 to 02-10-2026 | 2 working day(s) | Past\n"
-                + "ID 2 | Alice Pauline | 05-10-2026 to 07-10-2026 | 3 working day(s) | Ongoing\n"
-                + "ID 3 | Alice Pauline | 08-10-2026 to 09-10-2026 | 2 working day(s) | Upcoming";
+        String expectedRecords = "Leave ID 1 | Alice Pauline (alice@example.com) | "
+                + "01-10-2026 to 02-10-2026 | 2 working day(s) | Past\n"
+                + "Leave ID 2 | Alice Pauline (alice@example.com) | "
+                + "05-10-2026 to 07-10-2026 | 3 working day(s) | Ongoing\n"
+                + "Leave ID 3 | Alice Pauline (alice@example.com) | "
+                + "08-10-2026 to 09-10-2026 | 2 working day(s) | Upcoming";
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 7 of 14 day(s) remaining.\n\n"
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 7 of 14 day(s) remaining.\n\n"
                 + String.format(ListLeaveCommand.MESSAGE_SUCCESS, expectedRecords), result.getFeedbackToUser());
     }
 
@@ -100,11 +103,12 @@ public class ListLeaveCommandTest {
                 List.of(aliceLeave, bensonLeave), 3);
         Model model = new ModelManager(addressBook, new UserPrefs());
         model.updateFilteredEmployeeList(employee -> employee.getName().equals(ALICE.getName()));
-        String expectedRecord = "ID 1 | Alice Pauline | 01-10-2026 to 02-10-2026 | 2 working day(s) | Past";
+        String expectedRecord = "Leave ID 1 | Alice Pauline (alice@example.com) | "
+                + "01-10-2026 to 02-10-2026 | 2 working day(s) | Past";
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 12 of 14 day(s) remaining.\n\n"
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 12 of 14 day(s) remaining.\n\n"
                 + String.format(ListLeaveCommand.MESSAGE_SUCCESS, expectedRecord), result.getFeedbackToUser());
     }
 
@@ -117,7 +121,7 @@ public class ListLeaveCommandTest {
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 14 of 14 day(s) remaining.\n\n"
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 14 of 14 day(s) remaining.\n\n"
                 + ListLeaveCommand.MESSAGE_NO_LEAVE, result.getFeedbackToUser());
     }
 
@@ -129,15 +133,19 @@ public class ListLeaveCommandTest {
         Model model = new ModelManager(new AddressBook(List.of(ALICE), 2,
                 List.of(currentLeave, nextYearLeave), 3), new UserPrefs());
         String records = "Leave records:\n"
-                + "ID 1 | Alice Pauline | 01-10-2026 to 02-10-2026 | 2 working day(s) | Past\n"
-                + "ID 2 | Alice Pauline | 04-01-2027 to 06-01-2027 | 3 working day(s) | Upcoming";
+                + "Leave ID 1 | Alice Pauline (alice@example.com) | "
+                + "01-10-2026 to 02-10-2026 | 2 working day(s) | Past\n"
+                + "Leave ID 2 | Alice Pauline (alice@example.com) | "
+                + "04-01-2027 to 06-01-2027 | 3 working day(s) | Upcoming";
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 12 of 14 day(s) remaining.\n\n" + records,
+        assertEquals("Remaining annual leave (2026):\n"
+                + "Alice Pauline (alice@example.com): 12 of 14 day(s) remaining.\n\n" + records,
                 new ListLeaveCommand(FIXED_CLOCK).execute(model).getFeedbackToUser());
 
         Clock nextYearClock = Clock.fixed(LocalDate.of(2027, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC),
                 ZoneOffset.UTC);
-        assertEquals("Remaining annual leave (2027):\nAlice Pauline: 11 of 14 day(s) remaining.\n\n" + records,
+        assertEquals("Remaining annual leave (2027):\n"
+                + "Alice Pauline (alice@example.com): 11 of 14 day(s) remaining.\n\n" + records,
                 new ListLeaveCommand(nextYearClock).execute(model).getFeedbackToUser());
     }
 
@@ -152,10 +160,12 @@ public class ListLeaveCommandTest {
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 14 of 14 day(s) remaining.\n\n"
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 14 of 14 day(s) remaining.\n\n"
                 + "Leave records:\n"
-                + "ID 1 | Alice Pauline | 01-10-2025 to 02-10-2025 | 2 working day(s) | Past\n"
-                + "ID 2 | Alice Pauline | 04-01-2027 to 06-01-2027 | 3 working day(s) | Upcoming",
+                + "Leave ID 1 | Alice Pauline (alice@example.com) | "
+                + "01-10-2025 to 02-10-2025 | 2 working day(s) | Past\n"
+                + "Leave ID 2 | Alice Pauline (alice@example.com) | "
+                + "04-01-2027 to 06-01-2027 | 3 working day(s) | Upcoming",
                 result.getFeedbackToUser());
     }
 
@@ -167,9 +177,32 @@ public class ListLeaveCommandTest {
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 14 of 14 day(s) remaining.\n"
-                + "Benson Meier: 11 of 14 day(s) remaining.\n\n"
-                + "Leave records:\nID 1 | Benson Meier | 05-10-2026 to 07-10-2026 | 3 working day(s) | Ongoing",
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 14 of 14 day(s) remaining.\n"
+                + "Benson Meier (johnd@example.com): 11 of 14 day(s) remaining.\n\n"
+                + "Leave records:\nLeave ID 1 | Benson Meier (johnd@example.com) | "
+                + "05-10-2026 to 07-10-2026 | 3 working day(s) | Ongoing",
+                result.getFeedbackToUser());
+    }
+
+    @Test
+    public void execute_employeesWithSameName_showsDistinctEmailsForBalancesAndRecords() {
+        Employee otherAlice = new EmployeeBuilder(ALICE).withEmployeeId(2)
+                .withPhone("91234567").withEmail("alice.two@example.com").build();
+        Leave firstLeave = new Leave(new LeaveId(1), new EmployeeId(1), PAST_PERIOD);
+        Leave secondLeave = new Leave(new LeaveId(2), new EmployeeId(2), ONGOING_PERIOD);
+        Model model = new ModelManager(new AddressBook(List.of(ALICE, otherAlice), 3,
+                List.of(firstLeave, secondLeave), 3), new UserPrefs());
+
+        CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
+
+        assertEquals("Remaining annual leave (2026):\n"
+                + "Alice Pauline (alice@example.com): 12 of 14 day(s) remaining.\n"
+                + "Alice Pauline (alice.two@example.com): 11 of 14 day(s) remaining.\n\n"
+                + "Leave records:\n"
+                + "Leave ID 1 | Alice Pauline (alice@example.com) | "
+                + "01-10-2026 to 02-10-2026 | 2 working day(s) | Past\n"
+                + "Leave ID 2 | Alice Pauline (alice.two@example.com) | "
+                + "05-10-2026 to 07-10-2026 | 3 working day(s) | Ongoing",
                 result.getFeedbackToUser());
     }
 
@@ -181,8 +214,9 @@ public class ListLeaveCommandTest {
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 0 of 1 day(s) remaining.\n\n"
-                + "Leave records:\nID 1 | Alice Pauline | 01-10-2026 to 02-10-2026 | 2 working day(s) | Past",
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 0 of 1 day(s) remaining.\n\n"
+                + "Leave records:\nLeave ID 1 | Alice Pauline (alice@example.com) | "
+                + "01-10-2026 to 02-10-2026 | 2 working day(s) | Past",
                 result.getFeedbackToUser());
     }
 
@@ -191,7 +225,7 @@ public class ListLeaveCommandTest {
         Employee employee = new EmployeeBuilder(ALICE).withLeaveEntitlement(0).build();
         Model model = new ModelManager(new AddressBook(List.of(employee), 2), new UserPrefs());
 
-        assertEquals("Remaining annual leave (2026):\nAlice Pauline: 0 of 0 day(s) remaining.\n\n"
+        assertEquals("Remaining annual leave (2026):\nAlice Pauline (alice@example.com): 0 of 0 day(s) remaining.\n\n"
                 + ListLeaveCommand.MESSAGE_NO_LEAVE,
                 new ListLeaveCommand(FIXED_CLOCK).execute(model).getFeedbackToUser());
     }
@@ -211,8 +245,9 @@ public class ListLeaveCommandTest {
 
         CommandResult result = new ListLeaveCommand(FIXED_CLOCK).execute(model);
 
-        assertEquals("Remaining annual leave (2026):\nBenson Meier: 21 of 21 day(s) remaining.\n"
-                + "Alice Pauline: 14 of 14 day(s) remaining.\n\n" + ListLeaveCommand.MESSAGE_NO_LEAVE,
+        assertEquals("Remaining annual leave (2026):\nBenson Meier (johnd@example.com): 21 of 21 day(s) remaining.\n"
+                + "Alice Pauline (alice@example.com): 14 of 14 day(s) remaining.\n\n"
+                + ListLeaveCommand.MESSAGE_NO_LEAVE,
                 result.getFeedbackToUser());
         assertEquals(before, model.getAddressBook());
         assertSame(displayed, model.getFilteredEmployeeList());

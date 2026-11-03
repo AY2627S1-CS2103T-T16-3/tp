@@ -398,7 +398,7 @@ Examples:
 
 ### Managing employee leave
 
-Use the employee's displayed index to record leave, and the leave record's own ID to delete it:
+Use the employee's displayed index to record leave, and the leave ID to delete it:
 
 | Command | Which number should I use? |
 | --- | --- |
@@ -406,7 +406,7 @@ Use the employee's displayed index to record leave, and the leave record's own I
 | `leave delete LEAVE_ID` | The stable leave ID shown by `leave list`. |
 
 The examples below use John Doe at employee index `1`, with an annual entitlement of 14 days and no existing leave
-for 2026. The newly recorded leave has ID `7` in this example; your assigned ID and balance may differ.
+for 2026. The newly recorded leave has leave ID `7` in this example; your assigned leave ID and balance may differ.
 
 #### Recording leave: `leave add`
 
@@ -423,7 +423,7 @@ leave add 1 from/09-11-2026 to/11-11-2026
 Example output:
 
 ```text
-Leave recorded: ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 3 working day(s); 11 day(s) remaining in 2026.
+Leave recorded: Leave ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 3 working day(s); 11 day(s) remaining in 2026.
 ```
 
 This records three weekdays and leaves John with 11 days for 2026. Keep the returned leave ID (`7`) if you later
@@ -462,7 +462,8 @@ Neither rejection adds a leave record. Check `leave list` for overlaps or reques
 #### Listing leave: `leave list`
 
 Shows the current-year remaining balance for each displayed employee, followed by their leave records in leave ID
-order. Balances appear in the same employee order as the cards.
+order. Balances appear in the same employee order as the cards. Each employee's email is shown beside their name
+so that employees with the same name can be told apart.
 
 Format: `leave list`
 
@@ -472,22 +473,22 @@ Continuing the three-day example above, run:
 leave list
 ```
 
-Example output, assuming today's date is 2 November 2026:
+Example output, assuming today's date is 3 November 2026:
 
 ```text
 Remaining annual leave (2026):
-John Doe: 11 of 14 day(s) remaining.
+John Doe (john@example.com): 11 of 14 day(s) remaining.
 
 Leave records:
-ID 7 | John Doe | 09-11-2026 to 11-11-2026 | 3 working day(s) | Upcoming
+Leave ID 7 | John Doe (john@example.com) | 09-11-2026 to 11-11-2026 | 3 working day(s) | Upcoming
 ```
 
 | Output field | Meaning |
 | --- | --- |
 | `Remaining annual leave (2026)` | The calendar year used for all balances in this result. |
 | `11 of 14 day(s) remaining` | Remaining days and total annual entitlement for the named employee. |
-| `ID 7` | The leave ID to use with `leave delete`. |
-| `John Doe` | The employee's current name. |
+| `Leave ID 7` | The leave ID to use with `leave delete`. |
+| `John Doe (john@example.com)` | The employee's current name and unique email address. |
 | `09-11-2026 to 11-11-2026` | The inclusive start and end dates. |
 | `3 working day(s)` | Days charged against annual entitlement. |
 | `Upcoming` | The leave's status relative to today. |
@@ -525,10 +526,10 @@ To check an employee's current-year balance without recording or cancelling leav
 In the example above, John has **11 days remaining in 2026**, including the deduction for his upcoming three-day
 leave. The card's **Total annual leave** is his entitlement of 14 days; it is not the remaining balance.
 
-<img src="images/LeaveBalanceExample.png" alt="HR Book showing John Doe's remaining balance of 11 out of 14 days for 2026, followed by leave record ID 7" width="726" style="max-width: 100%; height: auto;" />
+<img src="images/LeaveBalanceExample.png" alt="HR Book showing John Doe (john@example.com) with 11 out of 14 days remaining for 2026, followed by Leave ID 7" width="886" style="max-width: 100%; height: auto;" />
 
 *The result box shows the balance separately from leave ID `7`. The employee's displayed index is `1`.
-This screenshot was captured on 2 November 2026, so the leave is `Upcoming`.*
+This screenshot was captured on 3 November 2026, so the leave is `Upcoming`.*
 
 #### Deleting leave: `leave delete`
 
@@ -545,11 +546,11 @@ leave delete 7
 Example output:
 
 ```text
-Deleted leave: ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 14 day(s) remaining in 2026.
+Deleted leave: Leave ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 14 day(s) remaining in 2026.
 ```
 
 The three charged days are released. As John has no other leave in 2026 in this example, his remaining balance
-returns to 14 days. Use the ID returned by your own `leave list` output if it differs from `7`.
+returns to 14 days. Use the leave ID returned by your own `leave list` output if it differs from `7`.
 
 Rules:
 
@@ -557,7 +558,7 @@ Rules:
 * Deleting a record restores those days to the employee's remaining entitlement for that calendar year because the
   balance is recalculated from the records that remain.
 * Leave IDs removed using `leave delete` are not reused while the current HR Book data remains in use. The `clear`
-  command starts a fresh data set and resets the ID sequence.
+  command starts a fresh data set and resets the leave ID sequence.
 
 ### Listing tasks on an employee: `task list`
 

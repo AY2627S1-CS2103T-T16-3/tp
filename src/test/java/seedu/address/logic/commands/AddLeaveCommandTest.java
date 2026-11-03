@@ -20,6 +20,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -43,9 +44,9 @@ public class AddLeaveCommandTest {
         CommandResult result = new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY).execute(model);
 
         Leave addedLeave = model.getAddressBook().getLeaveList().get(0);
-        int remainingDays = ALICE.getLeaveEntitlement().value - MONDAY_TO_WEDNESDAY.getWorkingDayCount();
-        assertEquals(String.format(AddLeaveCommand.MESSAGE_SUCCESS, addedLeave.getLeaveId(), ALICE.getName(),
-                MONDAY_TO_WEDNESDAY, 3, remainingDays, 2026), result.getFeedbackToUser());
+        assertEquals("Leave recorded: Leave ID 1 for Alice Pauline; period 05-10-2026 to 07-10-2026; "
+                + "3 working day(s); 11 day(s) remaining in 2026.", result.getFeedbackToUser());
+        assertEquals(new LeaveId(1), addedLeave.getLeaveId());
     }
 
     @Test

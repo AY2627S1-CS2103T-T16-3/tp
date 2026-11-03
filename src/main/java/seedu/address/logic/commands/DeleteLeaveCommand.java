@@ -22,8 +22,8 @@ public class DeleteLeaveCommand extends Command {
             + "  Run leave list to view available leave IDs.\n"
             + "  Example: leave " + SUBCOMMAND_WORD + " 1";
     public static final String MESSAGE_SUCCESS =
-            "Deleted leave: ID %1$s for %2$s; period %3$s; %4$d day(s) remaining in %5$d.";
-    public static final String MESSAGE_LEAVE_NOT_FOUND = "No leave record found with ID %1$s.";
+            "Deleted leave: Leave ID %1$s for %2$s; period %3$s; %4$d day(s) remaining in %5$d.";
+    public static final String MESSAGE_LEAVE_NOT_FOUND = "No leave record found with Leave ID %1$s.";
 
     private final LeaveId leaveId;
 
