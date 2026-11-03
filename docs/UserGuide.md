@@ -405,6 +405,8 @@ Use the employee's displayed index to record leave, and the leave ID to delete i
 | `leave add INDEX ...` | The employee index currently shown on the employee card. |
 | `leave delete LEAVE_ID` | The stable leave ID shown by `leave list`. |
 
+Leave results show the employee's email beside their name so that employees with the same name can be told apart.
+
 The examples below use John Doe at employee index `1`, with an annual entitlement of 14 days and no existing leave
 for 2026. The newly recorded leave has leave ID `7` in this example; your assigned leave ID and balance may differ.
 
@@ -423,7 +425,7 @@ leave add 1 from/09-11-2026 to/11-11-2026
 Example output:
 
 ```text
-Leave recorded: Leave ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 3 working day(s); 11 day(s) remaining in 2026.
+Leave recorded: Leave ID 7 for John Doe (john@example.com); period 09-11-2026 to 11-11-2026; 3 working day(s); 11 day(s) remaining in 2026.
 ```
 
 This records three weekdays and leaves John with 11 days for 2026. Keep the returned leave ID (`7`) if you later
@@ -454,7 +456,7 @@ This leave period overlaps an existing leave record for the employee.
 If another request needs 12 working days while John has only 11 remaining, the app reports:
 
 ```text
-John Doe has only 11 annual leave day(s) remaining in 2026, but this request needs 12.
+John Doe (john@example.com) has only 11 annual leave day(s) remaining in 2026, but this request needs 12.
 ```
 
 Neither rejection adds a leave record. Check `leave list` for overlaps or request fewer working days.
@@ -546,7 +548,7 @@ leave delete 7
 Example output:
 
 ```text
-Deleted leave: Leave ID 7 for John Doe; period 09-11-2026 to 11-11-2026; 14 day(s) remaining in 2026.
+Deleted leave: Leave ID 7 for John Doe (john@example.com); period 09-11-2026 to 11-11-2026; 14 day(s) remaining in 2026.
 ```
 
 The three charged days are released. As John has no other leave in 2026 in this example, his remaining balance

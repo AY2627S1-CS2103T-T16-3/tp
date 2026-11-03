@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
 import seedu.address.model.employee.EmployeeId;
@@ -73,7 +74,8 @@ public class ListLeaveCommand extends Command {
 
     private static String formatBalances(Model model, List<Employee> employees, int year) {
         String balances = employees.stream()
-                .map(employee -> String.format("%s: %d of %d day(s) remaining.", formatEmployee(employee),
+                .map(employee -> String.format("%s: %d of %d day(s) remaining.",
+                        Messages.formatEmployeeNameAndEmail(employee),
                         model.getRemainingLeave(employee.getEmployeeId().orElseThrow(), year),
                         employee.getLeaveEntitlement().value))
                 .collect(Collectors.joining("\n"));
@@ -87,12 +89,8 @@ public class ListLeaveCommand extends Command {
         }
         LeavePeriod period = leave.getPeriod();
         return String.format("Leave ID %s | %s | %s | %d working day(s) | %s",
-                leave.getLeaveId(), formatEmployee(employee), period, period.getWorkingDayCount(),
+                leave.getLeaveId(), Messages.formatEmployeeNameAndEmail(employee), period, period.getWorkingDayCount(),
                 getStatus(period, today));
-    }
-
-    private static String formatEmployee(Employee employee) {
-        return String.format("%s (%s)", employee.getName(), employee.getEmail());
     }
 
     static String getStatus(LeavePeriod period, LocalDate today) {

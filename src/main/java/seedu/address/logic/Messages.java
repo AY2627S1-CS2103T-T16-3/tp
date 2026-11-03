@@ -56,6 +56,11 @@ public class Messages {
         return String.join("\n", conflicts);
     }
 
+    /** Returns the employee's current name and email for leave feedback. */
+    public static String formatEmployeeNameAndEmail(Employee employee) {
+        return String.format("%s (%s)", employee.getName(), employee.getEmail());
+    }
+
     /**
      * Formats the {@code employee} for display to the user.
      */

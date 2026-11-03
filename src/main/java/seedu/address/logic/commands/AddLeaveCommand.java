@@ -70,12 +70,14 @@ public class AddLeaveCommand extends Command {
         try {
             Leave addedLeave = model.addLeave(employeeId, leavePeriod);
             int remainingDays = model.getRemainingLeave(employeeId, leavePeriod.getYear());
-            return new CommandResult(String.format(MESSAGE_SUCCESS, addedLeave.getLeaveId(), employee.getName(),
+            return new CommandResult(String.format(MESSAGE_SUCCESS, addedLeave.getLeaveId(),
+                    Messages.formatEmployeeNameAndEmail(employee),
                     leavePeriod, leavePeriod.getWorkingDayCount(), remainingDays, leavePeriod.getYear()));
         } catch (OverlappingLeaveException e) {
             throw new CommandException(MESSAGE_OVERLAPPING_LEAVE);
         } catch (InsufficientLeaveException e) {
-            throw new CommandException(String.format(MESSAGE_INSUFFICIENT_LEAVE, employee.getName(),
+            throw new CommandException(String.format(MESSAGE_INSUFFICIENT_LEAVE,
+                    Messages.formatEmployeeNameAndEmail(employee),
                     e.getRemainingDays(), leavePeriod.getYear(), e.getRequestedDays()));
         } catch (LeaveIdExhaustedException e) {
             throw new CommandException(MESSAGE_LEAVE_ID_EXHAUSTED);

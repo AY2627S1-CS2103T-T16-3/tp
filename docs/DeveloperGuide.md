@@ -594,7 +594,8 @@ The nested parser structure is described under [leave command routing](#leave-co
    checks the requested weekdays against the employee's remaining entitlement for that year.
 4. The model creates the record with the next `LeaveId`, adds it to `UniqueLeaveList`, and increments the leave ID
    counter.
-5. The command reports the assigned leave ID, employee, period, charged weekdays, and recalculated balance.
+5. The command reports the assigned leave ID, employee name and email, period, charged weekdays, and recalculated
+   balance.
 
 The following sequence diagram shows successful leave creation inside Model. It starts at `AddressBook#addLeave`,
 called through `ModelManager` after the command has resolved a valid displayed employee index. The request has no
@@ -651,9 +652,10 @@ a fixed clock for deterministic status checks:
 
 Balances and statuses are derived for display and are not persisted.
 
-`leave delete LEAVE_ID` removes one record by its stable leave ID. The leave ID counter is not decremented, so the
-deleted leave ID is not reused while the current address book remains in use. No balance mutation is
-required; the next balance calculation automatically excludes the deleted record.
+`leave delete LEAVE_ID` removes one record by its stable leave ID. The result shows the employee's current name and
+email. The leave ID counter is not decremented, so the deleted leave ID is not reused while the current address book
+remains in use. No balance mutation is required; the next balance calculation automatically excludes the deleted
+record.
 
 `ClearCommand` has broader semantics than deleting records individually. It replaces the model data with a new
 `AddressBook`, removing all employee and leave records and resetting both identifier counters to 1. Employee and leave
@@ -951,7 +953,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1.  HR manager requests to record a leave period for an employee selected by their displayed index, providing the
     start and end dates.
 2.  System records the leave period and assigns it a unique leave ID.
-3.  System displays the recorded leave and the employee’s remaining leave for the relevant calendar year.
+3.  System displays the recorded leave, the employee's name and email, and their remaining leave for the relevant
+    calendar year.
 
     Use case ends.
 
@@ -1050,7 +1053,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1. HR manager lists leave records to obtain a leave ID.
 2. HR manager requests to delete the record using its leave ID.
-3. System deletes the leave record and displays the employee's recalculated remaining leave for that year.
+3. System deletes the leave record and displays the employee's name, email, and recalculated remaining leave for that
+   year.
 
     Use case ends.
 
@@ -1532,7 +1536,8 @@ Run these tests in order on a disposable copy of the app with fresh sample data.
    1. Prerequisites: Add an employee with at least 5 days of leave entitlement, then run `list` and note their index.
 
    1. Test case: `leave add 1 from/19-10-2026 to/23-10-2026`<br>
-      Expected: Five working days are recorded. The result shows a leave ID and the remaining entitlement.
+      Expected: Five working days are recorded. The result shows a leave ID, employee name and email, and the
+      remaining entitlement.
 
    1. Test case: Run the same command again.<br>
       Expected: No leave is recorded because it overlaps the first record.
@@ -1569,7 +1574,7 @@ Run these tests in order on a disposable copy of the app with fresh sample data.
    1. Prerequisites: Note a leave ID returned by `leave add`; one recorded leave period is enough.
 
    1. Test case: `leave delete 1` (replace `1` with the recorded leave ID)<br>
-      Expected: That record is deleted and the result shows the employee's restored remaining leave.
+      Expected: That record is deleted and the result shows the employee's name, email, and restored remaining leave.
 
    1. Test case: Repeat the same `leave delete` command.<br>
       Expected: No record is deleted because that leave ID no longer exists.
