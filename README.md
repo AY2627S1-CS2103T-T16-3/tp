@@ -50,7 +50,7 @@ See the [User Guide](https://ay2627s1-cs2103t-t16-3.github.io/tp/UserGuide.html)
 
 ## For developers
 
-Start with the [setup guide](docs/SettingUp.md) to prepare your environment and run the project.
+Start with the [setup guide](https://ay2627s1-cs2103t-t16-3.github.io/tp/SettingUp.html) to prepare your environment and run the project.
 The [Developer Guide](https://ay2627s1-cs2103t-t16-3.github.io/tp/DeveloperGuide.html) covers architecture, implementation, requirements, and manual testing.
 
 ## Acknowledgements
