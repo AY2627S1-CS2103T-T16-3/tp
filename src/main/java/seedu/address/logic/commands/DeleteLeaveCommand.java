@@ -3,6 +3,7 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.employee.Employee;
@@ -22,8 +23,8 @@ public class DeleteLeaveCommand extends Command {
             + "  Run leave list to view available leave IDs.\n"
             + "  Example: leave " + SUBCOMMAND_WORD + " 1";
     public static final String MESSAGE_SUCCESS =
-            "Deleted leave: ID %1$s for %2$s; period %3$s; %4$d day(s) remaining in %5$d.";
-    public static final String MESSAGE_LEAVE_NOT_FOUND = "No leave record found with ID %1$s.";
+            "Deleted leave: Leave ID %1$s for %2$s; period %3$s; %4$d day(s) remaining in %5$d.";
+    public static final String MESSAGE_LEAVE_NOT_FOUND = "No leave record found with Leave ID %1$s.";
 
     private final LeaveId leaveId;
 
@@ -47,8 +48,8 @@ public class DeleteLeaveCommand extends Command {
                 .orElseThrow(() -> new IllegalStateException("Leave record references an unknown employee."));
         int year = deletedLeave.getPeriod().getYear();
         int remainingDays = model.getRemainingLeave(deletedLeave.getEmployeeId(), year);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, leaveId, employee.getName(), deletedLeave.getPeriod(),
-                remainingDays, year));
+        return new CommandResult(String.format(MESSAGE_SUCCESS, leaveId,
+                Messages.formatEmployeeNameAndEmail(employee), deletedLeave.getPeriod(), remainingDays, year));
     }
 
     @Override

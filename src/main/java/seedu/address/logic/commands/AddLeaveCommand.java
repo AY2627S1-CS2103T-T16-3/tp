@@ -35,7 +35,7 @@ public class AddLeaveCommand extends Command {
             + PREFIX_START_DATE + "05-10-2026 " + PREFIX_END_DATE + "07-10-2026";
 
     public static final String MESSAGE_SUCCESS =
-            "Leave recorded: ID %1$s for %2$s; period %3$s; %4$d working day(s); %5$d day(s) remaining in %6$d.";
+            "Leave recorded: Leave ID %1$s for %2$s; period %3$s; %4$d working day(s); %5$d day(s) remaining in %6$d.";
     public static final String MESSAGE_OVERLAPPING_LEAVE =
             "This leave period overlaps an existing leave record for the employee.";
     public static final String MESSAGE_INSUFFICIENT_LEAVE =
@@ -70,12 +70,14 @@ public class AddLeaveCommand extends Command {
         try {
             Leave addedLeave = model.addLeave(employeeId, leavePeriod);
             int remainingDays = model.getRemainingLeave(employeeId, leavePeriod.getYear());
-            return new CommandResult(String.format(MESSAGE_SUCCESS, addedLeave.getLeaveId(), employee.getName(),
+            return new CommandResult(String.format(MESSAGE_SUCCESS, addedLeave.getLeaveId(),
+                    Messages.formatEmployeeNameAndEmail(employee),
                     leavePeriod, leavePeriod.getWorkingDayCount(), remainingDays, leavePeriod.getYear()));
         } catch (OverlappingLeaveException e) {
             throw new CommandException(MESSAGE_OVERLAPPING_LEAVE);
         } catch (InsufficientLeaveException e) {
-            throw new CommandException(String.format(MESSAGE_INSUFFICIENT_LEAVE, employee.getName(),
+            throw new CommandException(String.format(MESSAGE_INSUFFICIENT_LEAVE,
+                    Messages.formatEmployeeNameAndEmail(employee),
                     e.getRemainingDays(), leavePeriod.getYear(), e.getRequestedDays()));
         } catch (LeaveIdExhaustedException e) {
             throw new CommandException(MESSAGE_LEAVE_ID_EXHAUSTED);

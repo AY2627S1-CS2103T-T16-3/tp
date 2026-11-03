@@ -19,7 +19,9 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.employee.Employee;
+import seedu.address.model.employee.EmployeeId;
 import seedu.address.model.leave.Leave;
+import seedu.address.model.leave.LeaveId;
 import seedu.address.model.leave.LeavePeriod;
 import seedu.address.testutil.EmployeeBuilder;
 
@@ -43,9 +45,24 @@ public class AddLeaveCommandTest {
         CommandResult result = new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY).execute(model);
 
         Leave addedLeave = model.getAddressBook().getLeaveList().get(0);
-        int remainingDays = ALICE.getLeaveEntitlement().value - MONDAY_TO_WEDNESDAY.getWorkingDayCount();
-        assertEquals(String.format(AddLeaveCommand.MESSAGE_SUCCESS, addedLeave.getLeaveId(), ALICE.getName(),
-                MONDAY_TO_WEDNESDAY, 3, remainingDays, 2026), result.getFeedbackToUser());
+        assertEquals("Leave recorded: Leave ID 1 for Alice Pauline (alice@example.com); "
+                + "period 05-10-2026 to 07-10-2026; "
+                + "3 working day(s); 11 day(s) remaining in 2026.", result.getFeedbackToUser());
+        assertEquals(new LeaveId(1), addedLeave.getLeaveId());
+    }
+
+    @Test
+    public void execute_employeesWithSameName_showsSelectedEmployeesEmail() throws Exception {
+        Employee otherAlice = new EmployeeBuilder(ALICE).withEmployeeId(2)
+                .withPhone("91234567").withEmail("alice.two@example.com").build();
+        Model model = new ModelManager(new AddressBook(List.of(ALICE, otherAlice), 3), new UserPrefs());
+
+        CommandResult result = new AddLeaveCommand(INDEX_SECOND_EMPLOYEE, MONDAY_TO_WEDNESDAY).execute(model);
+
+        assertEquals("Leave recorded: Leave ID 1 for Alice Pauline (alice.two@example.com); "
+                + "period 05-10-2026 to 07-10-2026; 3 working day(s); 11 day(s) remaining in 2026.",
+                result.getFeedbackToUser());
+        assertEquals(new EmployeeId(2), model.getAddressBook().getLeaveList().get(0).getEmployeeId());
     }
 
     @Test
@@ -73,8 +90,8 @@ public class AddLeaveCommandTest {
         AddressBook addressBook = new AddressBook();
         addressBook.addEmployee(employee);
         Model model = new ModelManager(addressBook, new UserPrefs());
-        String expectedMessage = String.format(AddLeaveCommand.MESSAGE_INSUFFICIENT_LEAVE,
-                employee.getName(), 2, 2026, 3);
+        String expectedMessage = "Amy Bee (amy@gmail.com) has only 2 annual leave day(s) remaining in 2026, "
+                + "but this request needs 3.";
 
         assertCommandFailure(new AddLeaveCommand(INDEX_FIRST_EMPLOYEE, MONDAY_TO_WEDNESDAY), model,
                 expectedMessage);
