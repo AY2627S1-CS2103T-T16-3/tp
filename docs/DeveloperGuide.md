@@ -11,8 +11,11 @@ title: Developer Guide
 
 * HR Book is based on [AddressBook-Level3](https://github.com/se-edu/addressbook-level3),
   developed by the [SE-EDU initiative](https://se-education.org).
-* We used [ChatGPT](https://chatgpt.com/) by OpenAI to assist with
-  generating and reviewing code, suggesting test cases, and refining documentation.
+* We used [ChatGPT](https://chatgpt.com/) by OpenAI extensively throughout the project to generate and refine
+  substantial portions of the code, UML diagrams, test cases, and content in the User Guide and Developer Guide.
+  We also used it to review implementations and documentation, identify potential defects, and suggest improvements.
+  The team reviewed, adapted, and integrated the AI-generated output and validated the resulting implementation
+  using tests and project quality checks.
 
 --------------------------------------------------------------------------------------------------------------------
 
