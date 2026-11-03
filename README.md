@@ -23,8 +23,8 @@ visible.
 | Workforce summaries | View employee, tag, task, and leave-record counts, plus total and average salary for all employees or a selected group. |
 
 Employees may share names, but phone numbers and email addresses must be unique. Data is saved locally
-between sessions. HR Book focuses on internal employee administration; recruitment, talent acquisition,
-and employee messaging are outside its scope.
+between sessions. HR Book focuses on internal employee administration; recruitment, talent acquisition.
+Features such as employee messaging are outside its scope.
 
 ## Getting started
 
@@ -34,10 +34,8 @@ and employee messaging are outside its scope.
 4. Open a terminal in that folder and run:
 
    ```text
-   java -jar JAR_FILE_NAME
+   java -jar [CS2103T-T16-03][HR Book].jar
    ```
-
-   Replace `JAR_FILE_NAME` with the downloaded file's full name, including `.jar`.
 
 Once the app opens, try:
 
