@@ -1682,4 +1682,51 @@ Run the command again after a change to see updated counts; summaries are not re
       file starts with sample data. Neither a valid file nor a missing file produces a data-loading error message.
 
 
+## **Future Enhancements**
 
+The following improvements are planned for consideration in future versions.
+They are not implemented in the current release.
+
+### Broader support for employee names
+
+Employee names currently accept only English letters, digits, and spaces.
+A future version could support names containing hyphens, apostrophes, accented
+letters, and characters from other writing systems.
+
+### List leave by year
+
+Allow HR managers to view leave records for a
+selected year in isolation. Show remaining balances for that year instead
+of always showing current-year balances.
+
+
+### Filter employees by year-specific leave
+
+Allow HR managers to select
+a year and filter employees by leave taken or remaining entitlement in
+that year. Keep these criteria distinct from the existing annual
+entitlement filter.
+
+### Sort employees by year-specific leave
+
+Allow HR managers to select
+a year and sort employees by leave taken or remaining entitlement in
+ascending or descending order.
+
+### More resilient local saving
+
+The current implementation writes directly to the JSON data file and restores
+the in-memory model if saving fails. This rollback does not repair a partially
+written file.
+
+Temporary-file saving with atomic replacement was previously implemented but
+removed after intermittent access-denied failures were encountered on Windows.
+A future version could revisit this approach after resolving those failures
+and verifying file replacement on Windows, Linux, and macOS. The design should
+handle unsupported atomic replacement and replacement failures without
+silently falling back to an overwrite that could damage the existing file.
+
+Keeping a previous valid backup could also support recovery from damaged data,
+with a defined recovery procedure. Data, temporary files, and backups would
+remain within the application's home folder, in a human-editable format, and
+saving and recovery would continue to work offline.
