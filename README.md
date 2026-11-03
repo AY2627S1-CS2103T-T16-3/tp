@@ -34,7 +34,7 @@ Features such as employee messaging are outside its scope.
 4. Open a terminal in that folder and run:
 
    ```text
-   java -jar [CS2103T-T16-03][HRBook].jar
+   java -jar [CS2103T-T16-3][HRBook].jar
    ```
 
 Once the app opens, try:
