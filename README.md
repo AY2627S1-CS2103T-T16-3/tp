@@ -14,7 +14,7 @@ HR Book enables an HR manager to:
 
 HR Book is intended for internal employee administration. Recruitment, talent acquisition, and communication between employees are outside the scope of the application.
 
-For detailed information about using and developing HR Book, see the [User Guide](docs/UserGuide.md) and [Developer Guide](docs/DeveloperGuide.md).
+For detailed information about using and developing HR Book, see the [User Guide](https://ay2627s1-cs2103t-t16-3.github.io/tp/UserGuide.html) and [Developer Guide](https://ay2627s1-cs2103t-t16-3.github.io/tp/DeveloperGuide.html).
 
 ## Acknowledgement
 This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).
