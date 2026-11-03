@@ -719,10 +719,6 @@ acceptable range or a leave refers to a missing employee). Therefore, edit the d
 you can update it correctly.
 </div>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
